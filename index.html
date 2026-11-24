@@ -1,0 +1,1083 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a1017">
+<title>Border Watch</title>
+<style>
+/* Design language: dense dark analyst workspace (inspired by the open-source Blueprint UI system). */
+:root{
+ --bg:#111418;--panel:#1C2127;--panel2:#252A31;--panel3:#2F343C;--line:#383E47;--line2:#2F343C;
+ --ink:#F6F7F9;--mute:#ABB3BF;--dim:#738091;
+ --acc:#4C90F0;--acc2:#2D72D2;--green:#32A467;--amber:#EC9A3C;--red:#E76A6E;--violet:#9881F3;
+ --mono:"SF Mono",Menlo,Consolas,"Roboto Mono",monospace;
+ --hdr:98px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.43 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+h1,h2,h3,p{margin:0}
+svg.i{display:inline-block;vertical-align:-3px;flex:none}
+.mute{color:var(--mute)}.ok{color:#72CA9B}.no{color:#FA999C}.wn{color:#FBB360}
+.sm{font-size:12.5px}
+/* header */
+.hdr{position:sticky;top:0;z-index:7}
+.classbar{height:18px;background:#1C6E42;color:#E6F5EC;font:700 10.5px/18px var(--mono);letter-spacing:.14em;text-align:center;text-transform:uppercase}
+.top{height:46px;display:flex;align-items:center;gap:4px;padding:0 8px;background:var(--panel2);box-shadow:0 1px 0 rgba(17,20,24,.6),0 1px 1px rgba(17,20,24,.4)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:.06em;font-size:14px;min-width:0}
+.brand .crumb{font-weight:400;letter-spacing:0;color:var(--mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:10px;border-left:1px solid var(--line)}
+.brand .crumb i{font-style:normal;color:var(--dim);margin:0 4px}
+.clock{font:600 16px var(--mono);color:var(--ink);margin-left:auto;padding:0 8px;letter-spacing:.04em}
+.ib{background:transparent;border:0;border-radius:2px;min-width:34px;height:32px;padding:0 8px;font-weight:600;color:var(--mute);display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.ib:hover{background:rgba(143,153,168,.15);color:var(--ink)}
+.ib.on{background:var(--acc2);color:#fff}
+.flow{height:34px;display:flex;align-items:center;gap:2px;padding:0 8px;background:var(--panel);border-bottom:1px solid var(--line2);overflow-x:auto;scrollbar-width:none}
+.flow span{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:2px;color:var(--dim);white-space:nowrap}
+.flow span b{font:600 10px var(--mono);width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;background:var(--panel3);color:var(--mute)}
+.flow span.d{color:#72CA9B}.flow span.d b{background:rgba(35,133,81,.3);color:#72CA9B}
+.flow span.c{color:var(--ink);background:rgba(45,114,210,.2)}.flow span.c b{background:var(--acc2);color:#fff}
+.flow em{color:var(--line);font-style:normal}
+/* layout */
+.main{display:grid;grid-template-columns:minmax(0,1fr) 440px;height:calc(100vh - var(--hdr))}
+.mapcol{position:relative;background:#10161D;border-right:1px solid var(--line2);display:flex;flex-direction:column;min-height:0}
+svg.map{width:100%;flex:1;min-height:0;display:block}
+svg.map text{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;pointer-events:none}
+.chips{position:absolute;left:8px;top:8px;display:flex;gap:4px;flex-wrap:wrap;right:8px}
+.chip{display:inline-flex;align-items:center;gap:5px;background:rgba(17,20,24,.88);border:1px solid var(--line);border-radius:2px;padding:2px 7px;font:600 11px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--mute)}
+.chip.hot{border-color:var(--red);color:#FA999C}
+.chip.busy{border-color:var(--amber);color:#FBB360}
+.ticker{background:var(--panel);border-top:1px solid var(--line2);padding:7px 12px;font:12px var(--mono);min-height:34px;color:var(--ink)}
+.ticker .tm{color:var(--acc);margin-right:8px}
+.panel{display:flex;flex-direction:column;min-height:0;background:var(--bg)}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);background:var(--panel);border-top:1px solid var(--line2)}
+.tab{background:none;border:0;padding:8px 2px 7px;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--acc);box-shadow:inset 0 2px 0 var(--acc)}
+.tab.dec{color:var(--amber)}
+.tab:disabled{opacity:.4}
+.tab .bd{position:absolute;top:5px;right:calc(50% - 16px);width:8px;height:8px;border-radius:50%;background:var(--red)}
+.body{overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px;flex:1}
+.hint{display:flex;gap:8px;align-items:flex-start;background:rgba(45,114,210,.15);border-left:3px solid var(--acc2);border-radius:2px;padding:8px 10px;font-size:13px}
+.hint svg{color:var(--acc);margin-top:2px}
+.card{background:var(--panel);border:1px solid var(--line2);border-radius:3px;padding:10px 12px 12px}
+.lbl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.card>.lbl{margin:-10px -12px 10px;padding:8px 12px;background:var(--panel2);border-bottom:1px solid var(--line2);border-radius:3px 3px 0 0}
+.verdict{font-size:16px;font-weight:600}
+.tri{display:flex;height:6px;border-radius:1px;overflow:hidden;margin-top:8px;background:var(--panel3);gap:1px}
+.tri b{display:block;height:100%;transition:width .5s}
+.legend{display:flex;justify-content:space-between;font-size:11px;margin-top:5px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.act{background:var(--panel);border:1px solid var(--line2);border-radius:3px;padding:9px 10px;text-align:left;display:flex;flex-direction:column;gap:2px;min-height:70px;position:relative;overflow:hidden}
+.act:hover:not(:disabled){border-color:var(--acc2);background:#20262D}
+.act .ic{color:var(--acc);height:18px}
+.act .nm{font-weight:600;font-size:13.5px}
+.act .ds{font-size:12px;color:var(--mute)}
+.act:disabled{opacity:.45;cursor:not-allowed}
+.act.done{border-color:rgba(50,164,103,.45)}.act.done .ic{color:var(--green)}.act.done .nm::after{content:" ✓";color:var(--green)}
+.act.go{border-color:var(--amber);opacity:1}.act.go .ic{color:var(--amber)}
+.act .pg{position:absolute;left:0;bottom:0;height:3px;background:var(--amber);width:0}
+.wide{grid-column:1/-1}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:13px}
+.kv>span:nth-child(odd){color:var(--dim);text-transform:uppercase;font-size:11px;letter-spacing:.06em;padding-top:2px}
+.src{font:11px var(--mono);color:var(--dim);display:block;margin-top:2px}
+.flag{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:2px}
+.flag.bad{background:rgba(205,66,70,.25);color:#FA999C}.flag.ok{background:rgba(35,133,81,.25);color:#72CA9B}.flag.warn{background:rgba(200,118,25,.25);color:#FBB360}.flag.unk{background:rgba(143,153,168,.2);color:var(--mute)}.flag.info{background:rgba(45,114,210,.25);color:#8ABBFF}
+.ev{border-left:2px solid var(--line);padding:3px 0 3px 10px;margin-top:8px}
+.ev:first-of-type{margin-top:0}
+.ev b{display:block;font-weight:600;font-size:13px}.ev span{font-size:13px;color:var(--mute)}
+.pcard{display:grid;grid-template-columns:40px 1fr auto;gap:2px 10px;align-items:center;background:var(--panel2);border:1px solid var(--line2);border-radius:3px;padding:8px 10px;text-align:left;width:100%}
+.pcard:hover{border-color:var(--acc2)}
+.av{width:40px;height:40px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-weight:700;background:var(--panel3);grid-row:1/3;font-size:13px}
+.pcard .nm{font-weight:600}
+.pcard .mt{grid-row:1/3;font:600 12px var(--mono);text-align:right}
+.audit div{font:11.5px/1.5 var(--mono);padding:3px 0;border-top:1px solid var(--line2);color:var(--mute)}
+.audit div:first-child{border-top:0}
+.audit div.no{color:#FA999C}
+svg.graph{width:100%;display:block;background:#161B21;border:1px solid var(--line2);border-radius:2px}
+svg.graph text{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;pointer-events:none}
+/* dialogs */
+.modalbg{position:fixed;inset:0;background:rgba(17,20,24,.7);display:flex;align-items:flex-end;justify-content:center;z-index:30}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:4px 4px 0 0;max-width:520px;width:100%;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto;box-shadow:0 0 0 1px rgba(17,20,24,.4),0 4px 8px rgba(17,20,24,.4),0 18px 46px 6px rgba(17,20,24,.4);animation:up .18s ease-out}
+@keyframes up{from{transform:translateY(24px);opacity:.4}to{transform:none;opacity:1}}
+@media(min-width:761px){.modalbg{align-items:center}.sheet{border-radius:4px}}
+.sheet h2{font-size:18px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.sheet p{margin:8px 0}
+.row{display:flex;gap:6px;margin-top:14px}
+.btn{flex:1;min-height:40px;background:var(--panel3);border:0;border-radius:3px;padding:10px 12px;font-weight:600;box-shadow:inset 0 0 0 1px rgba(17,20,24,.2),0 1px 2px rgba(17,20,24,.2)}
+.btn:hover:not(:disabled){background:#383E47}
+.btn.pri{background:var(--acc2);color:#fff}.btn.pri:hover:not(:disabled){background:#215DB0}
+.btn.red{background:transparent;box-shadow:inset 0 0 0 1px rgba(231,106,110,.6);color:#FA999C}
+.btn.grn{background:transparent;box-shadow:inset 0 0 0 1px rgba(50,164,103,.7);color:#72CA9B}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.choice{display:block;width:100%;text-align:left;margin-top:6px;background:var(--panel2)}
+.choice b{display:inline-flex;align-items:center;gap:6px}
+.choice small{display:block;font-weight:400;color:var(--mute);margin-top:2px}
+.choice.on{box-shadow:inset 0 0 0 2px var(--acc);background:rgba(45,114,210,.15)}
+.alert{border-left:3px solid var(--red);border-radius:2px;padding:10px 12px;background:rgba(205,66,70,.15);margin-bottom:10px}
+.alert b{color:#FA999C;letter-spacing:.08em;font:700 12px var(--mono);display:flex;gap:6px;align-items:center;margin-bottom:4px}
+.steps{padding-left:0;margin:6px 0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;display:flex;gap:10px;padding:6px 0;border-top:1px solid var(--line2);color:var(--mute);font-size:13.5px}
+.steps li:first-child{border-top:0}
+.steps li::before{content:counter(s);font:600 11px var(--mono);flex:none;width:20px;height:20px;border-radius:2px;background:var(--panel3);color:var(--ink);display:flex;align-items:center;justify-content:center}
+.steps li b{color:var(--ink)}
+/* ID card */
+.idc{border-radius:3px;overflow:hidden;border:1px solid var(--line);background:var(--panel2)}
+.idc .hd{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;font:700 10.5px var(--mono);letter-spacing:.12em;color:#fff}
+.idc .bd2{display:grid;grid-template-columns:80px 1fr;gap:12px;padding:10px 12px}
+.idc .ph{width:80px;height:100px;border-radius:2px;background:var(--panel3);position:relative;overflow:hidden;border:1px solid var(--line)}
+.idc .ph svg{position:absolute;inset:0;width:100%;height:100%}
+.idc .f{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+.idc .v{font-weight:600;font-size:14px;margin-bottom:4px}
+.idc .mrz{font:600 11px var(--mono);color:var(--mute);padding:6px 12px 8px;letter-spacing:.06em;border-top:1px dashed var(--line);word-break:break-all;background:#20262D}
+.match{display:flex;align-items:center;gap:8px;margin:10px 0 2px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);font-weight:600}
+.match i{flex:1;height:6px;background:var(--panel3);border-radius:1px;overflow:hidden}
+.match i b{display:block;height:100%}
+.match>b{font-family:var(--mono);color:var(--ink)}
+.rec{border:1px solid var(--line2);border-radius:3px;padding:10px;margin-top:10px;background:var(--panel)}
+.rec.locked{border:1px dashed var(--line);text-align:center;color:var(--mute);background:repeating-linear-gradient(135deg,#1C2127 0 8px,#20262D 8px 16px)}
+.rec.locked b{display:inline-flex;align-items:center;gap:6px;font:700 11.5px var(--mono);letter-spacing:.1em;color:#FBB360}
+.rec .ri{border-top:1px solid var(--line2);padding:6px 0;font-size:13.5px}
+.rec .ri:first-of-type{border-top:0}
+.dots{display:flex;gap:4px;justify-content:center;margin-top:10px}
+.dots i{width:14px;height:3px;border-radius:1px;background:var(--line)}.dots i.on{background:var(--acc)}
+/* title / end */
+.title{min-height:100vh;display:flex;flex-direction:column}
+.title .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:18px;background-color:var(--bg);background-image:linear-gradient(rgba(56,62,71,.25) 1px,transparent 1px),linear-gradient(90deg,rgba(56,62,71,.25) 1px,transparent 1px);background-size:32px 32px}
+.box{max-width:480px;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:4px;box-shadow:0 18px 46px 6px rgba(17,20,24,.5)}
+.box .bh{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--panel2);border-bottom:1px solid var(--line2);font-weight:700;letter-spacing:.06em;font-size:13px}
+.box .bb{padding:16px}
+.title h1{font-size:28px;font-weight:600;letter-spacing:.02em;margin:2px 0 10px}
+.title p{margin:10px 0;color:var(--mute)}
+.title p b{color:var(--ink)}
+.seedrow{display:flex;gap:6px;margin-top:16px}
+.seedrow label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);font-weight:600;margin-top:14px}
+.seedrow input{flex:1;min-width:0;background:var(--bg);border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:3px;padding:10px;color:var(--ink);font:600 14px var(--mono)}
+.seedrow input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--acc)}
+.end{max-width:620px;margin:0 auto;padding:14px 12px 40px;display:flex;flex-direction:column;gap:8px}
+.hero{border-radius:3px;padding:16px;border:1px solid var(--line2);border-left:4px solid var(--line);background:var(--panel)}
+.hero.good{border-left-color:var(--green)}.hero.bad{border-left-color:var(--red)}
+.hero h1{font-size:21px;font-weight:600;margin:4px 0 8px}
+.hero .meta{font:600 11px var(--mono);letter-spacing:.08em;color:var(--dim)}
+.grade{font:700 40px var(--mono);float:right;margin-left:10px;line-height:1;padding:6px 10px;border-radius:3px;background:var(--panel2)}
+.sc div{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-top:1px solid var(--line2)}
+.sc div b{font-family:var(--mono)}
+.sc div:first-child{border-top:0}
+/* career / meta */
+.prof{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--panel2);border:1px solid var(--line2);border-radius:3px;margin:12px 0}
+.prof .rk{font-weight:700}.prof .xp{flex:1;min-width:0}
+.bar{height:6px;background:var(--panel3);border-radius:1px;overflow:hidden;margin-top:5px}.bar b{display:block;height:100%;background:var(--acc);transition:width .9s ease-out}
+.lvls{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:6px}
+.lv{background:var(--panel2);border:0;border-radius:2px;padding:7px 0;font:700 13px var(--mono);color:var(--mute);box-shadow:inset 0 0 0 1px var(--line2)}
+.lv.on{background:var(--acc2);color:#fff;box-shadow:none}.lv:disabled{opacity:.45;cursor:not-allowed}
+.rule{font-size:12.5px;color:var(--mute);margin-top:6px;min-height:18px}
+.daily{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line2);border-left:3px solid var(--amber);border-radius:3px;background:var(--panel2);margin-top:12px}
+.daily .dt{flex:1}.daily .dt b{display:block}
+.cal{display:flex;gap:3px;margin-top:6px}.cal i{flex:1;font:700 11px/22px var(--mono);text-align:center;border-radius:2px;background:var(--panel3);color:var(--dim);font-style:normal}
+.cal i.g{background:rgba(35,133,81,.3);color:#72CA9B}.cal i.b{background:rgba(205,66,70,.25);color:#FA999C}
+.tiny{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.tiny .flag{font-size:10px}
+.cf{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.cf div{background:var(--panel2);border-radius:2px;padding:8px 4px;text-align:center;font-size:11px;color:var(--mute);border:1px solid transparent}
+.cf div b{display:block;font:700 20px var(--mono);color:var(--ink)}
+.cf div.you{border-color:var(--acc)}.cf div.best b{color:#72CA9B}
+.ach{display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line2);font-size:13px}
+.ach:first-child{border-top:0}.ach svg{color:var(--amber)}
+.ach.new{color:#FBB360}
+.share{width:100%;min-height:64px;background:var(--bg);color:var(--ink);border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:3px;font:12px var(--mono);padding:8px;margin-top:8px;resize:none}
+@keyframes pop{0%{transform:scale(.2) rotate(-8deg);opacity:0}55%{transform:scale(1.25,.85)}75%{transform:scale(.92,1.08)}100%{transform:none;opacity:1}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translate(-6px,2px) rotate(-.6deg)}40%{transform:translate(5px,-2px) rotate(.5deg)}60%{transform:translate(-3px,1px)}80%{transform:translate(2px,0)}}
+@keyframes rise{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+.fx .grade{animation:pop .6s .35s both cubic-bezier(.3,1.4,.5,1)}
+.fx .hero.bad{animation:shake .45s .2s both}
+.fx .end>.card{animation:rise .35s both}
+.fx .end>.card:nth-child(2){animation-delay:.5s}.fx .end>.card:nth-child(3){animation-delay:.6s}.fx .end>.card:nth-child(4){animation-delay:.7s}.fx .end>.card:nth-child(5){animation-delay:.8s}
+@media (prefers-reduced-motion:reduce){.fx *{animation:none!important}.bar b{transition:none}}
+@media(max-width:760px){
+ .main{display:block;height:auto}
+ .brand .crumb{display:none}
+ .mapcol{border-right:0;display:block;position:sticky;top:var(--hdr);z-index:4}
+ svg.map{height:auto;aspect-ratio:900/470}
+ .ticker{padding:5px 10px;font-size:11.5px;min-height:0}
+ .panel{display:block}
+ .tabs{position:fixed;left:0;right:0;bottom:0;z-index:8;padding-bottom:env(safe-area-inset-bottom)}
+ .body{overflow:visible;padding-bottom:80px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"></div>
+<script>
+'use strict';
+const SAVE = 'lattice-border-v5';
+const START_MIN = 30;
+const BORDER_X = 575;
+const BASES = { air:{x:885,y:190}, port:{x:805,y:432} };
+const COVE = {x:752,y:134};
+const HK = ['D','S','L'];
+const HN = {D:'In distress', S:'Criminal', L:'Legitimate'};
+const HC = {D:'#32A467', S:'#E76A6E', L:'#4C90F0'};
+const CASE_NO = '26-0417';
+const UNITS = {
+  drone:   {base:'air',  off:-18, speed:35,   air:true, col:'#b48cff', lbl:'DR', name:'Drone'},
+  heli:    {base:'air',  off:18,  speed:40,   air:true, col:'#5fd39a', lbl:'HE', name:'Helicopter'},
+  lifeboat:{base:'port', off:-18, speed:10,   col:'#f2994a', lbl:'LB', name:'Lifeboat'},
+  cutter:  {base:'port', off:18,  speed:10.5, col:'#c9d3de', lbl:'PC', name:'Patrol cutter'}
+};
+const TASKS = {track:2, hail:3, registry:2, face:2, expand:1, unlock:1};
+const TASKNAME = {track:'Track replay', hail:'Radio call', registry:'Registry check', face:'Face match', expand:'Search around', unlock:'Records access'};
+const FLOW = [['detect','Alert'],['track','Correlate'],['vessel','Vessel ID'],['people','People ID'],['records','Vet records'],['decide','Decide']];
+
+
+const ICONS = {
+  radar:'<circle cx="8" cy="8" r="6.5"/><circle cx="8" cy="8" r="3.5"/><path d="M8 8l4.6-4.6"/>',
+  track:'<path d="M1.5 12.5c2.5-.5 3-5 6-5s3 3 6 1.5"/><circle cx="13.5" cy="9" r="1.5"/>',
+  radio:'<rect x="2" y="6" width="12" height="8" rx="1"/><path d="M5 6l6-4M5.5 10h.01M9.5 9h2M9.5 11h2"/>',
+  drone:'<path d="M5.5 8h5M8 6.5v3"/><circle cx="3.5" cy="4.5" r="2"/><circle cx="12.5" cy="4.5" r="2"/><circle cx="3.5" cy="11.5" r="2"/><circle cx="12.5" cy="11.5" r="2"/>',
+  id:'<rect x="1.5" y="3" width="13" height="10" rx="1"/><circle cx="5.5" cy="7" r="1.6"/><path d="M3.3 11c.5-1.4 3.9-1.4 4.4 0M10 6.5h3M10 9h3"/>',
+  ship:'<path d="M1.5 10l1.7 3.5h9.6L14.5 10zM4 10V7h8v3M7 7V3.5h2V7"/>',
+  graph:'<circle cx="3.5" cy="4" r="1.8"/><circle cx="12.5" cy="4" r="1.8"/><circle cx="8" cy="12.5" r="1.8"/><path d="M5.3 4h5.4M4.4 5.6l2.7 5.2M11.6 5.6l-2.7 5.2"/>',
+  people:'<circle cx="6" cy="5" r="2.3"/><path d="M1.8 13.5c.6-3 7.8-3 8.4 0"/><circle cx="11.5" cy="5.5" r="1.8"/><path d="M11 9.2c1.9-.2 3.2.6 3.5 2.6"/>',
+  folder:'<path d="M1.5 3.5h4.5l1.5 1.5h7v8.5h-13z"/>',
+  scales:'<path d="M8 2v12M4.5 14h7M2.5 4.5h11M2.5 4.5L1 9h3zM13.5 4.5L12 9h3z"/>',
+  search:'<circle cx="7" cy="7" r="4.5"/><path d="M10.4 10.4L14 14"/>',
+  lock:'<rect x="3" y="7" width="10" height="7.5" rx="1"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/>',
+  check:'<path d="M3 8.5l3 3 7-7"/>',
+  alert:'<path d="M8 2L15 14H1z"/><path d="M8 6.5v3.5M8 12v.01"/>',
+  clock:'<circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 1.5"/>',
+  storm:'<path d="M4.5 10.5a3 3 0 1 1 .8-5.9A4 4 0 0 1 13 6.3a2.3 2.3 0 0 1-.5 4.2"/><path d="M8.5 8.5l-2 3h3l-2 3"/>',
+  building:'<path d="M2.5 14.5V2.5h7v12M9.5 6h4v8.5M4.5 5h3M4.5 8h3M4.5 11h3M1 14.5h14"/>',
+  person:'<circle cx="8" cy="5" r="2.8"/><path d="M2.5 14.5c.8-4 10.2-4 11 0"/>',
+  phone:'<rect x="4.5" y="1.5" width="7" height="13" rx="1"/><path d="M7.3 12.3h1.4"/>',
+  doc:'<path d="M3.5 1.5h6l3 3v10h-9zM9.5 1.5v3h3M5.5 8h5M5.5 10.5h5"/>',
+  buoy:'<circle cx="8" cy="8" r="6.3"/><circle cx="8" cy="8" r="2.6"/><path d="M3.6 3.6l2.5 2.5M12.4 3.6L9.9 6.1M3.6 12.4l2.5-2.5M12.4 12.4L9.9 9.9"/>',
+  anchor:'<circle cx="8" cy="3.3" r="1.6"/><path d="M8 5v9.5M5 7.5h6M2.5 9.5c0 2.8 2.5 5 5.5 5s5.5-2.2 5.5-5"/>',
+  eye:'<path d="M1 8s2.6-4.5 7-4.5S15 8 15 8s-2.6 4.5-7 4.5S1 8 1 8z"/><circle cx="8" cy="8" r="2"/>',
+  pause:'<path d="M5 3v10M11 3v10"/>', play:'<path d="M4.5 2.5l9 5.5-9 5.5z"/>',
+  help:'<circle cx="8" cy="8" r="6.5"/><path d="M6.2 6.2a1.9 1.9 0 1 1 2.6 1.8c-.5.2-.8.6-.8 1.2v.5M8 11.8v.01"/>',
+  reset:'<path d="M2.5 8a5.5 5.5 0 1 0 1.7-4M2 2.5v3.5h3.5"/>',
+  info:'<circle cx="8" cy="8" r="6.5"/><path d="M8 7.2V11.5M8 4.8v.01"/>'
+};
+const I = (n, s=16) => `<svg class="i" width="${s}" height="${s}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||''}</svg>`;
+const LOGO = `<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><g fill="none" stroke="#4C90F0" stroke-width="1.6"><path d="M10 2l7 4v8l-7 4-7-4V6z"/><path d="M10 2v16M3 6l14 8M17 6L3 14" stroke-opacity=".45"/></g><circle cx="10" cy="10" r="2.2" fill="#4C90F0"/></svg>`;
+const CLASSBAR = `<div class="classbar">Training simulation // all data fictional</div>`;
+
+const SYM = {unknown:'M-8,-8 A8.5,8.5 0 0 1 8,-8 A8.5,8.5 0 0 1 8,8 A8.5,8.5 0 0 1 -8,8 A8.5,8.5 0 0 1 -8,-8Z', hostile:'M0,-15 L15,0 L0,15 L-15,0Z', neutral:'M-12,-12 H12 V12 H-12Z'};
+// ---------- helpers ----------
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+function hash(s){ let h = 1779033703 ^ s.length; for (let i=0;i<s.length;i++){ h = Math.imul(h ^ s.charCodeAt(i), 3432918353); h = h<<13 | h>>>19; } return h>>>0; }
+function mulberry(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a>>>15, 1 | a); t = t + Math.imul(t ^ t>>>7, 61 | t) ^ t; return ((t ^ t>>>14)>>>0) / 4294967296; }; }
+function hhmm(t){ const m = Math.floor(START_MIN + t); return String(Math.floor(m/60)%24).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'); }
+const initials = n => n.replace('Dr. ','').split(' ').map(x => x[0]).join('').slice(0,2);
+
+// ---------- storage ----------
+let storageOK = true;
+function load(){ try { const s = localStorage.getItem(SAVE); if (s){ const o = JSON.parse(s); if (o && o.v === 5) return o; } } catch(e){ storageOK = false; } return null; }
+function save(){ try { localStorage.setItem(SAVE, JSON.stringify(GS)); } catch(e){ storageOK = false; } }
+function clearSave(){ try { localStorage.removeItem(SAVE); } catch(e){ storageOK = false; } }
+
+// ---------- career (meta-progression, stored apart from the case) ----------
+const CAREER = 'lattice-career-v1';
+function blankCareer(){ return {v:1, xp:0, lvlMax:1, sel:1, cases:0, bests:{}, outs:{}, ach:{}, daily:{}, tel:{dec:{}, grade:{}}, sound:true}; }
+let CR = blankCareer(), sessionCases = 0, newAch = [];
+function loadCareer(){ try { const s = localStorage.getItem(CAREER); if (s){ const o = JSON.parse(s); if (o && o.v === 1) CR = Object.assign(blankCareer(), o); } } catch(e){ storageOK = false; } }
+function saveCareer(){ try { localStorage.setItem(CAREER, JSON.stringify(CR)); } catch(e){ storageOK = false; } }
+// Clearance ladder (Slay the Spire "Ascension" pattern): each level adds one rule and stacks.
+const LEVELS = [null,
+  {rule:'Standard watch. Lattice shows its assessment.'},
+  {rule:'+ The storm front moves 15% faster.'},
+  {rule:'+ Every analyst task takes 1 minute longer.'},
+  {rule:'+ No Lattice assessment: you weigh the evidence yourself.'},
+  {rule:'+ No pause button. The clock never stops.'}];
+// payoff of each decision against each truth, 0–100 (from the design report's matrix)
+const PAY = { rescue:{D:100,S:30,L:50}, board:{D:55,S:100,L:35}, shadow:{D:25,S:60,L:70}, pass:{D:0,S:5,L:100} };
+const letter = s => s >= 85 ? 'A' : s >= 70 ? 'B' : s >= 50 ? 'C' : s >= 30 ? 'D' : 'F';
+const GRADE_MIN = {A:85, B:70, C:50, D:30};
+const XPG = {A:100, B:60, C:35, D:15, F:5};
+const lvlOf = xp => Math.floor(Math.pow(xp/200, 1/1.4)) + 1;           // cum(L) = 200 × (L-1)^1.4
+const xpFor = L => Math.round(200 * Math.pow(L-1, 1.4));
+const RANKS = [[1,'Cadet'],[2,'Watch Officer'],[4,'Analyst'],[6,'Senior Analyst'],[9,'Inspector'],[13,'Commodore']];
+const rankOf = L => RANKS.filter(r => L >= r[0]).pop()[1];
+const ACH = {
+  first:  ['First watch', 'Finish a case.'],
+  all3:   ['Seen it all', 'Solve a distress, a smuggling and a research case.'],
+  nobody: ['Nobody left behind', 'Rescue every person on board.'],
+  book:   ['By the book', 'Get an A with records opened only by logged purpose.'],
+  light:  ['Not every dark ship', 'Let an innocent research ship pass.'],
+  notthem:['Not them', 'Reject every wrong face match in a case.'],
+  follow: ['Follow the boat', 'Let smugglers lead police to the beach.'],
+  daily:  ['Daily watch', 'Finish a daily case.'],
+  lvl5:   ['Clearance 5', 'Unlock the top clearance.'],
+  outs:   ['Case archive', 'See all 8 possible outcomes.']
+};
+const today = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const dailyNo = day => Math.round((Date.parse(day) - Date.parse('2026-01-01')) / 864e5) + 1;
+function recordCase(G){
+  if (G.recorded) return; G.recorded = true;
+  const sc = score(G), o = OUT[G.res.kind], before = lvlOf(CR.xp), lvlBefore = CR.lvlMax;
+  const gain = Math.round(XPG[sc.grade] * (1 + 0.1*(G.lvl-1))) + (CR.bests[G.truth] ? 0 : 50);
+  CR.xp += gain; CR.cases++; sessionCases++;
+  const order = 'ABCDF';
+  if (!CR.bests[G.truth] || order.indexOf(sc.grade) < order.indexOf(CR.bests[G.truth])) CR.bests[G.truth] = sc.grade;
+  CR.outs[G.res.kind] = (CR.outs[G.res.kind] || 0) + 1;
+  CR.tel.dec[G.decision || 'none'] = (CR.tel.dec[G.decision || 'none'] || 0) + 1;
+  CR.tel.grade[sc.grade] = (CR.tel.grade[sc.grade] || 0) + 1;
+  if (G.lvl === CR.lvlMax && G.lvl < 5 && 'AB'.includes(sc.grade)) CR.lvlMax++;
+  if (G.daily && !CR.daily[G.daily]) CR.daily[G.daily] = {g:sc.grade, d:G.decision, used:usedTools(G), t:hhmm(G.decidedAt ?? G.res.t), lvl:G.lvl};
+  newAch = [];
+  const give = id => { if (!CR.ach[id]){ CR.ach[id] = today(); newAch.push(id); } };
+  give('first');
+  if (['D','S','L'].every(T => CR.bests[T] && CR.bests[T] !== 'F')) give('all3');
+  if (G.res.kind === 'saved') give('nobody');
+  if (sc.grade === 'A' && G.unlocked && !G.override) give('book');
+  if (G.res.kind === 'clear') give('light');
+  const wrong = G.sc.C.people.map((p,i)=>({p,i})).filter(x => !x.p.crowd && !x.p.same);
+  if (wrong.length && wrong.every(x => G.ids[x.i] === 'no')) give('notthem');
+  if (G.res.kind === 'followed') give('follow');
+  if (G.daily) give('daily');
+  if (CR.lvlMax >= 5) give('lvl5');
+  if (Object.keys(OUT).every(k => CR.outs[k])) give('outs');
+  G.meta = {gain, before, after:lvlOf(CR.xp), unlocked: CR.lvlMax > lvlBefore ? CR.lvlMax : 0, ach:newAch.slice(), xpAfter:CR.xp};
+  saveCareer(); save();
+}
+function usedTools(G){
+  const u = []; if (G.done.track) u.push('🛰️'); if (G.done.hail) u.push('📻'); if (G.done.registry) u.push('🔍');
+  if (G.graph.length > 1) u.push('🕸️'); if (G.done.drone) u.push('🛩️'); if (G.done.face) u.push('🪪'); if (G.unlocked) u.push(G.override ? '⚠️' : '🔓');
+  return u.join('');
+}
+function shareText(day){
+  const r = CR.daily[day]; if (!r) return '';
+  const D = {rescue:'🛟', board:'⚓', shadow:'👁️', pass:'✅'}[r.d] || '—';
+  return `Lattice Border Watch #${dailyNo(day)} · ${r.g}\n${r.used || '—'} → ${D}\nClearance ${r.lvl} · decided ${r.t}`;
+}
+// sound: tiny WebAudio tones, created on the first tap (browsers block audio before that)
+let AC = null;
+function tone(f, d=0.1, type='sine', gain=0.12, delay=0){
+  if (!CR.sound) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const t = AC.currentTime + delay, o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.value = f * (1 + (Math.random()-.5)*0.08);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + 0.02);
+  } catch(e){}
+}
+const buzz = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch(e){} };
+
+// ---------- scenario ----------
+const FIRST = ['Davor','Ilan','Mirek','Tomas','Anel','Kasimir','Jory','Brann','Samir','Oskar','Lio','Edvin'];
+const LAST  = ['Kesh','Moret','Varga','Oskarsen','Hadad','Brekke','Saar','Telin','Marrow','Dunvik'];
+function truthOf(seed){ return ['D','S','L'][Math.floor(mulberry(hash(seed))()*3)]; }
+function buildCase(r, truth, sc){
+  const pick = a => a[Math.floor(r()*a.length)], num = n => String(Math.floor(r()*10**n)).padStart(n,'0');
+  const names = []; while (names.length < 3){ const n = pick(FIRST)+' '+pick(LAST); if (!names.includes(n)) names.push(n); }
+  const hull = 'KA-'+(110+Math.floor(r()*780));
+  const C = {};
+  if (truth === 'D'){
+    C.vessel = {name:hull, type:'Fishing boat · 11 m', flag:'Varnholm (licence lapsed)', mmsi:'none', owner:'Lund Fishing AS', port:'Saltvik (abroad), 9 days ago'};
+    C.track = ['Track matches fishing boat '+hull, 'Its AIS went silent 9 h ago, 30 km west. The radar contact has drifted here since.', [2,0.8,0.9]];
+    C.registry = [hull+': licence lapsed', 'Owner Lund Fishing AS. A bill of sale says it was sold abroad last year.', [1.2,1.2,0.6]];
+    C.graph = [
+      {id:'v', label:hull, kind:'vessel', parent:null},
+      {id:'c', label:'Lund Fishing AS', kind:'company', parent:'v', text:'Registered owner of '+hull+'. Director: Petar Lund.', w:[1,1.1,1]},
+      {id:'e', label:'Overdue boat report', kind:'event', parent:'v', text:'3 days ago, families abroad reported an overdue fishing boat with about 40 people aboard. Hull number '+hull+'.', w:[5,0.5,0.5], flag:'ok'},
+      {id:'p', label:'Petar Lund', kind:'person', parent:'c', text:'Director, 52. Sold the boat abroad last year. Fined for illegal fishing in 2014.', w:[0.9,1.4,1], flag:'warn'}];
+    C.people = [
+      {n:names[0], age:34, nat:'Oresk', idn:'OR-'+num(7), m:88, same:true, st:'ok', tag:'Reported missing', recs:['Missing person report, 3 days ago: “Brother left by boat, no contact since.”'], w:[6,0.6,0.6]},
+      {n:'Petar Lund', age:52, nat:'Varnholm', idn:'VH-'+num(7), m:61, same:false, st:'warn', tag:'Illegal fishing fine (2014)', recs:['Fine for illegal fishing, 2014.','Director of Lund Fishing AS (boat owner).'], w:[0.6,2,0.8],
+       truthNote:'The man on deck was not Petar Lund. Lund sold the boat last year and was at home.'},
+      {n:(sc.people-2)+' more people', crowd:true, tag:'Not in our records', st:'unk', note:'Many children. No usable record matches.'}];
+  } else if (truth === 'S'){
+    C.vessel = {name:sc.sname, type:'Trawler · 14 m (claimed)', flag:'Oresk', mmsi:'273 '+num(6), owner:'Brine Holdings Ltd', port:'none on record'};
+    C.track = ['Broadcasting AIS as “'+sc.sname+'”', 'But the AIS track only starts 3 h ago, in open sea. No departure port.', [0.6,2.4,0.6]];
+    C.registry = [sc.sname+': scrapped in 2024', 'The real '+sc.sname+' was broken up. Someone is using its identity — a “zombie” ship.', [0.3,5,0.2]];
+    C.graph = [
+      {id:'v', label:sc.sname, kind:'vessel', parent:null},
+      {id:'c', label:'Brine Holdings Ltd', kind:'company', parent:'v', text:'Registered 6 weeks ago. Address is a PO box. One director.', w:[0.8,1.6,0.7], flag:'warn'},
+      {id:'p', label:names[0], kind:'person', parent:'c', text:'Sole director of Brine Holdings.', w:[1,1.3,1]},
+      {id:'ph', label:'Phone ···'+num(4), kind:'phone', parent:'p', text:'Director’s phone. Last seen on a mast near Gull Cove, 40 minutes ago.', w:[0.5,2.5,0.5], flag:'bad'}];
+    C.people = [
+      {n:names[0], age:41, nat:'Varnholm', idn:'VH-'+num(7), m:97, same:true, st:'bad', tag:'Convicted smuggler', recs:['Drug smuggling, 2019: 4 years. Released 2023.','Director of Brine Holdings Ltd (registered owner).'], w:[0.2,8,0.2]},
+      {n:names[1], age:29, nat:'Varnholm', idn:'VH-'+num(7), m:91, same:true, st:'ok', tag:'No record', recs:['No convictions. Registered fisherman.'], w:[1,1,1]},
+      {n:'Third person', crowd:true, tag:'Face covered', st:'unk', note:'No usable image.'}];
+  } else {
+    C.vessel = {name:'AURELLE', type:'Research ship · 62 m', flag:'Norvia', mmsi:'257 '+num(6), owner:'Halden Ocean Institute', port:'Port Halden, 2 days ago'};
+    C.track = ['Track matches research ship AURELLE', 'Its AIS stopped 20 h ago at this spot. Size and speed fit.', [0.6,0.8,2]];
+    C.registry = ['AURELLE: survey permit '+sc.permit, 'Seabed survey along the cable corridor, valid tonight. Clean record.', [0.2,0.3,5]];
+    C.graph = [
+      {id:'v', label:'AURELLE', kind:'vessel', parent:null},
+      {id:'c', label:'Halden Ocean Inst.', kind:'company', parent:'v', text:'University research institute. Owns AURELLE.', w:[0.7,0.7,1.6]},
+      {id:'d', label:'Permit '+sc.permit, kind:'doc', parent:'v', text:'Approved cable-corridor survey, 00:00–03:00 tonight. Crew list of 20 attached.', w:[0.2,0.3,4], flag:'ok'},
+      {id:'p', label:'Dr. '+names[0], kind:'person', parent:'d', text:'Chief scientist named on the permit.', w:[0.8,0.8,1.5]}];
+    C.people = [
+      {n:'Dr. '+names[0], age:47, nat:'Norvia', idn:'NV-'+num(7), m:95, same:true, st:'ok', tag:'Chief scientist', recs:['No record. Named on survey permit '+sc.permit+'.'], w:[0.3,0.4,6]},
+      {n:names[1], age:26, nat:'Varnholm', idn:'VH-'+num(7), m:68, same:false, st:'warn', tag:'Protest arrest (2021)', recs:['Arrested at a protest against a cable project, 2021. Released, no charge.'], w:[0.8,2,0.6],
+       truthNote:'The deckhand was a different person: a student on the permit’s crew list.'},
+      {n:'18 crew', crowd:true, tag:'Match the permit crew list', st:'ok', note:'Faces match the crew list filed with the permit.'}];
+  }
+  return C;
+}
+function freshState(seed, lvl=1, daily=null){
+  const r = mulberry(hash(seed));
+  const truth = ['D','S','L'][Math.floor(r()*3)];
+  const sc = { sx:310+r()*40, sy:300+r()*40, storm0:-10-r()*20, stormV:7.2+r()*0.8,
+    people:26+Math.floor(r()*22), sname:['SELA','MARETTA','KITE'][Math.floor(r()*3)], permit:String(7000+Math.floor(r()*900)) };
+  sc.C = buildCase(r, truth, sc);
+  if (lvl >= 2) sc.stormV *= 1.15;
+  const G = { v:5, seed, phase:'play', t:0, speed:1, paused:true, truth, sc, units:{}, busy:null, done:{},
+    findings:[], ticker:[], audit:[], graph:['v'], ids:{}, unlocked:false, override:false,
+    decision:null, basis:null, closed:false, saved:0, res:null, stopT:null, sunk:false, trail:[],
+    tab:'look', seen:{}, modal:{type:'alert'}, lvl, daily };
+  for (const k in UNITS){ const b = BASES[UNITS[k].base]; G.units[k] = {st:'base', x:b.x+UNITS[k].off, y:b.y}; }
+  let t = 0; while (t < 200 && stormX(G,t) < cpos(G,t).x) t += 0.1;
+  sc.hitT = +t.toFixed(1); sc.sinkT = +(sc.hitT + 16).toFixed(1);
+  sc.landT = +((Math.hypot(COVE.x-sc.sx, COVE.y-sc.sy)-6)/6.5).toFixed(1);
+  G.trail.push([Math.round(sc.sx), Math.round(sc.sy)]);
+  G.ticker.push({t:0, m:'ALERT: radar contact K-7 has no AIS match.'});
+  G.audit.push({t:0, m:'Case '+CASE_NO+' opened from radar alert'});
+  return G;
+}
+function stormX(G,t){ return G.sc.storm0 + G.sc.stormV*t; }
+function cpos(G,t){
+  const s = G.sc; let tt = G.stopT != null ? Math.min(t, G.stopT) : t;
+  if (G.truth === 'D'){ if (s.sinkT) tt = Math.min(tt, s.sinkT); return {x:s.sx+0.8*tt, y:s.sy+14*Math.sin(tt/6)+0.25*tt}; }
+  if (G.truth === 'S'){ const dx = COVE.x-s.sx, dy = COVE.y-s.sy, D = Math.hypot(dx,dy), d = Math.min(6.5*tt, D-6); return {x:s.sx+dx/D*d, y:s.sy+dy/D*d}; }
+  const t1 = Math.min(tt,80), d = 1.6*t1, leg = 130, k = Math.floor(d/leg), f = (d%leg)/leg;
+  let x = s.sx + 24*(d/leg), y = s.sy - 65 + (k%2 ? 130*(1-f) : 130*f);
+  if (tt > 80) x -= 3*(tt-80);
+  return {x, y};
+}
+// background traffic with AIS (for contrast with the dark contact)
+const TRAFFIC = [{n:'NORDVIK',y:150,v:5,x0:160},{n:'ASTER BAY',y:470,v:-4,x0:700},{n:'KELP',y:250,v:3,x0:420}];
+function trafficPos(s, t){ let x = s.x0 + s.v*t; x = 120 + ((x-120) % 600 + 600) % 600; return {x, y:s.y}; }
+
+// ---------- evidence ----------
+function probs(G){
+  const p = {D:.3, S:.4, L:.3};
+  for (const f of G.findings) if (f.w) HK.forEach((k,i) => p[k] *= f.w[i]);
+  const s = p.D+p.S+p.L; HK.forEach(k => p[k] /= s); return p;
+}
+function best(p){ return HK.reduce((a,b) => p[b] > p[a] ? b : a, 'D'); }
+function addFinding(key, title, text, w, src){
+  if (GS.findings.some(f => f.key === key)) return;
+  GS.findings.unshift({key, t:GS.t, title, text, w, src}); tick(title);
+}
+function hailResult(G){ const s = G.sc; return {
+  D:['Faint voice: “…engine… water… children…”','Then static.',[5,0.4,0.5]],
+  S:['No answer on channel 16','Three calls. The boat doesn’t change course.',[0.6,2.2,0.6]],
+  L:['“Research ship AURELLE, permit '+s.permit+'”','“Our transponder broke yesterday. We’ll be done by 03:00.”',[0.3,0.4,5]]}[G.truth]; }
+function droneResult(G){ const s = G.sc; return {
+  D:['Drone: '+s.people+' people packed on deck','Water in the hull. Some are waving.',[5,0.3,0.3]],
+  S:['Drone: speedboat, 3 people, covered cargo','No fishing gear. Moving fast.',[0.4,4,0.3]],
+  L:['Drone: survey ship with towed sonar','Crew in orange overalls.',[0.3,0.8,4]]}[G.truth]; }
+function taskMin(id){ return TASKS[id] + ((GS && GS.lvl >= 3) ? 1 : 0); }
+const blind = G => G.lvl >= 4 && !G.closed;
+function vesselKnown(G){ return !!(G.done.track || G.done.drone); }
+
+// ---------- simulation ----------
+let GS = null, dirty = true;
+function tick(m){ GS.ticker.push({t:GS.t, m}); if (GS.ticker.length > 30) GS.ticker.shift(); dirty = true; }
+function audit(m){ GS.audit.push({t:GS.t, m}); }
+function finishTask(b){
+  const G = GS, C = G.sc.C; tone(880,.07,'triangle',.06);
+  if (b.id === 'track'){ G.done.track = true; addFinding('track', C.track[0], C.track[1], C.track[2], 'Radar + AIS history'); G.badge = 'vessel'; }
+  if (b.id === 'hail'){ G.done.hail = true; const r = hailResult(G); addFinding('hail', r[0], r[1], r[2], 'VHF channel 16'); }
+  if (b.id === 'registry'){ G.done.registry = true; addFinding('registry', C.registry[0], C.registry[1], C.registry[2], 'Ship registry'); }
+  if (b.id === 'expand'){
+    G.graph.push(...C.graph.filter(n => n.parent === b.arg && !G.graph.includes(n.id)).map(n => n.id));
+    for (const n of C.graph.filter(n => n.parent === b.arg)) if (n.w) addFinding('g-'+n.id, n.label, n.text, n.w, 'Search around · '+C.graph.find(x=>x.id===b.arg).label);
+  }
+  if (b.id === 'face'){ G.done.face = true; tick('Face match done: '+C.people.filter(p=>!p.crowd).length+' possible identities.'); G.modal = {type:'idcards', i:0}; }
+  if (b.id === 'unlock'){ G.unlocked = true; tick('Police records unlocked for case '+CASE_NO+'.'); applyRecords(); if (b.arg != null) G.modal = {type:'idcards', i:+b.arg}; }
+  dirty = true;
+}
+function applyRecords(){
+  const G = GS;
+  if (!G.unlocked) return;
+  G.sc.C.people.forEach((p,i) => { if (!p.crowd && G.ids[i] === 'yes') addFinding('rec-'+i, p.n+': '+p.tag, p.recs[0], p.w, 'Police records'); });
+}
+function step(dt){
+  const G = GS; G.t = +(G.t + dt).toFixed(2); const t = G.t, s = G.sc, c = cpos(G, t);
+  const last = G.trail[G.trail.length-1];
+  if (Math.hypot(c.x-last[0], c.y-last[1]) > 6){ G.trail.push([Math.round(c.x), Math.round(c.y)]); if (G.trail.length > 120) G.trail.shift(); }
+  if (G.busy && t >= G.busy.end - 1e-6){ const b = G.busy; G.busy = null; finishTask(b); }
+  for (const k in UNITS) moveUnit(k, dt, c);
+  if (!G.res){
+    if (G.truth === 'D'){
+      if (!G.sunk && t >= s.sinkT){ G.sunk = true; if (G.saved < s.people) tick('K-7 is sinking. '+(s.people-Math.floor(G.saved))+' people in the water.'); }
+      if (G.saved >= s.people - 1e-6) resolve(G.sunk ? 'partial' : 'saved');
+      else if (t >= s.sinkT + 10) resolve(G.saved >= 1 ? 'partial' : 'lost');
+    } else if (G.truth === 'S'){
+      if (G.stopT == null && t >= s.landT){
+        if (G.decision === 'shadow'){ resolve('followed'); tick('K-7 landed. Police guided by the cutter arrested 2 on the beach.'); }
+        else { resolve('landed'); tick('K-7 landed at Gull Cove. The cargo is gone.'); }
+      }
+    } else if (t >= 80 && G.stopT == null){ resolve('clear'); tick('AURELLE finished its survey and left.'); }
+    if (t >= 120 && !G.res) resolve(G.truth==='D' ? 'lost' : G.truth==='S' ? 'landed' : 'clear');
+  }
+  if (G.res && t >= G.res.t + 3){ G.phase = 'end'; G.modal = null; }
+}
+function resolve(kind){ GS.res = {kind, t:GS.t}; dirty = true; }
+function moveUnit(k, dt, c){
+  const G = GS, u = G.units[k], U = UNITS[k];
+  if (U.air && ['out','on','hoist'].includes(u.st) && stormX(G, G.t) >= u.x - 8){ u.st = 'ret'; tick(U.name+': storm too strong, turning back.'); }
+  if (u.st === 'out'){
+    if (mv(u, c.x, c.y + (U.air ? -14 : 12), U.speed*dt)){ u.st = 'on'; arrive(k); }
+  } else if (['on','hoist','done','shadow'].includes(u.st)){
+    u.x = c.x + (k==='drone' || k==='lifeboat' ? -20 : 20); u.y = c.y + (U.air ? -14 : 16);
+    if (u.st === 'hoist'){
+      if (G.sunk) u.st = 'ret';
+      else { G.saved = Math.min(G.sc.people, G.saved + 4*dt); if (G.saved >= G.sc.people - 1e-6){ G.saved = G.sc.people; u.st = 'ret'; tick('Helicopter: everyone is aboard.'); } }
+    }
+  } else if (u.st === 'ret'){
+    if (mv(u, BASES[U.base].x + U.off, BASES[U.base].y, U.speed*dt)){ u.st = 'base'; dirty = true; }
+  }
+}
+function mv(u, x, y, d){ const dx = x-u.x, dy = y-u.y, L = Math.hypot(dx,dy); if (L <= d + 2){ u.x = x; u.y = y; return true; } u.x += dx/L*d; u.y += dy/L*d; return false; }
+function arrive(k){
+  const G = GS, T = G.truth, u = G.units[k], s = G.sc; dirty = true;
+  if (k === 'drone'){ G.done.drone = true; const r = droneResult(G); addFinding('drone', r[0], r[1], r[2], 'Drone video'); tick('Drone over K-7. Faces visible: run a face match (People tab).'); G.badge = 'people'; return; }
+  if (k === 'heli'){
+    if (T === 'D' && !G.sunk && !G.res){ u.st = 'hoist'; tick('Helicopter is winching people up.'); }
+    else { u.st = 'ret'; tick(T === 'S' ? 'Helicopter: the speedboat ignores us.' : T === 'L' ? 'Helicopter: nobody needs rescue.' : 'Helicopter: too late.'); }
+    return;
+  }
+  if (T === 'D'){
+    const left = s.people - G.saved;
+    if (G.res || left <= 0.001){ u.st = 'ret'; return; }
+    u.st = 'done';
+    if (!G.sunk){ G.saved = s.people; tick(UNITS[k].name+' took everyone off K-7.'); }
+    else { const n = Math.round(left*0.4); G.saved += n; tick(UNITS[k].name+' pulled '+n+' people from the water.'); }
+    return;
+  }
+  if (k === 'lifeboat'){ u.st = 'ret'; tick(T === 'S' ? 'Lifeboat can’t catch a speedboat.' : 'Lifeboat: nobody needs rescue.'); return; }
+  if (G.res){ u.st = 'ret'; return; }
+  if (G.decision === 'shadow'){ u.st = 'shadow'; tick('Cutter is shadowing K-7 at a distance.'); return; }
+  u.st = 'done'; G.stopT = G.t;
+  if (T === 'S'){ resolve('intercepted'); tick('Cutter boarded K-7: 400 kg of cargo, 3 arrested.'); }
+  else { resolve('incident'); tick('Cutter boarded AURELLE. The captain shows the permit and protests.'); }
+}
+
+// ---------- decisions ----------
+const DEC = {
+  rescue:{h:'D', name:'Rescue', icon:'buoy', sub:'Helicopter + lifeboat', text:'Take everyone off K-7. Sea-rescue law requires helping people in distress, whoever they are.'},
+  board: {h:'S', name:'Board & search', icon:'anchor', sub:'Patrol cutter', text:'Stop K-7 and search it. You must state a legal basis.'},
+  shadow:{h:'S', name:'Shadow', icon:'eye', sub:'Cutter follows', text:'Follow K-7 without stopping it, and tell police where it lands.'},
+  pass:  {h:'L', name:'Let it pass', icon:'check', sub:'Just watch', text:'Send nothing. Keep watching until it leaves.'}
+};
+const BASIS = {
+  flag:  {name:'False identity / no valid flag', sub:'A ship using a fake identity has no flag state to protect it.'},
+  waters:{name:'Smuggling suspected inside our waters', sub:'Needs K-7 inside the territorial line and real evidence.'},
+  none:  {name:'No specific basis, just check', sub:'Boarding a foreign ship without grounds is unlawful.'}
+};
+function basisValid(G, b){
+  if (b === 'flag') return G.truth === 'S' && !!G.done.registry;
+  if (b === 'waters') return cpos(G, G.t).x >= BORDER_X - 30 && probs(G).S >= 0.6;
+  return false;
+}
+
+// ---------- actions ----------
+const H = {
+  start(d){ GS = freshState((d.seed || '').trim().toUpperCase().slice(0,24) || randomSeed(), CR.sel); tone(440,.12,'triangle'); },
+  daily(){ const day = today(); if (CR.daily[day]) return; GS = freshState('DAILY-'+day, 2, day); tone(440,.12,'triangle'); },
+  lvl(d){ const n = +d.n; if (n >= 1 && n <= CR.lvlMax){ CR.sel = n; saveCareer(); } },
+  sound(){ CR.sound = !CR.sound; saveCareer(); if (CR.sound) tone(660,.1); },
+  copy(d){ const t = shareText(d.day); try { navigator.clipboard.writeText(t).then(() => { const b = $('#copyb'); if (b) b.textContent = 'Copied'; }, () => {}); } catch(e){} GS.shareOpen = d.day; },
+  doResetAll(){ clearSave(); try { localStorage.removeItem(CAREER); } catch(e){} CR = blankCareer(); GS = {v:5, phase:'title', seed:randomSeed()}; },
+  close(){ const m = GS.modal; GS.modal = null; if (m && m.type === 'alert') GS.paused = false; },
+  help(){ GS.modal = {type:'help'}; },
+  achs(){ GS.modal = {type:'achs'}; },
+  pause(){ if (GS.lvl >= 5 && GS.paused === false) return; GS.paused = !GS.paused; },
+  speed(){ GS.speed = GS.speed === 1 ? 2 : 1; GS.paused = false; },
+  tab(d){ GS.tab = d.t; if (GS.badge === d.t) GS.badge = null; },
+  task(d){
+    const G = GS, id = d.id; if (G.closed || G.busy) return;
+    if (id === 'track' && G.done.track) return;
+    if (id === 'hail' && G.done.hail) return;
+    if (id === 'registry' && (G.done.registry || !vesselKnown(G))) return;
+    if (id === 'face' && (G.done.face || !G.done.drone)) return;
+    if (id === 'expand' && (!vesselKnown(G) || !G.graph.includes(d.arg))) return;
+    const label = id === 'expand' ? 'Search around '+G.sc.C.graph.find(n=>n.id===d.arg).label : TASKNAME[id];
+    G.busy = {id, arg:d.arg, start:G.t, end:+(G.t + taskMin(id)).toFixed(2), label};
+    audit(label + (id === 'face' ? ' · drone video vs. national ID photos' : ''));
+    if (G.modal && G.modal.type === 'node') G.modal = null;
+  },
+  drone(){ const G = GS; if (G.closed || G.units.drone.st !== 'base' || G.done.drone) return; G.units.drone.st = 'out'; G.done.droneSent = true; tick('Drone launched.'); audit('Tasked drone to K-7'); },
+  node(d){ GS.modal = {type:'node', id:d.id}; },
+  ids(d){ GS.modal = {type:'idcards', i:+(d.i||0)}; },
+  idnav(d){ const n = GS.sc.C.people.length; GS.modal = {type:'idcards', i:clamp(+d.i, 0, n-1)}; },
+  confirm(d){ const i = +d.i, v = d.v; if (GS.closed) return; GS.ids[i] = v; audit((v==='yes'?'Confirmed':'Rejected')+' match: '+GS.sc.C.people[i].n); applyRecords(); },
+  unlockAsk(d){ GS.modal = {type:'unlock', i:d.i}; },
+  unlockLogged(d){ const G = GS; if (G.busy){ return; } G.modal = null; G.busy = {id:'unlock', arg:d.i, start:G.t, end:+(G.t+taskMin('unlock')).toFixed(2), label:'Records access'}; audit('Records access requested · purpose: case '+CASE_NO+' (border incident K-7)'); },
+  unlockOverride(d){ const G = GS; G.override = true; G.unlocked = true; audit('ADMIN OVERRIDE · records opened with no purpose stated'); tick('Records opened with an override. It will show in the audit.'); applyRecords(); G.modal = {type:'idcards', i:+(d.i||0)}; },
+  ask(){ if (GS.closed) return; GS.modal = {type:'decide', d:null, b:null}; },
+  pickD(d){ GS.modal.d = d.d; GS.modal.b = null; },
+  pickB(d){ GS.modal.b = d.b; },
+  decide(){
+    const G = GS, m = G.modal, d = m.d; if (!d || (d === 'board' && !m.b)) return;
+    G.modal = null; G.decision = d; G.basis = m.b; G.basisOK = d === 'board' ? basisValid(G, m.b) : null;
+    G.decidedAt = G.t; G.closed = true; G.paused = false; G.busy = null; G.tab = 'case'; G.judge = judgement(G, d); tone(110,.35,'sine',.2); buzz(30);
+    audit('DECISION: '+DEC[d].name + (m.b ? ' · basis: '+BASIS[m.b].name : ''));
+    if (d === 'rescue'){ for (const k of ['heli','lifeboat']) if (G.units[k].st === 'base') G.units[k].st = 'out'; tick('Helicopter and lifeboat launched.'); }
+    if (d === 'board' || d === 'shadow'){ G.units.cutter.st = 'out'; tick('Patrol cutter launched.'); }
+    if (d === 'pass') tick('You chose to watch and wait.');
+  },
+  reset(){ GS.modal = {type:'reset'}; },
+  doReset(){ clearSave(); GS = {v:5, phase:'title', seed:randomSeed()}; },
+  cancel(){ GS.modal = null; },
+  replay(){ if (GS.daily) return; GS = freshState(GS.seed, GS.lvl); },
+  newRun(){ GS = {v:5, phase:'title', seed:randomSeed()}; }
+};
+function randomSeed(){ const w = ['NIGHT','TIDE','GALE','HARBOR','SKERRY','BEACON','SWELL']; return w[Math.floor(Math.random()*w.length)]+'-'+(Math.floor(Math.random()*90)+10); }
+function act(name, data){
+  if (!H[name] || !GS) return;
+  const before = GS.phase; H[name](data || {});
+  save(); dirty = true;
+  if (GS.phase !== before || ['start','replay','copy','lvl','sound'].includes(name)) render(); else { frame(); renderModal(); }
+}
+
+// ---------- rendering ----------
+function render(){
+  const app = $('#app');
+  if (GS.phase === 'title'){ app.innerHTML = titleHTML(); app.classList.remove('fx'); }
+  else if (GS.phase === 'end'){ const fresh = !GS.recorded; recordCase(GS); app.innerHTML = endHTML(); app.classList.toggle('fx', fresh); window.scrollTo(0,0);
+    if (fresh){ const g = score(GS).grade; [523,659,784,1047].slice(0, {A:4,B:3,C:2,D:1,F:1}[g]).forEach((f,i) => tone(g==='F'?147:f, .18, 'triangle', .1, .35+i*.09)); if (!OUT[GS.res.kind].g) buzz(80); } }
+  else { app.innerHTML = playHTML(); dirty = true; frame(); }
+  renderModal();
+}
+function profileHTML(){
+  const L = lvlOf(CR.xp), lo = xpFor(L), hi = xpFor(L+1), day = today(), dr = CR.daily[day];
+  const cal = [...Array(7)].map((_,i) => { const d = new Date(); d.setDate(d.getDate()-6+i); const k = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); const r = CR.daily[k]; return `<i class="${r ? ('AB'.includes(r.g)?'g':r.g==='F'?'b':'') : ''}" title="${k}">${r ? r.g : '·'}</i>`; }).join('');
+  const nAch = Object.keys(CR.ach).length;
+  return `<div class="prof">${I('person',22)}<div class="xp"><div style="display:flex;justify-content:space-between;font-size:13px"><span class="rk">${rankOf(L)} · lvl ${L}</span><span class="mute">${CR.xp} XP · ${CR.cases} case${CR.cases===1?'':'s'}</span></div><div class="bar"><b style="width:${Math.round((CR.xp-lo)/(hi-lo)*100)}%"></b></div></div><button class="ib" data-act="sound" aria-label="Sound">${CR.sound ? '♪' : '<s>♪</s>'}</button></div>
+  <div class="daily">${I('clock',18)}<div class="dt"><b>Daily case #${dailyNo(day)}</b><span class="mute sm">${dr ? `Done today: grade ${dr.g}. A new one tomorrow.` : 'Same case for everyone today · one attempt · clearance 2'}</span><div class="cal">${cal}</div></div>${dr ? `<button class="btn" data-act="copy" data-day="${day}" id="copyb" style="flex:none">Share</button>` : `<button class="btn pri" data-act="daily" style="flex:none">Play</button>`}</div>
+  ${GS.shareOpen && dr ? `<textarea class="share" readonly aria-label="Share text">${esc(shareText(day))}</textarea>` : ''}
+  <label style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);font-weight:600;margin-top:14px">Clearance</label>
+  <div class="lvls">${[1,2,3,4,5].map(n => `<button class="lv ${CR.sel===n?'on':''}" data-act="lvl" data-n="${n}" ${n>CR.lvlMax?'disabled':''} aria-label="Clearance ${n}">${n>CR.lvlMax ? I('lock',12) : n}</button>`).join('')}</div>
+  <div class="rule">${esc(LEVELS[CR.sel].rule)}${CR.lvlMax < 5 ? ` <span style="color:var(--dim)">· B or better at ${CR.lvlMax} unlocks ${CR.lvlMax+1}</span>` : ''}</div>
+  <div class="tiny">${['D','S','L'].map(T => `<span class="flag ${CR.bests[T] ? 'ok' : 'unk'}">${HN[T]}: ${CR.bests[T] || '—'}</span>`).join('')}<span class="flag info">outcomes ${Object.keys(CR.outs).length}/8</span><span class="flag warn" data-act="achs" style="cursor:pointer">badges ${nAch}/${Object.keys(ACH).length}</span></div>`;
+}
+function titleHTML(){
+  return `<div class="title">${CLASSBAR}<div class="stage"><div class="box"><div class="bh">${LOGO}LATTICE<span class="mute" style="font-weight:400;letter-spacing:0;margin-left:auto">Case ${CASE_NO}</span></div><div class="bb">
+  <h1>Border Watch</h1>
+  <p>00:30. Radar sees a boat with no transponder heading for the coast. A storm is coming.</p>
+  <p>Work the case the way an intelligence analyst does: <b>correlate</b> the contact, <b>identify</b> the vessel and the people on board, <b>vet</b> their records, then <b>decide</b>. Every check costs minutes.</p>
+  ${profileHTML()}
+  <div class="seedrow" style="display:block"><label for="seed">Scenario seed</label><div style="display:flex;gap:6px;margin-top:6px"><input id="seed" value="${esc(GS.seed || 'NIGHT-01')}" maxlength="24"><button class="btn pri" data-act="start" style="flex:none">Open case</button></div></div>
+  <p class="mute" style="font-size:12.5px">The seed decides who is really on the boat. Everything is fictional. Works offline.</p>
+  ${storageOK ? '' : '<p class="no" style="font-size:13px">Storage is off: progress won’t be saved.</p>'}
+  </div></div></div></div>`;
+}
+function playHTML(){
+  return `<div class="hdr">${CLASSBAR}<div class="top"><div class="brand">${LOGO}<span>LATTICE</span><span class="crumb">${GS.daily ? 'Daily #'+dailyNo(GS.daily) : 'Cases'}<i>/</i>${CASE_NO}<i>/</i>Clearance ${GS.lvl||1}</span></div>
+   <div class="clock" id="clock"></div>
+   <button class="ib" id="bp" data-act="pause" aria-label="Pause" ${GS.lvl>=5?'disabled style="opacity:.35"':''}></button>
+   <button class="ib" id="bs" data-act="speed" aria-label="Speed"></button>
+   <button class="ib" data-act="help" aria-label="How to play">${I('help')}</button>
+   <button class="ib" data-act="reset" aria-label="Reset">${I('reset')}</button></div>
+  <div class="flow" id="flow"></div></div>
+  <div class="main">
+   <div class="mapcol">${mapSVG()}<div class="chips" id="chips"></div><div class="ticker" id="ticker"></div></div>
+   <div class="panel"><div class="body" id="body"></div><nav class="tabs" id="tabs"></nav></div>
+  </div>`;
+}
+function mapSVG(){
+  let grid = '';
+  for (let x=200; x<1000; x+=100) grid += `<line x1="${x}" y1="60" x2="${x}" y2="560"/>`;
+  for (let y=100; y<560; y+=100) grid += `<line x1="100" y1="${y}" x2="1000" y2="${y}"/>`;
+  let units = '';
+  for (const k in UNITS){ const U = UNITS[k];
+    units += `<line id="ul-${k}" stroke="#8ABBFF" stroke-width="1.5" stroke-dasharray="5 5" stroke-opacity=".8" visibility="hidden"/>
+    <g id="ug-${k}">${U.air ? `<path d="M-17,9 L-17,-2 A17,13 0 0 1 17,-2 L17,9 Z" fill="#8ABBFF" stroke="#111418" stroke-width="2"/>` : `<rect x="-17" y="-11" width="34" height="22" fill="#8ABBFF" stroke="#111418" stroke-width="2"/>`}<text text-anchor="middle" y="${U.air?6:5}" font-size="11" font-weight="800" fill="#10161D">${U.lbl}</text></g>`; }
+  const traffic = TRAFFIC.map((s,i) => `<g id="tf${i}"><rect x="-7" y="-7" width="14" height="14" fill="#AAE5C2" stroke="#111418" stroke-width="1.5"/><path d="M${s.v>0?'9,0 L16,0':'-9,0 L-16,0'}" stroke="#72CA9B" stroke-width="1.5"/><text y="-12" text-anchor="middle" font-size="10.5" letter-spacing="1" fill="#72CA9B">${s.n}</text></g>`).join('');
+  return `<svg class="map" viewBox="100 60 900 470" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Sea map">
+  <defs><linearGradient id="stg" x1="0" x2="1"><stop offset="0" stop-color="#4c5c75" stop-opacity=".6"/><stop offset=".9" stop-color="#71839f" stop-opacity=".55"/><stop offset="1" stop-color="#c3cfe2" stop-opacity=".8"/></linearGradient>
+  <pattern id="rain" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(18)"><line x1="2" y1="0" x2="2" y2="8" stroke="#d5e0f0" stroke-opacity=".3"/></pattern></defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#10161D"/>
+  <g stroke="#19212A">${grid}</g>
+  <path d="M806,300 C650,322 450,334 0,350" fill="none" stroke="#9881F3" stroke-opacity=".55" stroke-width="2" stroke-dasharray="2 8"/>
+  <text x="118" y="374" font-size="12" letter-spacing="1.5" fill="#9881F3" fill-opacity=".85">UNDERSEA CABLE</text>
+  ${traffic}
+  <rect id="stR" x="0" y="0" width="0" height="620" fill="url(#stg)"/><rect id="stR2" x="0" y="0" width="0" height="620" fill="url(#rain)"/>
+  <text id="stL" x="110" y="520" font-size="13" font-weight="700" letter-spacing="2" fill="#DCE0E5">STORM FRONT ▶</text>
+  <line x1="${BORDER_X}" y1="60" x2="${BORDER_X}" y2="560" stroke="#EC9A3C" stroke-opacity=".7" stroke-dasharray="10 8" stroke-width="2"/>
+  <text x="${BORDER_X-8}" y="84" text-anchor="end" font-size="13" font-weight="700" letter-spacing="2" fill="#EC9A3C">TERRITORIAL LINE</text>
+  <path d="M792,0 L800,40 L788,80 L772,108 L748,126 L742,140 L760,152 L784,172 L795,215 L790,260 L806,300 L800,350 L812,400 L802,428 L790,446 L805,470 L798,520 L782,560 L790,620 L1000,620 L1000,0 Z" fill="#1E2329" stroke="#404854" stroke-width="1.5"/>
+  <text x="900" y="515" text-anchor="middle" font-size="20" font-weight="800" fill="#404854" letter-spacing="6">VARNHOLM</text>
+  <text x="${COVE.x-14}" y="${COVE.y-12}" text-anchor="end" font-size="12" letter-spacing="1.5" fill="#8F99A8">GULL COVE</text>
+  <rect x="${COVE.x-6}" y="${COVE.y-6}" width="12" height="12" fill="none" stroke="#E76A6E" stroke-width="1.5"/>
+  <text x="${BASES.air.x}" y="${BASES.air.y+36}" text-anchor="middle" font-size="12" letter-spacing="1.5" fill="#8F99A8">AIRBASE</text>
+  <text x="${BASES.port.x+8}" y="${BASES.port.y+38}" text-anchor="middle" font-size="12" letter-spacing="1.5" fill="#8F99A8">PORT</text>
+  <polyline id="hist" fill="none" stroke="#72CA9B" stroke-opacity=".7" stroke-width="2" stroke-dasharray="2 5" visibility="hidden"/>
+  <polyline id="trail" fill="none" stroke="#FBB360" stroke-opacity=".55" stroke-width="2" stroke-dasharray="4 5"/>
+  <g id="cg">
+   <circle r="22" fill="none" stroke="#FBB360" stroke-width="1.5"><animate attributeName="r" values="12;34;12" dur="2.2s" repeatCount="indefinite"/><animate attributeName="stroke-opacity" values=".8;0;.8" dur="2.2s" repeatCount="indefinite"/></circle>
+   <path id="cshape" d="${SYM.unknown}" fill="#F0B726" stroke="#111418" stroke-width="2"/><text id="ctag" y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#111418">?</text>
+   <text id="clabel" y="-36" text-anchor="middle" font-size="13" font-weight="700" letter-spacing="1" fill="#FBD065">K-7</text>
+  </g>
+  ${units}</svg>`;
+}
+function frame(){
+  if (!GS || GS.phase !== 'play' || !$('#clock')) return;
+  const G = GS, c = cpos(G, G.t), C = G.sc.C;
+  $('#clock').textContent = hhmm(G.t);
+  const bpH = I(G.paused ? 'play' : 'pause'); if ($('#bp')._h !== bpH){ $('#bp').innerHTML = bpH; $('#bp')._h = bpH; } $('#bp').classList.toggle('on', G.paused);
+  setTxt('#bs', G.speed + '×');
+  const fx = clamp(stormX(G, G.t), 0, 1000);
+  $('#stR').setAttribute('width', fx); $('#stR2').setAttribute('width', fx);
+  $('#stL').setAttribute('x', Math.max(110, fx - 100)); $('#stL').setAttribute('visibility', fx > 150 ? 'visible' : 'hidden');
+  TRAFFIC.forEach((s,i) => { const p = trafficPos(s, G.t); $('#tf'+i).setAttribute('transform', `translate(${p.x.toFixed(1)},${p.y})`); });
+  $('#trail').setAttribute('points', G.trail.map(p => p.join(',')).join(' ') + ` ${c.x.toFixed(1)},${c.y.toFixed(1)}`);
+  // track history after replay
+  const h = $('#hist');
+  if (G.done.track){
+    const s = G.sc, pts = G.truth === 'D' ? `${s.sx-210},${s.sy-40} ${s.sx-120},${s.sy-20}` : G.truth === 'L' ? `${s.sx-60},${s.sy+40} ${s.sx-20},${s.sy+10}` : `${s.sx-60},${s.sy+30} ${s.sx-25},${s.sy+12}`;
+    h.setAttribute('points', pts + ` ${G.trail[0].join(',')}`); h.setAttribute('visibility', 'visible');
+  } else h.setAttribute('visibility', 'hidden');
+  $('#cg').setAttribute('transform', `translate(${c.x.toFixed(1)},${c.y.toFixed(1)})`);
+  setTxt('#clabel', 'K-7' + (vesselKnown(G) ? ' · ' + C.vessel.name : ''));
+  const pp = probs(G), bb = best(pp), sure = !blind(G) && G.findings.length && pp[bb] >= 0.75;
+  const sym = !sure ? 'unknown' : bb === 'S' ? 'hostile' : 'neutral';
+  let col = sym === 'unknown' ? '#F0B726' : sym === 'hostile' ? '#FF8080' : '#AAE5C2';
+  if (G.sunk && !G.res) col = '#FF8080';
+  const sh = $('#cshape'); if (sh.getAttribute('d') !== SYM[sym]) sh.setAttribute('d', SYM[sym]); sh.setAttribute('fill', col);
+  setTxt('#ctag', sym === 'unknown' ? '?' : sym === 'hostile' ? 'H' : 'N');
+  for (const k in UNITS){ const u = G.units[k], l = $('#ul-'+k);
+    $('#ug-'+k).setAttribute('transform', `translate(${u.x.toFixed(1)},${u.y.toFixed(1)})`);
+    if (u.st === 'out'){ l.setAttribute('x1', u.x); l.setAttribute('y1', u.y); l.setAttribute('x2', c.x); l.setAttribute('y2', c.y); l.setAttribute('visibility', 'visible'); }
+    else l.setAttribute('visibility', 'hidden');
+  }
+  const sIn = G.sc.hitT - G.t, bIn = (BORDER_X - c.x)/10;
+  let chips = `<span class="chip ${sIn < 10 && sIn > 0 ? 'hot' : ''}">${I('storm',12)} ${G.sc.hitT >= 200 ? 'storm behind' : sIn > 0 ? 'storm '+Math.ceil(sIn)+' min' : 'storm over K-7'}</span>`;
+  chips += `<span class="chip">${I('ship',12)} ${bIn > 0 ? 'border '+bIn.toFixed(0)+' km' : 'in our waters'}</span>`;
+  if (G.truth === 'D' && (G.saved > 0 || G.sunk)) chips += `<span class="chip ${G.sunk?'hot':''}">rescued ${Math.floor(G.saved)}/${G.sc.people}</span>`;
+  if (G.units.drone.st === 'out') chips += `<span class="chip">drone ${Math.ceil(Math.hypot(c.x-G.units.drone.x, c.y-G.units.drone.y)/UNITS.drone.speed)} min</span>`;
+  if (G.busy) chips += `<span class="chip busy">${I('clock',12)} ${esc(G.busy.label)}</span>`;
+  setHTML('#chips', chips);
+  const pg = $('#pg'); if (pg && G.busy) pg.style.width = clamp((G.t-G.busy.start)/(G.busy.end-G.busy.start)*100, 0, 100) + '%';
+  if (dirty){ dirty = false; renderPanel(); }
+}
+function setTxt(sel, v){ const el = $(sel); if (el && el.textContent !== v) el.textContent = v; }
+function setHTML(sel, v){ const el = $(sel); if (el && el._h !== v){ el.innerHTML = v; el._h = v; } }
+function flowState(G){
+  const st = {detect:true, track:!!G.done.track, vessel:!!(G.done.registry || G.graph.length > 1),
+    people:G.done.face && Object.keys(G.ids).length >= G.sc.C.people.filter(p=>!p.crowd).length,
+    records:G.unlocked, decide:!!G.decision};
+  return st;
+}
+function nextHint(G){
+  if (G.closed) return 'Decision made. Watch the outcome on the map.';
+  if (G.busy) return 'Analyst busy: '+G.busy.label+'…';
+  if (!G.done.track) return '<b>Correlate:</b> replay the contact’s track to see which ship it might be. <span class="mute">(Look tab)</span>';
+  if (!G.done.droneSent) return '<b>Get eyes on it:</b> send the drone now. It takes ~16 min to fly out.';
+  if (!G.done.registry) return '<b>Identify the vessel:</b> run a registry check and search around its owner. <span class="mute">(Vessel tab)</span>';
+  if (!G.done.drone) return 'Waiting for the drone. Meanwhile: call them on the radio, or search around the vessel.';
+  if (!G.done.face) return '<b>Identify people:</b> run a face match on the drone video. <span class="mute">(People tab)</span>';
+  if (G.sc.C.people.some((p,i) => !p.crowd && !G.ids[i])) return '<b>Resolve identities:</b> confirm or reject each face match. Weak matches are often wrong.';
+  if (!G.unlocked) return '<b>Vet:</b> police records are restricted. State your purpose to open them.';
+  return '<b>Decide:</b> you have the picture. Open the Decide tab.';
+}
+const TABS = [['look','radar','Look'],['vessel','ship','Vessel'],['people','id','People'],['case','folder','Case'],['decide','scales','Decide']];
+function renderPanel(){
+  const G = GS, C = G.sc.C, fl = flowState(G);
+  const last = G.ticker[G.ticker.length-1];
+  $('#ticker').innerHTML = last ? `<span class="tm">${hhmm(last.t)}</span>${esc(last.m)}` : '';
+  const cur = FLOW.find(f => !fl[f[0]]);
+  $('#flow').innerHTML = FLOW.map((f,j) => `<span class="${fl[f[0]] ? 'd' : cur && cur[0]===f[0] ? 'c' : ''}"><b>${fl[f[0]] ? '✓' : j+1}</b>${f[1]}</span>`).join('<em>›</em>');
+  $('#tabs').innerHTML = TABS.map(t => `<button class="tab ${G.tab===t[0]?'on':''} ${t[0]==='decide'?'dec':''}" data-act="${t[0]==='decide'?'ask':'tab'}" data-t="${t[0]}" ${t[0]==='decide'&&G.closed?'disabled':''}><span class="ti">${I(t[1],18)}</span>${t[2]}${G.badge===t[0]&&G.tab!==t[0]?'<span class="bd"></span>':''}</button>`).join('');
+  let h = `<div class="hint">${I('info')}<span>${nextHint(G)}</span></div>`;
+  const pbar = id => G.busy && G.busy.id === id ? '<i class="pg" id="pg"></i>' : '';
+  const actBtn = (act, id, ic, nm, ds, dis, done, extra='') => `<button class="act ${done?'done':''} ${G.busy&&G.busy.id===id?'go':''} ${extra}" data-act="${act}" data-id="${id}" ${dis?'disabled':''}><span class="ic">${I(ic,18)}</span><span class="nm">${nm}</span><span class="ds">${ds}</span>${pbar(id)}</button>`;
+  const lock = G.closed || !!G.busy;
+  if (G.tab === 'look'){
+    const ds = G.units.drone.st;
+    h += `<div class="acts">
+      ${actBtn('task','track','track','Replay track','Match radar with AIS history · 2 min', lock || G.done.track, G.done.track)}
+      ${actBtn('task','hail','radio','Call on ch. 16','Hail the vessel by radio · 3 min', lock || G.done.hail, G.done.hail)}
+      ${actBtn('drone','drone','drone','Send drone', ds==='out' ? 'On its way…' : G.done.drone ? 'Video live' : 'Live video · ~16 min flight', G.closed || ds!=='base' || G.done.drone, G.done.drone, ds==='out'?'go':'')}
+      ${actBtn('tab','people','id','Face match', G.done.drone ? 'Open People tab' : 'Needs the drone first', !G.done.drone, G.done.face)}
+    </div>`;
+    h += latticeCard(G);
+  }
+  if (G.tab === 'vessel'){
+    if (!vesselKnown(G)) h += `<div class="card"><div class="lbl"><span>Vessel object</span></div><p class="mute">K-7 is only a radar blip. Replay its track (Look tab) to link it to a ship in the records.</p></div>`;
+    else {
+      const v = C.vessel;
+      h += `<div class="card"><div class="lbl"><span>Vessel object</span><span>${G.done.registry?'registry checked':'not verified'}</span></div>
+       <div class="kv"><span>Name</span><span><b>${esc(v.name)}</b></span><span>Type</span><span>${esc(v.type)}</span><span>Flag</span><span>${esc(v.flag)}</span>
+       <span>MMSI</span><span>${esc(v.mmsi)}</span><span>Owner</span><span>${esc(v.owner)}</span><span>Last port</span><span>${esc(v.port)}</span></div>
+       <span class="src" style="margin-top:6px">Source: AIS history · ${G.done.track ? hhmm(G.findings.find(f=>f.key==='track')?.t||0) : 'drone'}. Claimed data until checked.</span></div>`;
+      h += `<div class="acts">${actBtn('task','registry','search','Registry check','Is the identity real? · 2 min', lock || G.done.registry, G.done.registry)}
+        <button class="act" disabled style="opacity:.75"><span class="ic">${I('graph',18)}</span><span class="nm">Search around</span><span class="ds">Tap a node with ＋ below · 1 min each</span></button></div>`;
+      h += `<div class="card"><div class="lbl"><span>Link graph</span><span>tap a node</span></div>${graphSVG(G)}</div>`;
+    }
+  }
+  if (G.tab === 'people'){
+    if (!G.done.drone) h += `<div class="card"><p class="mute">No faces yet. ${G.done.droneSent ? 'The drone is on its way.' : 'Send the drone (Look tab) to get video of the people on board.'}</p></div>`;
+    else if (!G.done.face) h += `<div class="acts">${actBtn('task','face','people','Run face match','Drone video vs. national ID photos · 2 min', lock, false, 'wide')}</div>`;
+    else {
+      h += `<div class="card"><div class="lbl"><span>People on board</span><span>${G.unlocked ? (G.override ? '<span class="no">records: override</span>' : '<span class="ok">records: logged access</span>') : I('lock',12)+' records restricted'}</span></div><div style="display:flex;flex-direction:column;gap:8px">${C.people.map((p,i) => personRow(G,p,i)).join('')}</div></div>`;
+      h += `<p class="mute sm">Face matching is an outside tool with its own error rate. A match is a lead, not a fact: you decide whether to link it to a person record.</p>`;
+    }
+  }
+  if (G.tab === 'case'){
+    h += latticeCard(G);
+    h += G.findings.length ? `<div class="card"><div class="lbl"><span>Evidence</span><span>${G.findings.length}</span></div>${G.findings.map(f => `<div class="ev" style="border-color:${f.w?HC[best({D:f.w[0],S:f.w[1],L:f.w[2]})]:'var(--line)'}"><b>${esc(f.title)}</b><span>${esc(f.text)}</span><span class="src">${hhmm(f.t)} · ${esc(f.src)}</span></div>`).join('')}</div>` : '';
+    h += `<div class="card"><div class="lbl"><span>Audit log</span><span>every query is recorded</span></div><div class="audit">${G.audit.slice().reverse().map(a => `<div class="${/OVERRIDE/.test(a.m)?'no':''}">${hhmm(a.t)} ${esc(a.m)}</div>`).join('')}</div></div>`;
+  }
+  if (G.tab === 'decide' && G.closed) h += `<div class="card"><div class="verdict">Decision: ${I(DEC[G.decision].icon)} ${DEC[G.decision].name}</div><p class="mute sm">Time runs fast to the outcome.</p></div>`;
+  $('#body').innerHTML = h;
+}
+function latticeCard(G){
+  const p = probs(G), b = best(p), n = G.findings.length;
+  if (blind(G)) return `<div class="card"><div class="lbl"><span>Lattice assessment</span><span>${I('lock',12)} clearance 4</span></div><div class="mute sm">Assessment switched off at this clearance. You have ${n} piece${n===1?'':'s'} of evidence in the Case tab: weigh them yourself.</div></div>`;
+  const verdict = !n ? `<div class="verdict mute">No evidence yet</div><div class="mute sm">Lattice’s starting guess comes from past cases: most dark boats here were criminal. That’s a base rate, not evidence.</div>`
+    : `<div class="verdict" style="color:${HC[b]}">${HN[b]} · ${Math.round(p[b]*100)}%</div><div class="mute sm">${p[b] < .75 ? 'Not sure yet.' : 'Fairly sure'} · based on ${n} piece${n>1?'s':''} of evidence you collected.</div>`;
+  return `<div class="card"><div class="lbl"><span>Lattice assessment</span></div>${verdict}
+    <div class="tri">${HK.map(h => `<b style="width:${(p[h]*100).toFixed(1)}%;background:${HC[h]}"></b>`).join('')}</div>
+    <div class="legend">${HK.map(h => `<span style="color:${HC[h]}">${HN[h]}</span>`).join('')}</div></div>`;
+}
+function personRow(G, p, i){
+  if (p.crowd) return `<div class="pcard" style="cursor:default"><span class="av">+</span><span class="nm">${esc(p.n)}</span><span class="mt"></span><span><span class="flag ${p.st}">${esc(p.tag)}</span></span></div>`;
+  const st = G.ids[i], recVisible = st === 'yes' && G.unlocked;
+  const tag = st === 'no' ? '<span class="flag unk">Match rejected</span>' : recVisible ? `<span class="flag ${p.st}">${esc(p.tag)}</span>` : st === 'yes' ? '<span class="flag info">Confirmed · record locked</span>' : '<span class="flag warn">Confirm or reject</span>';
+  return `<button class="pcard" data-act="ids" data-i="${i}"><span class="av" style="${recVisible&&p.st==='bad'?'background:#4a1c1c':''}">${esc(initials(p.n))}</span>
+    <span class="nm">${esc(p.n)}, ${p.age}</span><span class="mt" style="color:${p.m>=85?'var(--green)':'var(--amber)'}">${p.m}%<br><span class="mute" style="font-weight:500">match</span></span><span>${tag}</span></button>`;
+}
+function graphSVG(G){
+  const C = G.sc.C, shown = C.graph.filter(n => G.graph.includes(n.id));
+  const depth = n => n.parent ? 1 + depth(C.graph.find(x => x.id === n.parent)) : 0;
+  const cols = {}; const pos = {};
+  for (const n of shown){ const d = depth(n); cols[d] = (cols[d]||0) + 1; pos[n.id] = {d, i:cols[d]-1}; }
+  const maxD = Math.max(1, ...C.graph.map(depth)), dx = 270 / maxD;
+  const xy = id => { const p = pos[id], cnt = cols[p.d]; return {x:50 + p.d*dx, y: 30 + (cnt===1 ? 60 : p.i * (120/(cnt-1)))}; };
+  const ICON = {vessel:'ship', company:'building', person:'person', phone:'phone', event:'alert', doc:'doc'};
+  let lines = '', nodes = '';
+  for (const n of shown){
+    const a = xy(n.id);
+    if (n.parent && pos[n.parent]){ const b = xy(n.parent); lines += `<line x1="${b.x}" y1="${b.y}" x2="${a.x}" y2="${a.y}" stroke="#404854" stroke-width="1.5"/>`; }
+    const more = C.graph.some(x => x.parent === n.id && !G.graph.includes(x.id));
+    const ring = n.flag === 'bad' ? '#E76A6E' : n.flag === 'warn' ? '#EC9A3C' : n.flag === 'ok' ? '#32A467' : '#4C90F0';
+    nodes += `<g data-act="node" data-id="${n.id}" style="cursor:pointer"><circle cx="${a.x}" cy="${a.y}" r="20" fill="#252A31" stroke="${ring}" stroke-width="2"/>
+      <svg pointer-events="none" x="${a.x-9}" y="${a.y-9}" width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#F6F7F9" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${ICONS[ICON[n.kind]]}</svg>
+      <text x="${a.x}" y="${a.y+38}" text-anchor="middle" font-size="11" fill="#ABB3BF">${esc(n.label.length > 16 ? n.label.slice(0,15)+'…' : n.label)}</text>
+      ${more ? `<rect x="${a.x+9}" y="${a.y-25}" width="16" height="16" rx="2" fill="#2D72D2"/><text x="${a.x+17}" y="${a.y-13}" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">+</text>` : ''}</g>`;
+  }
+  return `<svg class="graph" viewBox="0 0 370 190">${lines}${nodes}</svg>`;
+}
+function photo(p){
+  const h = hash(p.n), hue = h % 360, sk = ['#c9a27e','#a77b56','#e0bf9a','#8a5f3e'][h % 4], hair = ['#2a1d14','#4a3322','#191919','#6b5236'][(h>>3) % 4];
+  return `<svg viewBox="0 0 84 104"><rect width="84" height="104" fill="hsl(${hue},18%,30%)"/><ellipse cx="42" cy="108" rx="34" ry="30" fill="hsl(${(hue+140)%360},20%,35%)"/>
+   <ellipse cx="42" cy="48" rx="17" ry="21" fill="${sk}"/><path d="M25,44 Q26,22 42,23 Q58,22 59,44 Q56,32 42,31 Q28,32 25,44Z" fill="${hair}"/>
+   <circle cx="35" cy="48" r="1.8" fill="#222"/><circle cx="49" cy="48" r="1.8" fill="#222"/><path d="M37,60 Q42,63 47,60" stroke="#6b3d2a" stroke-width="1.6" fill="none"/></svg>`;
+}
+function idCardHTML(G, i){
+  const C = G.sc.C, p = C.people[i], st = G.ids[i];
+  const natCol = {Varnholm:'#1C6E42', Oresk:'#935610', Norvia:'#184A90'}[p.nat] || '#404854';
+  const mrz = `IDV${p.nat.slice(0,3).toUpperCase()}${p.idn.replace('-','')}<<${p.n.replace('Dr. ','').toUpperCase().replace(' ','<<')}<<<<<<`;
+  let rec;
+  if (st === 'no') rec = `<div class="rec"><b>Match rejected.</b><div class="mute sm">This face is not linked to ${esc(p.n)}’s records.</div></div>`;
+  else if (st !== 'yes') rec = `<div class="rec"><b>Is this the same person?</b><div class="mute sm">Linking the face to this ID record (Resolve) attaches all their records to the case.</div>
+     <div class="row" style="margin-top:8px"><button class="btn red" data-act="confirm" data-i="${i}" data-v="no">Not the same</button><button class="btn grn" data-act="confirm" data-i="${i}" data-v="yes">Same person</button></div></div>`;
+  else if (!G.unlocked) rec = `<div class="rec locked"><b>${I('lock',14)} POLICE RECORDS · RESTRICTED</b><div class="sm" style="margin:4px 0 8px">Opening them needs a stated purpose. It will be logged.</div><button class="btn pri" style="width:100%" data-act="unlockAsk" data-i="${i}" ${G.closed?'disabled':''}>Request access</button></div>`;
+  else rec = `<div class="rec"><div class="lbl"><span>Police records</span><span class="flag ${p.st}">${esc(p.tag)}</span></div>${p.recs.map(r => `<div class="ri">${esc(r)}</div>`).join('')}<span class="src">Source: police records · opened ${G.override ? 'by override (no purpose)' : 'for case '+CASE_NO}</span></div>`;
+  return `<div class="idc"><div class="hd" style="background:${natCol}"><span>${esc(p.nat.toUpperCase())} · IDENTITY CARD</span><span>${esc(p.idn)}</span></div>
+    <div class="bd2"><div class="ph">${photo(p)}</div><div>
+      <div class="f">Name</div><div class="v">${esc(p.n)}</div>
+      <div class="f">Age</div><div class="v">${p.age}</div>
+      <div class="f">Nationality</div><div class="v">${esc(p.nat)}</div></div></div>
+    <div class="mrz">${esc(mrz)}</div></div>
+    <div class="match"><span>Face match</span><i><b style="width:${p.m}%;background:${p.m>=85?'var(--green)':'var(--amber)'}"></b></i><b>${p.m}%</b></div>
+    <span class="src">Drone video frame vs. national ID photo database.</span>
+    ${p.m < 80 ? '<p class="wn sm" style="margin-top:6px">Under 80%: matches this weak are often a different person.</p>' : ''}
+    ${rec}`;
+}
+function renderModal(){
+  const m = GS && GS.modal, box = $('#modal');
+  if (!m || (GS.phase !== 'play' && m.type !== 'achs')){ box.innerHTML = ''; return; }
+  const G = GS, C = G.sc ? G.sc.C : null; let h = '';
+  if (m.type === 'alert' || m.type === 'help') h = `${m.type==='alert' ? `<div class="alert"><b>${I('alert',14)} ALERT · ${hhmm(G.t)} · RADAR</b><div>Radar contact <b>K-7</b> has no matching AIS signal. ${((BORDER_X - G.sc.sx)/10).toFixed(0)} km from the border, heading for the coast.</div></div>` : '<h2>How to work the case</h2>'}
+    <ol class="steps">
+     <li><span><b>Correlate</b> the blip with AIS history: which ship is it?</span></li>
+     <li><span><b>Identify the vessel</b>: registry check, then search around its owner.</span></li>
+     <li><span><b>Identify people</b>: drone video → face match → confirm or reject each match.</span></li>
+     <li><span><b>Vet</b>: open police records with a stated purpose. Everything is logged.</span></li>
+     <li><span><b>Decide</b>: rescue, board, shadow or let it pass.</span></li></ol>
+    <p class="mute sm">The clock runs: 1 s = 1 min. A storm is coming. Space pauses.</p>
+    <div class="row"><button class="btn pri" data-act="close">${m.type==='alert' ? 'Open the case' : 'Back'}</button></div>`;
+  if (m.type === 'idcards'){
+    const ppl = C.people.map((p,i) => i).filter(i => !C.people[i].crowd), k = Math.max(0, ppl.indexOf(m.i)), i = ppl[k] ?? ppl[0];
+    h = `<div class="lbl"><span>Face match · person ${k+1} of ${ppl.length}</span><span>${G.unlocked ? '' : I('lock',12)+' records restricted'}</span></div>${idCardHTML(G, i)}
+      <div class="dots">${ppl.map((_,j) => `<i class="${j===k?'on':''}"></i>`).join('')}</div>
+      <div class="row"><button class="btn" data-act="idnav" data-i="${ppl[k-1] ?? i}" ${k===0?'disabled':''}>‹ Prev</button>
+      ${k < ppl.length-1 ? `<button class="btn pri" data-act="idnav" data-i="${ppl[k+1]}">Next ›</button>` : `<button class="btn pri" data-act="close">Done</button>`}</div>`;
+  }
+  if (m.type === 'unlock') h = `<h2>${I('lock',18)} Restricted records</h2>
+    <p>Police records carry an access marking. To open them you must state why. The request and your purpose go into the audit log that oversight reviews.</p>
+    <button class="btn choice" data-act="unlockLogged" data-i="${m.i}" ${G.busy?'disabled':''}><b>Purpose: case ${CASE_NO}, border incident K-7</b><small>Logged · 1 min</small></button>
+    <button class="btn choice red" data-act="unlockOverride" data-i="${m.i}"><b>Use admin override</b><small>Instant, no purpose stated. Flagged in the audit.</small></button>
+    ${G.busy ? '<p class="wn sm">The analyst is busy. Wait for the current task to finish.</p>' : ''}
+    <div class="row"><button class="btn" data-act="cancel">Cancel</button></div>`;
+  if (m.type === 'node'){
+    const n = C.graph.find(x => x.id === m.id), hidden = C.graph.filter(x => x.parent === n.id && !G.graph.includes(x.id));
+    const v = C.vessel;
+    h = `<div class="lbl"><span>${esc(n.kind)} object</span></div><h2>${esc(n.label)}</h2>
+      ${n.kind === 'vessel' ? `<div class="kv"><span>Type</span><span>${esc(v.type)}</span><span>Flag</span><span>${esc(v.flag)}</span><span>Owner</span><span>${esc(v.owner)}</span></div>` : `<p>${esc(n.text)}</p>`}
+      ${n.flag ? `<p><span class="flag ${n.flag}">${n.flag==='bad'?'red flag':n.flag==='warn'?'worth a look':'supports a story'}</span></p>` : ''}
+      ${n.kind === 'person' ? '<p class="mute sm">Being linked to something is not evidence of wrongdoing.</p>' : ''}
+      <div class="row"><button class="btn" data-act="cancel">Close</button>${hidden.length ? `<button class="btn pri" data-act="task" data-id="expand" data-arg="${n.id}" ${G.busy||G.closed?'disabled':''}>Search around (${hidden.length}) · 1 min</button>` : ''}</div>`;
+  }
+  if (m.type === 'decide'){
+    const p = probs(G);
+    h = `<h2>Decide</h2><p class="mute sm">One decision. ${blind(G) ? 'No assessment at this clearance.' : `Lattice says: <b style="color:${HC[best(p)]}">${HN[best(p)]} ${Math.round(p[best(p)]*100)}%</b>`} from ${G.findings.length} pieces of evidence.</p>
+      ${Object.keys(DEC).map(k => `<button class="btn choice ${m.d===k?'on':''}" data-act="pickD" data-d="${k}"><b>${I(DEC[k].icon)} ${DEC[k].name}</b> <span class="mute">· ${DEC[k].sub}</span><small>${DEC[k].text}</small></button>`).join('')}
+      ${m.d === 'board' ? `<div class="lbl" style="margin-top:12px"><span>Legal basis</span></div>${Object.keys(BASIS).map(k => `<button class="btn choice ${m.b===k?'on':''}" data-act="pickB" data-b="${k}"><b>${BASIS[k].name}</b><small>${BASIS[k].sub}</small></button>`).join('')}` : ''}
+      ${!G.findings.length ? '<p class="wn sm">You haven’t gathered any evidence yet.</p>' : ''}
+      <div class="row"><button class="btn" data-act="cancel">Not yet</button><button class="btn pri" data-act="decide" ${!m.d || (m.d==='board' && !m.b) ? 'disabled' : ''}>Confirm</button></div>`;
+  }
+  if (m.type === 'achs') h = `<h2>${I('check',18)} Badges</h2>${Object.keys(ACH).map(id => `<div class="ach" style="${CR.ach[id]?'':'opacity:.45'}">${CR.ach[id]?I('check',14):I('lock',14)}<span><b>${ACH[id][0]}</b> · ${ACH[id][1]}${CR.ach[id]?` <span class="mute">${CR.ach[id]}</span>`:''}</span></div>`).join('')}<div class="row"><button class="btn" data-act="cancel">Close</button></div>`;
+  if (m.type === 'reset') h = `<h2>Start over?</h2><p><b>Reset case</b> deletes this case only. <b>Reset everything</b> also wipes your rank, clearances, archive and badges.</p>
+    <div class="row"><button class="btn" data-act="cancel">Cancel</button><button class="btn red" data-act="doReset">Reset case</button></div><div class="row" style="margin-top:6px"><button class="btn red" data-act="doResetAll">Reset everything</button></div>`;
+  box.innerHTML = `<div class="modalbg" data-act="${['alert','help','idcards'].includes(m.type)?'close':'cancel'}"><div class="sheet" role="dialog" aria-modal="true">${h}</div></div>`;
+}
+
+// ---------- debrief ----------
+const OUT = {
+  saved:{g:true, h:'Everyone was rescued'}, partial:{g:false, h:'Only some people were rescued'}, lost:{g:false, h:'The boat sank. Nobody was saved'},
+  intercepted:{g:true, h:'Smugglers caught at sea'}, followed:{g:true, h:'Smugglers arrested on the beach'}, landed:{g:false, h:'The smugglers got away'},
+  clear:{g:true, h:'The research ship left safely'}, incident:{g:false, h:'You boarded an innocent research ship'}
+};
+function judgement(G, d){ const p = probs(G); return HK.reduce((a,T) => a + p[T]*PAY[d][T], 0); }
+function missedClue(G){
+  // the single most telling clue the player never collected (honest "what you missed")
+  const C = G.sc.C, ti = HK.indexOf(G.truth), have = new Set(G.findings.map(f => f.key)), cand = [];
+  const add = (key, tool, title, w) => { if (!have.has(key) && w) cand.push({tool, title, r: w[ti] / Math.max(...w.filter((_,i)=>i!==ti))}); };
+  add('track', 'Replay track', C.track[0], C.track[2]); add('hail', 'Radio call', hailResult(G)[0], hailResult(G)[2]);
+  add('registry', 'Registry check', C.registry[0], C.registry[2]); add('drone', 'Drone', droneResult(G)[0], droneResult(G)[2]);
+  C.graph.forEach(n => n.w && add('g-'+n.id, 'Search around', n.label+': '+n.text, n.w));
+  C.people.forEach((p,i) => !p.crowd && p.same && add('rec-'+i, 'Police records', p.n+': '+p.tag, p.w));
+  return cand.filter(c => c.r > 1.5).sort((a,b) => b.r - a.r)[0] || null;
+}
+function score(G){
+  const L = []; let s = {saved:45, partial:20, lost:0, intercepted:45, followed:35, landed:0, clear:45, incident:5}[G.res.kind];
+  L.push(['Outcome', s]);
+  const J = G.decision ? (G.judge ?? judgement(G, G.decision)) : 0, callPts = Math.round(J * 0.2);
+  s += callPts; L.push([J >= 70 ? 'Sound call for the evidence you had' : J >= 45 ? 'Shaky call for the evidence you had' : 'The evidence didn’t support this call', callPts]);
+  let idp = 0; G.sc.C.people.forEach((p,i) => { if (p.crowd || !G.ids[i]) return; idp += ((G.ids[i]==='yes') === p.same) ? 5 : -8; });
+  s += idp; L.push(['Identity matches resolved', idp]);
+  const acc = G.override ? -10 : G.unlocked ? 10 : 0; s += acc; L.push([G.override ? 'Records opened by override' : G.unlocked ? 'Records opened with a logged purpose' : 'Records never opened', acc]);
+  const ev = G.findings.length >= 3 ? 10 : 0; s += ev; L.push([ev ? 'Gathered evidence before acting' : 'Acted on little evidence', ev]);
+  if (G.decision === 'board'){ const b = G.basisOK ? 5 : -15; s += b; L.push([G.basisOK ? 'Boarding had a valid legal basis' : 'Boarding had no valid legal basis', b]); }
+  s = clamp(s, 0, 100);
+  return {s, L, grade: s >= 85 ? 'A' : s >= 70 ? 'B' : s >= 50 ? 'C' : s >= 30 ? 'D' : 'F'};
+}
+function debriefExtra(G, sc, p, lb){
+  const J = G.decision ? (G.judge ?? judgement(G, G.decision)) : 0, good = OUT[G.res.kind].g;
+  let luck = '';
+  if (!good && J >= 70) luck = `<p class="sm" style="margin-top:6px"><span class="flag info">good read, bad luck</span> Your evidence really did point this way. The grade keeps that.</p>`;
+  else if (good && J < 45) luck = `<p class="sm" style="margin-top:6px"><span class="flag warn">lucky</span> It worked out, but your evidence didn’t support this call.</p>`;
+  const nextG = 'FDCBA'['FDCBA'.indexOf(sc.grade)+1];
+  const gap = nextG ? GRADE_MIN[nextG] - sc.s : 0;
+  const cf = Object.keys(DEC).map(k => `<div class="${G.decision===k?'you':''} ${PAY[k][G.truth]===100?'best':''}"><b>${letter(PAY[k][G.truth])}</b>${DEC[k].name}${G.decision===k?' · you':''}</div>`).join('');
+  const miss = missedClue(G);
+  return `<div class="card"><div class="lbl"><span>Your read of the evidence</span><span>${G.findings.length} clues</span></div>
+    <p>${G.findings.length ? `Your evidence pointed to <b style="color:${HC[lb]}">${HN[lb]} at ${Math.round(p[lb]*100)}%</b>.` : `You decided with no evidence, on the base rate alone.`} The truth was <b style="color:${HC[G.truth]}">${HN[G.truth]}</b>.</p>${luck}
+    ${gap ? `<p class="mute sm" style="margin-top:6px">${gap} point${gap>1?'s':''} short of ${nextG}.</p>` : ''}
+    ${miss ? `<div class="ev" style="margin-top:10px;border-color:var(--amber)"><b>Missed: ${esc(miss.tool)}</b><span>${esc(miss.title)}</span></div>` : '<p class="mute sm" style="margin-top:6px">You found every telling clue.</p>'}</div>
+   <div class="card"><div class="lbl"><span>How each call would have ended</span></div><div class="cf">${cf}</div></div>`;
+}
+function careerCard(G){
+  const M = G.meta; if (!M) return '';
+  const L = M.after, lo = xpFor(L), hi = xpFor(L+1), pct = Math.round((M.xpAfter - lo) / (hi - lo) * 100);
+  const goal = M.unlocked ? `<p class="ok sm" style="margin-top:8px">${I('check',14)} Clearance ${M.unlocked} unlocked: ${esc(LEVELS[M.unlocked].rule.replace('+ ',''))}</p>`
+    : G.lvl < 5 && G.lvl === CR.lvlMax ? `<p class="mute sm" style="margin-top:8px">Next goal: a B or better at clearance ${G.lvl} unlocks clearance ${G.lvl+1}.</p>` : '';
+  return `<div class="card"><div class="lbl"><span>Career</span><span>+${M.gain} XP</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:13px"><b>${rankOf(L)} · level ${L}</b><span class="mute">${M.xpAfter} / ${hi} XP</span></div>
+    <div class="bar"><b style="width:${pct}%"></b></div>${M.after > M.before ? `<p class="ok sm" style="margin-top:6px">Level up!</p>` : ''}${goal}
+    ${M.ach.map(id => `<div class="ach new">${I('check',14)}<span><b>${ACH[id][0]}</b> · ${ACH[id][1]}</span></div>`).join('')}</div>`;
+}
+function endHTML(){
+  const G = GS, o = OUT[G.res.kind], sc = score(G), s = G.sc, C = s.C, p = probs(G), lb = best(p);
+  const truth = {D:`K-7 was a broken-down fishing boat (${esc(C.vessel.name)}) with <b>${s.people} people</b> aboard, including children.`,
+    S:`K-7 was a smuggling speedboat using the identity of a scrapped fishing boat, “${esc(s.sname)}”.`,
+    L:`K-7 was <b>AURELLE</b>, a licensed research ship. Its transponder had simply broken.`}[G.truth];
+  const lesson = {D:'A dark boat and a man with an old fine made this look criminal. The real clues were cheap: the radio, the drift, the overdue-boat report. The weak face match pointed at the wrong man.',
+    S:'The transponder said “fishing boat”. The registry showed a zombie identity, and the face match found a convicted smuggler who also directed the owning company. That chain of links is how analysts build a case.',
+    L:'A dark ship over a cable looked like sabotage, and a weak match put a protester “on board”. The permit and the radio call showed licensed work.'}[G.truth];
+  const fp = C.people.map((x,i) => ({x,i})).filter(o => !o.x.crowd);
+  return `${CLASSBAR}<div class="end">
+   <div class="hero ${o.g?'good':'bad'}"><div class="grade ${o.g?'ok':'no'}">${sc.grade}</div>
+    <div class="meta">CASE ${CASE_NO} · ${hhmm(G.res.t)} · SEED ${esc(G.seed)}</div>
+    <h1>${o.h}</h1><p>${truth}</p>${G.truth==='D' ? `<p style="margin-top:8px"><b>${Math.floor(G.saved)} of ${s.people}</b> rescued.</p>` : ''}</div>
+   <div class="card"><div class="lbl"><span>Your decision</span><span>${hhmm(G.decidedAt ?? G.res.t)}</span></div>
+    <div class="verdict">${G.decision ? I(DEC[G.decision].icon,18)+' '+DEC[G.decision].name : 'None'}</div>
+    ${G.decision === 'board' ? `<p class="sm" style="margin-top:4px">Legal basis: ${esc(BASIS[G.basis].name)} — ${G.basisOK ? '<span class="ok">valid</span>' : '<span class="no">not valid</span>'}</p>` : ''}
+    <p class="mute sm" style="margin-top:4px">Lattice said <span style="color:${HC[lb]}">${HN[lb]} (${Math.round(p[lb]*100)}%)</span>. The truth: <span style="color:${HC[G.truth]}">${HN[G.truth]}</span>.</p></div>
+   <div class="card"><div class="lbl"><span>Who was really on board</span></div>
+    ${fp.map(({x,i}) => `<div class="ev" style="border-color:${x.same?'var(--green)':'var(--red)'}"><b>${esc(x.n)} · ${x.m}% match → ${x.same ? 'really them' : 'NOT them'}</b>
+      <span>You ${G.ids[i]==='yes'?'confirmed':G.ids[i]==='no'?'rejected':'never resolved'} this match. ${((G.ids[i]==='yes')===x.same && G.ids[i]) ? '<span class="ok">✓</span>' : G.ids[i] ? '<span class="no">✗</span>' : ''} ${x.truthNote ? esc(x.truthNote) : ''}</span></div>`).join('')}</div>
+   ${debriefExtra(G, sc, p, lb)}
+   <div class="card"><div class="lbl"><span>Score</span><span>${sc.s}/100</span></div><div class="sc">${sc.L.map(l => `<div><span>${esc(l[0])}</span><b class="${l[1]>0?'ok':l[1]<0?'no':'mute'}">${l[1]>0?'+':''}${l[1]}</b></div>`).join('')}</div></div>
+   <div class="card"><div class="lbl"><span>The lesson</span></div><p>${lesson}</p></div>
+   <div class="card"><div class="lbl"><span>Audit log (what oversight sees)</span></div><div class="audit">${G.audit.map(a => `<div class="${/OVERRIDE/.test(a.m)?'no':''}">${hhmm(a.t)} ${esc(a.m)}</div>`).join('')}</div></div>
+   ${careerCard(G)}
+   <div style="display:flex;gap:8px"><button class="btn pri" data-act="newRun">New case</button>${G.daily ? `<button class="btn" data-act="copy" data-day="${G.daily}" id="copyb">Share result</button>` : '<button class="btn" data-act="replay">Replay seed</button>'}</div>
+   ${G.daily && G.shareOpen ? `<textarea class="share" readonly aria-label="Share text">${esc(shareText(G.daily))}</textarea>` : ''}
+   ${sessionCases >= 3 && sessionCases % 3 === 0 ? '<p class="mute sm" style="text-align:center">Good place to stop: your career and archive are saved.</p>' : ''}
+  </div>`;
+}
+
+// ---------- input & loop ----------
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
+  if (el.classList.contains('modalbg') && e.target !== el) return;
+  const d = {...el.dataset};
+  if (d.act === 'start'){ const inp = $('#seed'); d.seed = inp ? inp.value : ''; }
+  act(d.act, d);
+});
+document.addEventListener('keydown', e => {
+  if (!GS) return;
+  if (e.target.tagName === 'INPUT'){ if (e.key === 'Enter' && GS.phase === 'title') act('start', {seed:e.target.value}); return; }
+  if (GS.phase !== 'play') return;
+  if (e.key === ' '){ e.preventDefault(); if (!GS.modal) act('pause'); }
+  if (e.key === 'Escape' && GS.modal) act(['alert','help','idcards'].includes(GS.modal.type) ? 'close' : 'cancel');
+});
+let ticks = 0;
+addEventListener('visibilitychange', () => { if (document.hidden && GS) save(); });
+addEventListener('pagehide', () => { if (GS) save(); });
+setInterval(() => {
+  if (!GS || GS.phase !== 'play') return;
+  if (!GS.paused && !GS.modal){
+    const n = GS.closed ? 15 : GS.speed;
+    for (let i=0; i<n && GS.phase === 'play'; i++) step(0.1);
+    if (GS.phase === 'end'){ save(); render(); return; }
+  }
+  frame();
+  if (++ticks % 20 === 0) save();
+}, 100);
+
+// ---------- test hooks ----------
+window.Lattice = {
+  state: () => GS, act, truthOf, probs: () => probs(GS), career: () => CR, score: () => score(GS),
+  step(min){ for (let i=0; i<Math.round(min*10) && GS.phase === 'play'; i++) step(0.1); save(); if (GS.phase === 'end') render(); else { dirty = true; frame(); renderModal(); } }
+};
+window.LatticeTests = { run(){
+  const r = [], a = freshState('X1'), b = freshState('X1');
+  r.push(['same seed, same case', JSON.stringify(a.sc) === JSON.stringify(b.sc) && a.truth === b.truth]);
+  const seen = new Set(); for (let i=0;i<60;i++) seen.add(truthOf('S'+i));
+  r.push(['all three cases occur', seen.size === 3]);
+  r.push(['every case has a weak or strong face match', ['D','S','L'].every(T => { let s='S0'; for (let i=0;i<80&&truthOf(s)!==T;i++) s='S'+(i+1); return freshState(s).sc.C.people.some(p => !p.crowd); })]);
+  return {passed: r.every(x => x[1]), results: r};
+} };
+
+loadCareer();
+GS = load() || {v:5, phase:'title', seed:'NIGHT-01'};
+if (GS.phase === 'play' && GS.lvl == null) GS.lvl = 1;
+render();
+if (location.hash === '#selftest') console.log('selftest', JSON.stringify(LatticeTests.run()));
+</script>
+</body>
+</html>
