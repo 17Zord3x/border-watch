@@ -450,6 +450,27 @@ html.lowfx .top,html.lowfx .flow,html.lowfx .chip,html.lowfx .ticker{background:
 .act.pulse,.tab.pulse{border-color:var(--amber)!important;animation:pulseb 1.4s ease-in-out infinite}
 .tab.pulse{color:var(--amber)}
 @media (prefers-reduced-motion:reduce){.act.pulse,.tab.pulse{animation:none;box-shadow:0 0 0 2px var(--amber)}}
+
+/* v11: daily brief, uplink ladder, streak */
+.cal button,.cal i{flex:1;font:700 11px/26px var(--mono);text-align:center;border-radius:2px;background:var(--panel3);color:var(--dim);font-style:normal;border:0;padding:0;min-height:30px}
+.cal button{cursor:pointer}.cal button:hover{color:var(--ink)}.cal .now{box-shadow:inset 0 0 0 1px var(--amber)}
+.cal button.g{background:rgba(35,133,81,.3);color:#72CA9B}.cal button.b{background:rgba(205,66,70,.25);color:#FA999C}
+.daily .streak{display:block;margin-top:4px;color:var(--amber)}.xs{display:block;font-size:11px;margin-top:4px}
+.how{margin:12px 0 0;padding-left:18px;font-size:13px;color:var(--mute)}.how li{margin:2px 0}
+.upl .tier{color:var(--amber);font-weight:700}
+.upw{position:relative;height:250px;margin:10px 0 12px 74px;border-left:2px solid var(--line);background:linear-gradient(to top,rgba(86,180,233,.10),rgba(5,9,13,0) 45%,rgba(240,228,66,.06))}
+.um{position:absolute;left:0;right:0;height:0;border-top:1px dashed var(--line2)}
+.um span{position:absolute;right:calc(100% + 8px);transform:translateY(-50%);font:600 11px var(--mono);color:var(--dim);white-space:nowrap}
+.um em{position:absolute;left:10px;transform:translateY(-50%);font-style:normal;font-size:11.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 10px)}
+.um.on{border-top-color:rgba(86,180,233,.45)}.um.on em,.um.on span{animation:lit .4s ease-out var(--d) forwards}
+@keyframes lit{to{color:var(--ink)}}
+.ume{position:absolute;left:-7px;right:0;bottom:0;height:0;border-top:2px solid var(--amber);z-index:2;animation:rise 1.6s cubic-bezier(.2,.7,.2,1) .3s forwards}
+.ume::before{content:'';position:absolute;left:-1px;top:-7px;width:12px;height:12px;border-radius:50%;background:var(--amber);box-shadow:0 0 12px rgba(245,181,68,.8)}
+.ume b{position:absolute;right:0;top:-22px;font:700 12px var(--mono);color:var(--amber);background:var(--panel2);padding:1px 4px;border-radius:3px}
+@keyframes rise{to{bottom:var(--to)}}
+html.lowfx .ume,html.lowfx .um.on em,html.lowfx .um.on span{animation:none}html.lowfx .ume{bottom:var(--to)}html.lowfx .um.on em,html.lowfx .um.on span{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.ume{animation:none!important;bottom:var(--to)}.um.on em,.um.on span{animation:none!important;color:var(--ink)}}
+@media (max-width:420px){.upw{margin-left:62px}.um em{font-size:11px}}
 </style>
 </head>
 <body>
@@ -560,7 +581,9 @@ const ACH = {
   lvl5:   ['Clearance 5', 'Unlock the top clearance.'],
   outs:   ['Case archive', 'See all 8 possible outcomes.'],
   trained:['Trained', 'Finish an operation tutorial.'],
-  ops:    ['Field generalist', 'Finish all five operations.']
+  ops:    ['Field generalist', 'Finish all five operations.'],
+  needle: ['Needle in a haystack', 'Call the unlikely answer right and get an A.'],
+  streak3:['Three in a row', 'Finish daily briefs three days running.']
 };
 const today = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 const dailyNo = day => Math.round((Date.parse(day) - Date.parse('2026-01-01')) / 864e5) + 1;
@@ -575,9 +598,10 @@ function recordCase(G){
   CR.tel.dec[G.decision || 'none'] = (CR.tel.dec[G.decision || 'none'] || 0) + 1;
   CR.tel.grade[sc.grade] = (CR.tel.grade[sc.grade] || 0) + 1;
   if (G.lvl === CR.lvlMax && G.lvl < 5 && 'AB'.includes(sc.grade)) CR.lvlMax++;
-  if (G.daily && !CR.daily[G.daily]) CR.daily[G.daily] = {g:sc.grade, d:G.decision, used:usedTools(G), t:hhmm(G.decidedAt ?? G.res.t), lvl:G.lvl};
   newAch = [];
   const give = id => { if (!CR.ach[id]){ CR.ach[id] = today(); newAch.push(id); } };
+  recordDaily(G, sc, G.decision ? PAY[G.decision][G.truth] : 0, give);
+  if (sc.needle && sc.grade === 'A') give('needle');
   give('first');
   if (['D','S','L'].every(T => CR.bests[T] && CR.bests[T] !== 'F')) give('all3');
   if (G.res.kind === 'saved') give('nobody');
@@ -586,7 +610,6 @@ function recordCase(G){
   const wrong = G.sc.C.people.map((p,i)=>({p,i})).filter(x => !x.p.crowd && !x.p.same);
   if (wrong.length && wrong.every(x => G.ids[x.i] === 'no')) give('notthem');
   if (G.res.kind === 'followed') give('follow');
-  if (G.daily) give('daily');
   if (CR.lvlMax >= 5) give('lvl5');
   if (Object.keys(OUT).every(k => CR.outs[k])) give('outs');
   G.meta = {gain, before, after:lvlOf(CR.xp), unlocked: CR.lvlMax > lvlBefore ? CR.lvlMax : 0, ach:newAch.slice(), xpAfter:CR.xp};
@@ -597,11 +620,53 @@ function usedTools(G){
   if (G.graph.length > 1) u.push('🕸️'); if (G.done.drone) u.push('🛩️'); if (G.done.face) u.push('🪪'); if (G.unlocked) u.push(G.override ? '⚠️' : '🔓');
   return u.join('');
 }
+// ---- Daily brief: one shared case a day, rotating through all six operations ----
+const DAILY_ROT = ['border','ridge','lantern','bellwether','ledger','skyglass'];
+const dailyOp = day => DAILY_ROT[((dailyNo(day) % 6) + 6) % 6];
+const opTitle = k => k === 'border' ? 'Border Watch' : OPS[k].name;
+const dayKey = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function streak(){ const d = new Date(); if (!CR.daily[dayKey(d)]) d.setDate(d.getDate()-1); let n = 0; while (CR.daily[dayKey(d)]){ n++; d.setDate(d.getDate()-1); } return n; }
+function untilTomorrow(){ const n = new Date(), t = new Date(n); t.setHours(24,0,0,0); const x = Math.max(0, Math.floor((t - n)/1000)); return [x/3600|0, (x/60|0)%60, x%60].map(v => String(v).padStart(2,'0')).join(':'); }
+// ---- Uplink: the score lifts a signal toward geostationary orbit (log scale, real altitudes) ----
+const GEO = 35786;
+const altOf = sc => sc <= 0 ? 0 : Math.round(Math.pow(GEO, sc/100));
+const scoreFor = km => Math.ceil(100 * Math.log(km) / Math.log(GEO));
+const fmtKm = km => km.toLocaleString('en-US') + ' km';
+const MARKS = [[9,'Everest','Higher than Everest (8.8 km)'],[21,'spy-plane ceiling','Spy-plane ceiling: high-altitude reconnaissance jets'],[100,'Kármán line','Kármán line: space begins'],
+  [408,'ISS','The space station, and most imaging satellites'],[2000,'low orbit','Edge of low Earth orbit'],[20200,'GPS','GPS satellites'],[GEO,'geostationary','Geostationary orbit: a perfect brief']];
+// ---- Signal tiers: six names, the top one only for calling the unlikely answer right ----
+const TIERS = [[0,'Static'],[30,'Chatter'],[50,'Lead'],[70,'Signal'],[85,'Clear signal']];
+const tierOf = sc => sc.needle && sc.s >= 85 ? 'Needle in a haystack' : TIERS.filter(t => sc.s >= t[0]).pop()[1];
+function againstOdds(prior, truth, pay){ const v = Object.values(prior), mn = Math.min(...v), mx = Math.max(...v); return pay === 100 && prior[truth] <= mn + 0.01 && mx - prior[truth] >= 0.05; }
+function cluePattern(G){
+  const keys = G.op ? OPK : HK, ti = keys.indexOf(G.truth);
+  return G.findings.filter(f => f.w).map(f => f.mis ? '🟥' : f.w.indexOf(Math.max(...f.w)) === ti ? '🟩' : '🟨').join('');
+}
+function recordDaily(G, sc, pay, give){
+  if (!G.daily || CR.daily[G.daily]) return;
+  CR.daily[G.daily] = {g:sc.grade, d:G.decision, op:G.op || 'border', s:sc.s, tier:tierOf(sc), pat:cluePattern(G), res: pay >= 80 ? '✅' : pay >= 50 ? '➖' : '❌',
+    used: G.op ? '' : usedTools(G), t:hhmm(G.decidedAt ?? G.res.t), lvl:G.lvl};
+  const n = streak(); CR.bestStreak = Math.max(CR.bestStreak || 0, n);
+  give('daily'); if (n >= 3) give('streak3');
+}
 function shareText(day){
   const r = CR.daily[day]; if (!r) return '';
-  const D = {rescue:'🛟', board:'⚓', shadow:'👁️', pass:'✅'}[r.d] || '—';
-  return `Lattice Border Watch #${dailyNo(day)} · ${r.g}\n${r.used || '—'} → ${D}\nClearance ${r.lvl} · decided ${r.t}`;
+  if (r.s == null){ const D = {rescue:'🛟', board:'⚓', shadow:'👁️', pass:'✅'}[r.d] || '—'; return `Lattice Border Watch #${dailyNo(day)} · ${r.g}\n${r.used || '—'} → ${D}\nClearance ${r.lvl} · decided ${r.t}`; }
+  const km = altOf(r.s), top = MARKS.filter(m => km >= m[0]).pop(), n = streak();
+  return `LATTICE Daily Brief #${dailyNo(day)} · ${opTitle(r.op)}\nGrade ${r.g} · ${r.tier}${n > 1 ? ' · 🔥' + n : ''}\n${r.pat || '·'} → ${r.res}\nUplink ${fmtKm(km)}${top ? ' · past ' + top[1] : ''}`;
 }
+function uplinkCard(G, sc){
+  const km = altOf(sc.s), top = MARKS.filter(m => km >= m[0]).pop(), next = MARKS.find(m => km < m[0]);
+  const pos = k => k <= 1 ? 0 : Math.log(k) / Math.log(GEO) * 100, me = pos(km);
+  return `<div class="card upl"><div class="lbl"><span>Uplink</span><span class="tier">${tierOf(sc)}</span></div>
+   <div class="upw" aria-hidden="true"><div class="ume" style="--to:${me.toFixed(1)}%"><b>${fmtKm(km)}</b></div>
+    ${MARKS.map(m => `<div class="um ${km >= m[0] ? 'on' : ''}" style="bottom:${pos(m[0]).toFixed(1)}%;--d:${(0.3 + 1.6 * pos(m[0]) / Math.max(me, 1)).toFixed(2)}s"><span>${fmtKm(m[0])}</span><em>${m[2]}</em></div>`).join('')}</div>
+   <p class="sm">Your score lifts the uplink: <b>${fmtKm(km)}</b>. ${top ? 'Highest landmark passed: ' + top[1] + '.' : 'Still on the ground.'}</p>
+   ${next ? `<p class="mute sm">Next: ${next[1]} at ${fmtKm(next[0])}, ${scoreFor(next[0]) - sc.s} more point${scoreFor(next[0]) - sc.s === 1 ? '' : 's'}.</p>` : ''}
+   ${sc.needle ? '<p class="ok sm">Against the odds: the base rate pointed elsewhere, and you followed the evidence.</p>' : ''}
+   ${G.daily ? `<p class="sm" style="margin-top:6px">Daily streak: <b>${streak()} day${streak() === 1 ? '' : 's'}</b> · best ${CR.bestStreak || streak()} · next brief in <span class="cd">${untilTomorrow()}</span></p>` : ''}</div>`;
+}
+setInterval(() => document.querySelectorAll('.cd').forEach(e => e.textContent = untilTomorrow()), 1000);
 // sound: tiny WebAudio tones, created on the first tap (browsers block audio before that)
 let AC = null;
 function tone(f, d=0.1, type='sine', gain=0.12, delay=0){
@@ -832,7 +897,8 @@ function basisValid(G, b){
 // ---------- actions ----------
 const H = {
   start(d){ GS = freshState((d.seed || '').trim().toUpperCase().slice(0,24) || randomSeed(), CR.sel); tone(440,.12,'triangle'); },
-  daily(){ const day = today(); if (CR.daily[day]) return; GS = freshState('DAILY-'+day, 2, day); tone(440,.12,'triangle'); },
+  daily(d){ const day = (d && d.day) || today(), arch = day !== today(); if (!arch && CR.daily[day]) return; const op = dailyOp(day), seed = 'DAILY-'+day;
+    GS = op === 'border' ? freshState(seed, 2, arch ? null : day) : Object.assign(opFresh(op, seed, 2), {daily: arch ? null : day}); GS.arch = arch ? day : null; tone(440,.12,'triangle'); },
   lvl(d){ const n = +d.n; if (n >= 1 && n <= CR.lvlMax){ CR.sel = n; saveCareer(); } },
   sound(){ CR.sound = !CR.sound; saveCareer(); if (CR.sound) tone(660,.1); },
   fx(){ CR.lowfx = !CR.lowfx; saveCareer(); applyFx(); },
@@ -898,7 +964,7 @@ function act(name, data){
   if (!H[name] || !GS) return;
   const before = GS.phase; H[name](data || {});
   save(); dirty = true;
-  if (GS.phase !== before || ['start','replay','copy','lvl','sound','opStart'].includes(name)) render(); else { frame(); renderModal(); }
+  if (GS.phase !== before || ['start','replay','copy','lvl','sound','opStart','daily'].includes(name)) render(); else { frame(); renderModal(); }
 }
 
 // ---------- rendering ----------
@@ -911,13 +977,20 @@ function render(){
   else { app.innerHTML = GS.op ? opPlayHTML() : playHTML(); dirty = true; frame(); }
   renderModal();
 }
+function dailyHTML(){
+  const day = today(), dr = CR.daily[day];
+  const cal = [...Array(7)].map((_,i) => { const d = new Date(); d.setDate(d.getDate()-6+i); const k = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); const r = CR.daily[k], cls = r ? ('AB'.includes(r.g)?'g':r.g==='F'?'b':'') : '';
+    return k === day ? `<i class="${cls} now" title="Today">${r ? r.g : '·'}</i>` : `<button class="${cls}" data-act="daily" data-day="${k}" aria-label="Replay brief #${dailyNo(k)} (${opTitle(dailyOp(k))}) as practice">${r ? r.g : '·'}</button>`; }).join('');
+  return `<div class="daily">${I('clock',18)}<div class="dt"><b>Daily brief #${dailyNo(day)} · ${opTitle(dailyOp(day))}</b><span class="mute sm">${dr ? `Done today: grade ${dr.g}${dr.tier ? ' · ' + dr.tier : ''}. Next brief in <span class="cd">${untilTomorrow()}</span>` : 'Same case for everyone today · one attempt · clearance 2'}</span>
+    <span class="sm streak">${streak() ? `Streak <b>${streak()}</b> day${streak() === 1 ? '' : 's'}` : 'No streak yet'}${CR.bestStreak ? ` · best ${CR.bestStreak}` : ''}</span><div class="cal">${cal}</div><span class="mute xs">Tap an earlier day to replay it as practice.</span></div>${dr ? `<button class="btn" data-act="copy" data-day="${day}" id="copyb" style="flex:none">Share</button>` : `<button class="btn pri" data-act="daily" style="flex:none">Play</button>`}</div>
+  ${GS.shareOpen && dr ? `<textarea class="share" readonly aria-label="Share text">${esc(shareText(day))}</textarea>` : ''}`;
+}
 function profileHTML(){
   const L = lvlOf(CR.xp), lo = xpFor(L), hi = xpFor(L+1), day = today(), dr = CR.daily[day];
-  const cal = [...Array(7)].map((_,i) => { const d = new Date(); d.setDate(d.getDate()-6+i); const k = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); const r = CR.daily[k]; return `<i class="${r ? ('AB'.includes(r.g)?'g':r.g==='F'?'b':'') : ''}" title="${k}">${r ? r.g : '·'}</i>`; }).join('');
+  const cal = [...Array(7)].map((_,i) => { const d = new Date(); d.setDate(d.getDate()-6+i); const k = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); const r = CR.daily[k], cls = r ? ('AB'.includes(r.g)?'g':r.g==='F'?'b':'') : '';
+    return k === day ? `<i class="${cls} now" title="Today">${r ? r.g : '·'}</i>` : `<button class="${cls}" data-act="daily" data-day="${k}" aria-label="Replay brief #${dailyNo(k)} (${opTitle(dailyOp(k))}) as practice">${r ? r.g : '·'}</button>`; }).join('');
   const nAch = Object.keys(CR.ach).length;
   return `<div class="prof">${I('person',22)}<div class="xp"><div style="display:flex;justify-content:space-between;font-size:13px"><span class="rk">${rankOf(L)} · lvl ${L}</span><span class="mute">${CR.xp} XP · ${CR.cases} case${CR.cases===1?'':'s'}</span></div><div class="bar"><b style="width:${Math.round((CR.xp-lo)/(hi-lo)*100)}%"></b></div></div><button class="ib" data-act="sound" aria-label="Sound" aria-pressed="${!!CR.sound}">${CR.sound ? '♪' : '<s>♪</s>'}</button><button class="ib fxb" data-act="fx" aria-label="Low effects: solid panels, no animation" aria-pressed="${!!CR.lowfx}">${CR.lowfx ? 'FX off' : 'FX'}</button></div>
-  <div class="daily">${I('clock',18)}<div class="dt"><b>Daily case #${dailyNo(day)}</b><span class="mute sm">${dr ? `Done today: grade ${dr.g}. A new one tomorrow.` : 'Same case for everyone today · one attempt · clearance 2'}</span><div class="cal">${cal}</div></div>${dr ? `<button class="btn" data-act="copy" data-day="${day}" id="copyb" style="flex:none">Share</button>` : `<button class="btn pri" data-act="daily" style="flex:none">Play</button>`}</div>
-  ${GS.shareOpen && dr ? `<textarea class="share" readonly aria-label="Share text">${esc(shareText(day))}</textarea>` : ''}
   <label style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);font-weight:600;margin-top:14px">Clearance</label>
   <div class="lvls">${[1,2,3,4,5].map(n => `<button class="lv ${CR.sel===n?'on':''}" data-act="lvl" data-n="${n}" ${n>CR.lvlMax?'disabled':''} aria-label="Clearance ${n}">${n>CR.lvlMax ? I('lock',12) : n}</button>`).join('')}</div>
   <div class="rule">${esc(LEVELS[CR.sel].rule)}${CR.lvlMax < 5 ? ` <span style="color:var(--dim)">· B or better at ${CR.lvlMax} unlocks ${CR.lvlMax+1}</span>` : ''}</div>
@@ -927,15 +1000,17 @@ function titleHTML(){
   return `<div class="title">${CLASSBAR}<div class="stage"><div class="box"><div class="bh">${LOGO}LATTICE<span class="mute" style="font-weight:400;letter-spacing:0;margin-left:auto">Case ${CASE_NO}</span></div><div class="bb">
   <h1>Border Watch</h1>
   <p>Six fictional cases. Work each one like an intelligence analyst: <b>collect</b>, <b>corroborate</b>, <b>vet</b> restricted data lawfully, then <b>decide</b> before the clock runs out. New to an operation? Press <b>Learn</b>.</p>
+  ${dailyHTML()}
+  <ul class="how"><li>One daily brief, the same case for everyone. One attempt.</li><li>Your score lifts an uplink toward orbit: 100 points reaches 35,786 km.</li><li>The obvious answer is often right. Calling the unlikely one right, on evidence, scores extra.</li></ul>
   ${opsListHTML()}
   ${profileHTML()}
   <div class="seedrow" style="display:block"><label for="seed">Scenario seed · same seed, same case</label><div style="display:flex;gap:6px;margin-top:6px"><input id="seed" value="${esc(GS.seed || 'NIGHT-01')}" maxlength="24"><button class="btn pri" data-act="start" style="flex:none">Open case</button></div></div>
-  <p class="mute" style="font-size:12.5px">The seed decides who is really on the boat. Everything is fictional. Works offline.</p>
+  <p class="mute" style="font-size:12.5px">The seed decides what really happened. Everything is fictional. Works offline.</p>
   ${storageOK ? '' : '<p class="no" style="font-size:13px">Storage is off: progress won’t be saved.</p>'}
   </div></div></div></div>`;
 }
 function playHTML(){
-  return `<div class="hdr">${CLASSBAR}<div class="top"><div class="brand">${LOGO}<span>LATTICE</span><span class="crumb">${GS.daily ? 'Daily #'+dailyNo(GS.daily) : 'Cases'}<i>/</i>${CASE_NO}<i>/</i>Clearance ${GS.lvl||1}</span></div>
+  return `<div class="hdr">${CLASSBAR}<div class="top"><div class="brand">${LOGO}<span>LATTICE</span><span class="crumb">${GS.daily ? 'Daily #'+dailyNo(GS.daily) : GS.arch ? 'Archive #'+dailyNo(GS.arch) : 'Cases'}<i>/</i>${CASE_NO}<i>/</i>Clearance ${GS.lvl||1}</span></div>
    <div class="clock" id="clock"></div>
    <button class="ib" id="bp" data-act="pause" aria-label="Pause" ${GS.lvl>=5?'disabled style="opacity:.35"':''}></button>
    <button class="ib" id="bs" data-act="speed" aria-label="Speed"></button>
@@ -1227,8 +1302,10 @@ function score(G){
   const acc = G.override ? -10 : G.unlocked ? 10 : 0; s += acc; L.push([G.override ? 'Records opened by override' : G.unlocked ? 'Records opened with a logged purpose' : 'Records never opened', acc]);
   const ev = G.findings.length >= 3 ? 10 : 0; s += ev; L.push([ev ? 'Gathered evidence before acting' : 'Acted on little evidence', ev]);
   if (G.decision === 'board'){ const b = G.basisOK ? 5 : -15; s += b; L.push([G.basisOK ? 'Boarding had a valid legal basis' : 'Boarding had no valid legal basis', b]); }
+  const needle = !!G.decision && againstOdds({D:.3, S:.4, L:.3}, G.truth, PAY[G.decision][G.truth]);
+  if (needle){ s += 8; L.push(['Against the odds: the less likely answer, called right', 8]); }
   s = clamp(s, 0, 100);
-  return {s, L, grade: s >= 85 ? 'A' : s >= 70 ? 'B' : s >= 50 ? 'C' : s >= 30 ? 'D' : 'F'};
+  return {s, L, needle, grade: s >= 85 ? 'A' : s >= 70 ? 'B' : s >= 50 ? 'C' : s >= 30 ? 'D' : 'F'};
 }
 function debriefExtra(G, sc, p, lb){
   const J = G.decision ? (G.judge ?? judgement(G, G.decision)) : 0, good = OUT[G.res.kind].g;
@@ -1276,6 +1353,7 @@ function endHTML(){
     ${fp.map(({x,i}) => `<div class="ev" style="border-color:${x.same?'var(--green)':'var(--red)'}"><b>${esc(x.n)} · ${x.m}% match → ${x.same ? 'really them' : 'NOT them'}</b>
       <span>You ${G.ids[i]==='yes'?'confirmed':G.ids[i]==='no'?'rejected':'never resolved'} this match. ${((G.ids[i]==='yes')===x.same && G.ids[i]) ? '<span class="ok">✓</span>' : G.ids[i] ? '<span class="no">✗</span>' : ''} ${x.truthNote ? esc(x.truthNote) : ''}</span></div>`).join('')}</div>
    ${debriefExtra(G, sc, p, lb)}
+   ${uplinkCard(G, sc)}
    <div class="card"><div class="lbl"><span>Score</span><span>${sc.s}/100</span></div><div class="sc">${sc.L.map(l => `<div><span>${esc(l[0])}</span><b class="${l[1]>0?'ok':l[1]<0?'no':'mute'}">${l[1]>0?'+':''}${l[1]}</b></div>`).join('')}</div></div>
    <div class="card"><div class="lbl"><span>The lesson</span></div><p>${lesson}</p></div>
    <div class="card"><div class="lbl"><span>Audit log (what oversight sees)</span></div><div class="audit">${G.audit.map(a => `<div class="${/OVERRIDE/.test(a.m)?'no':''}">${hhmm(a.t)} ${esc(a.m)}</div>`).join('')}</div></div>
@@ -1654,8 +1732,10 @@ function opScore(G){
   }
   if (O.tasks.some(t => t.restricted)){ const a = G.override ? -10 : G.logged ? 10 : 0; s += a; L.push([G.override ? 'Restricted data opened by override' : G.logged ? 'Restricted data opened with a logged purpose' : 'Restricted data never opened', a]); }
   const ev = G.findings.filter(f => f.w).length >= 3 ? 10 : 0; s += ev; L.push([ev ? 'Gathered evidence before acting' : 'Acted on little evidence', ev]);
+  const needle = G.decision !== 'timeout' && againstOdds(O.prior, G.truth, pay);
+  if (needle){ s += 8; L.push(['Against the odds: the less likely answer, called right', 8]); }
   s = clamp(s, 0, 100);
-  return {s, L, grade:letter(s), good: pay >= 80};
+  return {s, L, needle, grade:letter(s), good: pay >= 80};
 }
 function recordOp(G){
   if (G.recorded) return; G.recorded = true;
@@ -1673,6 +1753,7 @@ function recordOp(G){
   give('first');
   if (G.tut){ give('trained'); CR.tut = CR.tut || {}; CR.tut[G.op] = 1; }
   if (OPS_ORDER.every(k => CR.ob[k])) give('ops');
+  if (!G.tut){ recordDaily(G, sc, opPay(G), give); if (sc.needle && sc.grade === 'A') give('needle'); }
   if (CR.lvlMax >= 5) give('lvl5');
   G.meta = {gain, before, after:lvlOf(CR.xp), unlocked: CR.lvlMax > lvlBefore ? CR.lvlMax : 0, ach:newAch.slice(), xpAfter:CR.xp};
   saveCareer(); save();
@@ -1681,7 +1762,7 @@ function recordOp(G){
 // ----- op rendering -----
 function opPlayHTML(){
   const O = OPN();
-  return `<div class="hdr">${CLASSBAR}<div class="top"><div class="brand">${LOGO}<span>LATTICE</span><span class="crumb">${esc(O.kind)}<i>/</i>${O.code}<i>/</i>${GS.tut ? 'Tutorial' : 'Clearance '+GS.lvl}</span></div>
+  return `<div class="hdr">${CLASSBAR}<div class="top"><div class="brand">${LOGO}<span>LATTICE</span><span class="crumb">${GS.daily ? 'Daily #'+dailyNo(GS.daily) : GS.arch ? 'Archive #'+dailyNo(GS.arch) : esc(O.kind)}<i>/</i>${O.code}<i>/</i>${GS.tut ? 'Tutorial' : 'Clearance '+GS.lvl}</span></div>
    <div class="clock" id="clock"></div>
    <button class="ib" id="bp" data-act="pause" aria-label="Pause" ${GS.lvl>=5?'disabled style="opacity:.35"':''}></button>
    <button class="ib" id="bs" data-act="speed" aria-label="Speed"></button>
@@ -1924,11 +2005,13 @@ function opEndHTML(){
     ${mis.length ? mis.map(f => `<div class="ev" style="border-color:var(--red)"><b>Misleading: ${esc(f.src)}</b><span>“${esc(f.title)}” pointed the wrong way. Sources like this are wrong sometimes.</span></div>`).join('') : ''}
     ${miss ? `<div class="ev" style="border-color:var(--amber)"><b>Missed: ${esc(miss.t.nm)}</b><span>${esc(fill(miss.t.r[G.truth][0], G))}</span></div>` : '<p class="mute sm">You found every telling clue.</p>'}</div>
    <div class="card"><div class="lbl"><span>How each call would have ended</span></div><div class="cf">${cf}</div></div>
+   ${uplinkCard(G, sc)}
    <div class="card"><div class="lbl"><span>Score</span><span>${sc.s}/100</span></div><div class="sc">${sc.L.map(l => `<div><span>${esc(l[0])}</span><b class="${l[1]>0?'ok':l[1]<0?'no':'mute'}">${l[1]>0?'+':''}${l[1]}</b></div>`).join('')}</div></div>
    <div class="card"><div class="lbl"><span>The lesson</span></div><p>${esc(O.lesson[G.truth])}</p></div>
    <div class="card"><div class="lbl"><span>Audit log (what oversight sees)</span></div><div class="audit">${G.audit.map(a => `<div class="${/OVERRIDE/.test(a.m)?'no':''}">${hhmm(a.t)} ${esc(a.m)}</div>`).join('')}</div></div>
    ${careerCard(G)}
-   <div style="display:flex;gap:8px"><button class="btn pri" data-act="newRun">All operations</button><button class="btn" data-act="opStart" data-op="${G.op}" data-new="1">${G.tut ? 'Play for real' : 'New '+esc(O.name)+' case'}</button></div>
+   <div style="display:flex;gap:8px"><button class="btn pri" data-act="newRun">All operations</button>${G.daily ? `<button class="btn" data-act="copy" data-day="${G.daily}" id="copyb">Share result</button>` : `<button class="btn" data-act="opStart" data-op="${G.op}" data-new="1">${G.tut ? 'Play for real' : 'New '+esc(O.name)+' case'}</button>`}</div>
+   ${G.daily && G.shareOpen ? `<textarea class="share" readonly aria-label="Share text">${esc(shareText(G.daily))}</textarea>` : ''}
   </div>`;
 }
 function opsListHTML(){
