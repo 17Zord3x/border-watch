@@ -435,22 +435,7 @@ html.lowfx .top,html.lowfx .flow,html.lowfx .chip,html.lowfx .ticker{background:
 .lbl,.card>.lbl{font-size:12px}
 @media(max-width:760px){.card>.lbl,.lbl{font-size:11px}.legend{font-size:11px}.tab{font-size:11px}.chip{font-size:11px}}
 
-/* ops: title list, images, tutorial pulse */
 .seclbl{display:block;font:600 11px var(--mono);text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-top:14px}
-.ops{display:flex;flex-direction:column;gap:6px;margin-top:6px}
-.oprow{display:grid;grid-template-columns:28px minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:6px 8px 6px 10px;border:1px solid var(--line2);border-radius:6px;background:rgba(255,255,255,.03)}
-.oprow .oi{color:var(--acc);display:flex}
-.oprow .on b{display:block;font-size:14px}.oprow .on small{display:block;color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.oprow .btn{flex:none;min-height:40px;padding:8px 12px}
-.oimg{width:100%;display:block;border-radius:6px;border:1px solid var(--line);margin:8px 0;background:#05090d}
-.ledg{width:100%;border-collapse:collapse;font:12px var(--mono);margin:8px 0}.ledg th{text-align:left;color:var(--dim);font-weight:600;padding:4px;border-bottom:1px solid var(--line)}
-.ledg td{padding:5px 4px;border-bottom:1px solid var(--line2)}.ledg td:last-child,.ledg th:last-child{text-align:right;font-variant-numeric:tabular-nums}
-.lnk{background:none;border:0;padding:0;color:var(--acc);font:inherit;text-decoration:underline;cursor:pointer}
-@keyframes pulseb{0%,100%{box-shadow:0 0 0 0 rgba(245,181,68,0)}50%{box-shadow:0 0 0 3px rgba(245,181,68,.55)}}
-.act.pulse,.tab.pulse{border-color:var(--amber)!important;animation:pulseb 1.4s ease-in-out infinite}
-.tab.pulse{color:var(--amber)}
-@media (prefers-reduced-motion:reduce){.act.pulse,.tab.pulse{animation:none;box-shadow:0 0 0 2px var(--amber)}}
-
 /* v11: daily brief, uplink ladder, streak */
 .cal button,.cal i{flex:1;font:700 11px/26px var(--mono);text-align:center;border-radius:2px;background:var(--panel3);color:var(--dim);font-style:normal;border:0;padding:0;min-height:30px}
 .cal button{cursor:pointer}.cal button:hover{color:var(--ink)}.cal .now{box-shadow:inset 0 0 0 1px var(--amber)}
@@ -471,6 +456,13 @@ html.lowfx .top,html.lowfx .flow,html.lowfx .chip,html.lowfx .ticker{background:
 html.lowfx .ume,html.lowfx .um.on em,html.lowfx .um.on span{animation:none}html.lowfx .ume{bottom:var(--to)}html.lowfx .um.on em,html.lowfx .um.on span{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.ume{animation:none!important;bottom:var(--to)}.um.on em,.um.on span{animation:none!important;color:var(--ink)}}
 @media (max-width:420px){.upw{margin-left:62px}.um em{font-size:11px}}
+
+/* v13: conditions */
+.envs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.envc{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:4px 8px;border:1px solid var(--line2);border-radius:4px;color:var(--dim);background:rgba(255,255,255,.02)}
+.envc.on{color:var(--ink);border-color:rgba(86,180,233,.5)}
+.envb{display:flex;gap:10px;align-items:flex-start;margin:10px 0 4px;padding:10px 12px;border:1px solid var(--line2);border-left:3px solid var(--acc);border-radius:4px;background:rgba(255,255,255,.03)}
+.envb b{display:block;font-size:14px}.envb span{display:block;font-size:13px;color:var(--mute);margin-top:2px}.envb svg{color:var(--acc);margin-top:2px}
 </style>
 </head>
 <body>
@@ -478,7 +470,7 @@ html.lowfx .ume,html.lowfx .um.on em,html.lowfx .um.on span{animation:none}html.
 <div id="modal"></div>
 <script>
 'use strict';
-const SAVE = 'lattice-border-v5';
+const SAVE = 'lattice-border-v6';
 const START_MIN = 30;
 const BORDER_X = 575;
 const BASES = { air:{x:885,y:190}, port:{x:805,y:432} };
@@ -493,8 +485,8 @@ const UNITS = {
   lifeboat:{base:'port', off:-18, speed:10,   col:'#f2994a', lbl:'LB', name:'Lifeboat'},
   cutter:  {base:'port', off:18,  speed:10.5, col:'#c9d3de', lbl:'PC', name:'Patrol cutter'}
 };
-const TASKS = {track:2, hail:3, registry:2, face:2, expand:1, unlock:1};
-const TASKNAME = {track:'Track replay', hail:'Radio call', registry:'Registry check', face:'Face match', expand:'Search around', unlock:'Records access'};
+const TASKS = {track:2, drift:2, hail:3, registry:2, face:2, expand:1, unlock:1, cams:2};
+const TASKNAME = {track:'Track replay', drift:'Drift check', cams:'Port cameras', hail:'Radio call', registry:'Registry check', face:'Face match', expand:'Search around', unlock:'Records access'};
 const FLOW = [['detect','Alert'],['track','Correlate'],['vessel','Vessel ID'],['people','People ID'],['records','Vet records'],['decide','Decide']];
 
 
@@ -538,12 +530,12 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
 function hash(s){ let h = 1779033703 ^ s.length; for (let i=0;i<s.length;i++){ h = Math.imul(h ^ s.charCodeAt(i), 3432918353); h = h<<13 | h>>>19; } return h>>>0; }
 function mulberry(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a>>>15, 1 | a); t = t + Math.imul(t ^ t>>>7, 61 | t) ^ t; return ((t ^ t>>>14)>>>0) / 4294967296; }; }
-function hhmm(t){ const m = Math.floor((GS && GS.op ? OPS[GS.op].start : START_MIN) + t); return String(Math.floor(m/60)%24).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'); }
+function hhmm(t){ const m = Math.floor((GS && GS.sc && GS.sc.E ? ENVS[GS.sc.E].start : START_MIN) + t); return String(Math.floor(m/60)%24).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'); }
 const initials = n => n.replace('Dr. ','').split(' ').map(x => x[0]).join('').slice(0,2);
 
 // ---------- storage ----------
 let storageOK = true;
-function load(){ try { const s = localStorage.getItem(SAVE); if (s){ const o = JSON.parse(s); if (o && o.v === 5) return o; } } catch(e){ storageOK = false; } return null; }
+function load(){ try { const s = localStorage.getItem(SAVE); if (s){ const o = JSON.parse(s); if (o && o.v === 6) return o; } } catch(e){ storageOK = false; } return null; }
 function save(){ try { localStorage.setItem(SAVE, JSON.stringify(GS)); } catch(e){ storageOK = false; } }
 function clearSave(){ try { localStorage.removeItem(SAVE); } catch(e){ storageOK = false; } }
 
@@ -580,8 +572,8 @@ const ACH = {
   daily:  ['Daily watch', 'Finish a daily case.'],
   lvl5:   ['Clearance 5', 'Unlock the top clearance.'],
   outs:   ['Case archive', 'See all 8 possible outcomes.'],
-  trained:['Trained', 'Finish an operation tutorial.'],
-  ops:    ['Field generalist', 'Finish all five operations.'],
+  weather:['All weathers', 'Finish a case in all six conditions.'],
+  files:  ['Full case file', 'See all nine situations.'],
   needle: ['Needle in a haystack', 'Call the unlikely answer right and get an A.'],
   streak3:['Three in a row', 'Finish daily briefs three days running.']
 };
@@ -601,6 +593,9 @@ function recordCase(G){
   newAch = [];
   const give = id => { if (!CR.ach[id]){ CR.ach[id] = today(); newAch.push(id); } };
   recordDaily(G, sc, G.decision ? PAY[G.decision][G.truth] : 0, give);
+  CR.seenE = CR.seenE || {}; CR.seenS = CR.seenS || {}; CR.seenE[G.sc.E] = 1; CR.seenS[G.sc.story] = 1;
+  if (ENV_ORDER.every(k => CR.seenE[k])) give('weather');
+  if (STORY_KEYS.every(k => CR.seenS[k])) give('files');
   if (sc.needle && sc.grade === 'A') give('needle');
   give('first');
   if (['D','S','L'].every(T => CR.bests[T] && CR.bests[T] !== 'F')) give('all3');
@@ -617,13 +612,11 @@ function recordCase(G){
 }
 function usedTools(G){
   const u = []; if (G.done.track) u.push('🛰️'); if (G.done.hail) u.push('📻'); if (G.done.registry) u.push('🔍');
-  if (G.graph.length > 1) u.push('🕸️'); if (G.done.drone) u.push('🛩️'); if (G.done.face) u.push('🪪'); if (G.unlocked) u.push(G.override ? '⚠️' : '🔓');
+  if (G.graph.length > 1) u.push('🕸️'); if (G.done.drone) u.push('🛩️'); if (G.done.face) u.push('🪪'); if (G.unlocked) u.push(G.override ? '⚠️' : '🔓'); if (G.done.drift) u.unshift('🌊'); if (G.done.cams) u.push('📹');
   return u.join('');
 }
-// ---- Daily brief: one shared case a day, rotating through all six operations ----
-const DAILY_ROT = ['border','ridge','lantern','bellwether','ledger','skyglass'];
-const dailyOp = day => DAILY_ROT[((dailyNo(day) % 6) + 6) % 6];
-const opTitle = k => k === 'border' ? 'Border Watch' : OPS[k].name;
+// ---- Daily brief: one shared case a day ----
+const dailyEnv = day => ENVS[rollCase('DAILY-'+day).E].name;
 const dayKey = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 function streak(){ const d = new Date(); if (!CR.daily[dayKey(d)]) d.setDate(d.getDate()-1); let n = 0; while (CR.daily[dayKey(d)]){ n++; d.setDate(d.getDate()-1); } return n; }
 function untilTomorrow(){ const n = new Date(), t = new Date(n); t.setHours(24,0,0,0); const x = Math.max(0, Math.floor((t - n)/1000)); return [x/3600|0, (x/60|0)%60, x%60].map(v => String(v).padStart(2,'0')).join(':'); }
@@ -639,13 +632,13 @@ const TIERS = [[0,'Static'],[30,'Chatter'],[50,'Lead'],[70,'Signal'],[85,'Clear 
 const tierOf = sc => sc.needle && sc.s >= 85 ? 'Needle in a haystack' : TIERS.filter(t => sc.s >= t[0]).pop()[1];
 function againstOdds(prior, truth, pay){ const v = Object.values(prior), mn = Math.min(...v), mx = Math.max(...v); return pay === 100 && prior[truth] <= mn + 0.01 && mx - prior[truth] >= 0.05; }
 function cluePattern(G){
-  const keys = G.op ? OPK : HK, ti = keys.indexOf(G.truth);
+  const keys = HK, ti = keys.indexOf(G.truth);
   return G.findings.filter(f => f.w).map(f => f.mis ? '🟥' : f.w.indexOf(Math.max(...f.w)) === ti ? '🟩' : '🟨').join('');
 }
 function recordDaily(G, sc, pay, give){
   if (!G.daily || CR.daily[G.daily]) return;
-  CR.daily[G.daily] = {g:sc.grade, d:G.decision, op:G.op || 'border', s:sc.s, tier:tierOf(sc), pat:cluePattern(G), res: pay >= 80 ? '✅' : pay >= 50 ? '➖' : '❌',
-    used: G.op ? '' : usedTools(G), t:hhmm(G.decidedAt ?? G.res.t), lvl:G.lvl};
+  CR.daily[G.daily] = {g:sc.grade, d:G.decision, e:G.sc.E, s:sc.s, tier:tierOf(sc), pat:cluePattern(G), res: pay >= 80 ? '✅' : pay >= 50 ? '➖' : '❌',
+    used: usedTools(G), t:hhmm(G.decidedAt ?? G.res.t), lvl:G.lvl};
   const n = streak(); CR.bestStreak = Math.max(CR.bestStreak || 0, n);
   give('daily'); if (n >= 3) give('streak3');
 }
@@ -653,7 +646,7 @@ function shareText(day){
   const r = CR.daily[day]; if (!r) return '';
   if (r.s == null){ const D = {rescue:'🛟', board:'⚓', shadow:'👁️', pass:'✅'}[r.d] || '—'; return `Lattice Border Watch #${dailyNo(day)} · ${r.g}\n${r.used || '—'} → ${D}\nClearance ${r.lvl} · decided ${r.t}`; }
   const km = altOf(r.s), top = MARKS.filter(m => km >= m[0]).pop(), n = streak();
-  return `LATTICE Daily Brief #${dailyNo(day)} · ${opTitle(r.op)}\nGrade ${r.g} · ${r.tier}${n > 1 ? ' · 🔥' + n : ''}\n${r.pat || '·'} → ${r.res}\nUplink ${fmtKm(km)}${top ? ' · past ' + top[1] : ''}`;
+  return `LATTICE Daily Brief #${dailyNo(day)} · ${ENVS[r.e] ? ENVS[r.e].name : 'Border Watch'}\nGrade ${r.g} · ${r.tier}${n > 1 ? ' · 🔥' + n : ''}\n${r.pat || '·'} → ${r.res}\nUplink ${fmtKm(km)}${top ? ' · past ' + top[1] : ''}`;
 }
 function uplinkCard(G, sc){
   const km = altOf(sc.s), top = MARKS.filter(m => km >= m[0]).pop(), next = MARKS.find(m => km < m[0]);
@@ -684,81 +677,294 @@ const buzz = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch(e
 // ---------- scenario ----------
 const FIRST = ['Davor','Ilan','Mirek','Tomas','Anel','Kasimir','Jory','Brann','Samir','Oskar','Lio','Edvin'];
 const LAST  = ['Kesh','Moret','Varga','Oskarsen','Hadad','Brekke','Saar','Telin','Marrow','Dunvik'];
-function truthOf(seed){ return ['D','S','L'][Math.floor(mulberry(hash(seed))()*3)]; }
-function buildCase(r, truth, sc){
+// ---------- conditions: the seed picks one; each changes the map, the clock and which tools work ----------
+const ENVS = {
+  storm:   {name:'Storm night', ic:'storm', start:30, drone:'thermal', storm:true, night:true, prior:{D:.3, S:.4, L:.3},
+            base:'Most dark boats here at night were criminal.',
+            brief:'A storm front is coming in from the west. It is dark, so the drone camera sees heat, not faces. Aircraft must turn back once the storm reaches them.'},
+  fog:     {name:'Fog bank at dawn', ic:'fog', start:310, drone:'fog', slow:0.75, prior:{D:.35, S:.4, L:.25},
+            base:'In fog, dark boats are often lost or smuggling under cover.',
+            brief:'Thick fog. The drone can fly but sees only faint heat shapes: no faces, and weak clues. Our boats move slower.'},
+  gale:    {name:'Gale in daylight', ic:'wind', start:840, drone:'grounded', fast:true, prior:{D:.45, S:.25, L:.3},
+            base:'In a gale, many dark boats are boats in trouble.',
+            brief:'Winds of 70 km/h. The drone cannot launch, but the helicopter can still fly. A boat in trouble sinks sooner in these seas.'},
+  calm:    {name:'Calm, clear day', ic:'sun', start:660, drone:'video', prior:{D:.2, S:.35, L:.45},
+            base:'On calm days most dark contacts are boats with a broken or switched-off transponder.',
+            brief:'Perfect visibility. The drone sees faces clearly. Lots of leisure traffic about.'},
+  skerries:{name:'Skerries at night', ic:'island', start:130, drone:'thermal', clutter:true, night:true, prior:{D:.2, S:.55, L:.25},
+            base:'Smugglers love the skerries: over half the dark boats here were criminal.',
+            brief:'Hundreds of small islands. The radar loses the contact behind them, so the track replay is uncertain. It is dark: the drone sees heat, not faces.'},
+  harbour: {name:'Harbour approach at dusk', ic:'cam', start:1180, drone:'video', cams:true, near:true, prior:{D:.25, S:.3, L:.45},
+            base:'This close to the harbour, most dark boats are locals with a dead transponder.',
+            brief:'The contact is already near the coast, so there is less time. Port cameras cover the harbour mouth, and the drone still sees faces in the last light.'}
+};
+const ENV_ORDER = ['storm','fog','gale','calm','skerries','harbour'];
+const envOf = G => ENVS[G.sc.E];
+const facesOK = G => envOf(G).drone === 'video';
+
+// ---------- situations: three per truth, each solved by different tools ----------
+// w = evidence weights [in distress, criminal, legitimate]; >1 supports, <1 argues against.
+const STORIES = {
+  D1:{cat:'D', name:'Engine failure, crowded boat', mo:'drift', build(r, sc, N, num){
+    const hull = 'KA-'+(110+Math.floor(r()*780));
+    sc.people = 26 + Math.floor(r()*22);
+    return {
+      vessel:{name:hull, type:'Fishing boat · 11 m', flag:'Varnholm (licence lapsed)', mmsi:'none', owner:'Lund Fishing AS', port:'Saltvik (abroad), 9 days ago'},
+      track:['Track matches fishing boat '+hull, 'Its AIS went silent 9 h ago, 30 km west. The radar contact has drifted here since.', [2,0.8,0.9]],
+      drift:['Moving exactly with wind and current', 'Speed and heading match the drift model: no engine running.', [4,0.4,0.8]],
+      hail:['Faint voice: “…engine… water… children…”', 'Then static.', [5,0.4,0.5]],
+      registry:[hull+': licence lapsed', 'Owner Lund Fishing AS. A bill of sale says it was sold abroad last year.', [1.2,1.2,0.6]],
+      graph:[
+        {id:'v', label:hull, kind:'vessel', parent:null},
+        {id:'c', label:'Lund Fishing AS', kind:'company', parent:'v', text:'Registered owner of '+hull+'. Director: Petar Lund.', w:[1,1.1,1]},
+        {id:'e', label:'Overdue boat report', kind:'event', parent:'v', text:'3 days ago, families abroad reported an overdue fishing boat with about 40 people aboard. Hull number '+hull+'.', w:[5,0.5,0.5], flag:'ok'},
+        {id:'p', label:'Petar Lund', kind:'person', parent:'c', text:'Director, 52. Sold the boat abroad last year. Fined for illegal fishing in 2014.', w:[0.9,1.4,1], flag:'warn'}],
+      drone:{video:['Drone: '+sc.people+' people packed on deck', 'Water in the hull. Some are waving.', [3,0.5,0.5]],
+             thermal:['Thermal: about '+sc.people+' heat shapes packed together', 'The engine is cold. Nobody is steering.', [4,0.5,0.4]]},
+      cams:['Port cameras: never seen in our harbour', 'No match in 30 days of harbour footage. It came from abroad.', [1.3,1.2,0.6]],
+      people:[
+        {n:N[0], age:34, nat:'Oresk', idn:'OR-'+num(7), m:88, same:true, st:'ok', tag:'Reported missing', recs:['Missing person report, 3 days ago: “Brother left by boat, no contact since.”'], w:[6,0.6,0.6]},
+        {n:'Petar Lund', age:52, nat:'Varnholm', idn:'VH-'+num(7), m:61, same:false, st:'warn', tag:'Illegal fishing fine (2014)', recs:['Fine for illegal fishing, 2014.','Director of Lund Fishing AS (boat owner).'], w:[0.6,2,0.8],
+         truthNote:'The man on deck was not Petar Lund. Lund sold the boat last year and was at home.'},
+        {n:(sc.people-2)+' more people', crowd:true, tag:'Not in our records', st:'unk', note:'Many children. No usable record matches.'}],
+      truth:`K-7 was a broken-down fishing boat (${hull}) with <b>${sc.people} people</b> aboard, including children.`,
+      lesson:'A dark boat and a man with an old fine made this look criminal. The cheap clues told the truth: the drift, the radio and the overdue-boat report. The weak face match pointed at the wrong man.',
+      boardTxt:'Cutter boarded '+hull+': it was full of exhausted people.'};
+  }},
+  D2:{cat:'D', name:'Fire on a fishing boat', mo:'drift', build(r, sc, N, num){
+    const nm = ['MARIT','HAVSULE','TINDRA'][Math.floor(r()*3)];
+    sc.people = 5; sc.fire = true;
+    return {
+      vessel:{name:nm, type:'Trawler · 15 m', flag:'Varnholm', mmsi:'259 '+num(6), owner:'Brekkvik Fishers’ Co-op', port:'Brekkvik, this morning'},
+      track:['Track matches trawler '+nm, 'Normal fishing all day. Its AIS cut out suddenly 40 minutes ago, mid-sea.', [1.6,1,1.2]],
+      drift:['Stopped, turning side-on to the waves', 'No headway at all. A boat with power would keep its bow into the sea.', [3,0.5,0.8]],
+      hail:['No answer on channel 16', 'Three calls, nothing. Their radio may have no power, or they may not want to talk.', [0.9,1.6,0.8]],
+      registry:[nm+': licence valid, clean record', 'Fishing licence in order. Owned by the local co-op.', [1,0.4,1.6]],
+      graph:[
+        {id:'v', label:nm, kind:'vessel', parent:null},
+        {id:'c', label:'Brekkvik Co-op', kind:'company', parent:'v', text:'Fishers’ co-operative, 40 boats. The skipper’s wife called them an hour ago: no contact with '+nm+' since the evening.', w:[4,0.5,0.6], flag:'ok'},
+        {id:'p', label:N[1], kind:'person', parent:'c', text:'Deckhand on '+nm+'. Served a sentence for cannabis smuggling in 2017.', w:[0.7,1.8,0.9], flag:'warn'}],
+      drone:{video:['Drone: smoke pouring from the engine room', 'Five crew crowded at the bow. One waves an orange jacket.', [3.5,0.5,0.5]],
+             thermal:['Thermal: a 400 °C hot spot mid-ship', 'Five heat shapes at the bow, away from it. That is a fire.', [6,0.3,0.3]]},
+      cams:['Port cameras: left Brekkvik at 05:40', 'Five crew on deck, fishing gear, nothing unusual.', [1.2,0.5,1.6]],
+      people:[
+        {n:N[0], age:47, nat:'Varnholm', idn:'VH-'+num(7), m:93, same:true, st:'ok', tag:'Skipper, no record', recs:['No record. Licensed skipper of '+nm+'.'], w:[1.5,0.5,1.2]},
+        {n:N[2], age:31, nat:'Oresk', idn:'OR-'+num(7), m:72, same:false, st:'bad', tag:'Drug courier (2020)', recs:['Convicted drug courier, 2020.'], w:[0.4,3,0.6],
+         truthNote:'Wrong man: the deckhand only looked like him. Weak matches mislead.'},
+        {n:'3 more crew', crowd:true, tag:'Faces turned away', st:'unk', note:'Smoke hides the rest.'}],
+      truth:`K-7 was the trawler <b>${nm}</b>. A fire in the engine room had killed its power and radio, with five crew aboard.`,
+      lesson:'A silent radio felt suspicious, but a dead boat has a dead radio. The heat of the fire and the co-op’s call for help were the clues. Remember that a deckhand’s old sentence doesn’t make tonight a crime.',
+      outH:{saved:'The crew was rescued', partial:'Only some of the crew were rescued', lost:'The trawler burned and sank'},
+      boardTxt:'Cutter reached '+nm+' and found a fire, not a crime.'};
+  }},
+  D3:{cat:'D', name:'Dismasted yacht', mo:'drift', dv:1.2, build(r, sc, N, num){
+    const nm = ['SOLVEIG','WINDROSE','ALBA'][Math.floor(r()*3)], owner = N[0];
+    sc.people = 4;
+    return {
+      vessel:{name:nm, type:'Sailing yacht · 12 m', flag:'Norvia', mmsi:'none (not required)', owner:owner, port:'Saltvik marina, 16:00'},
+      track:['No AIS history at all', 'Small yachts don’t have to carry AIS. Radar picked it up an hour ago.', [1,1.3,1.1]],
+      drift:['Drifting toward the rocks at 2 knots', 'Exactly downwind. No sail, no engine.', [3.5,0.5,0.7]],
+      hail:['Handheld radio, very weak: “…mast broke… engine won’t start…”', '“…kids are sick…” Then it cuts out.', [4,0.5,0.7]],
+      registry:[nm+': private yacht, registered', 'Owner '+owner+'. Insurance valid.', [0.9,0.7,1.6]],
+      graph:[
+        {id:'v', label:nm, kind:'vessel', parent:null},
+        {id:'p', label:owner, kind:'person', parent:'v', text:'Owner, 44. Charged with tax fraud last month; on bail.', w:[0.6,2.5,0.8], flag:'bad'},
+        {id:'e', label:'Saltvik marina log', kind:'event', parent:'v', text:'Left 16:00 with the owner, his partner and 2 children. Expected back by dark. Not back.', w:[3,0.6,1.2], flag:'ok'}],
+      drone:{video:['Drone: broken mast in the water', 'Four people in life jackets, two of them children.', [3,0.5,0.6]],
+             thermal:['Thermal: four heat shapes, two of them small', 'Huddled in the cockpit. The engine is cold.', [2.5,0.7,1]]},
+      cams:['Port cameras: left Saltvik marina at 16:02', 'Two adults, two children, beach bags.', [1.6,0.5,1.4]],
+      people:[
+        {n:owner, age:44, nat:'Norvia', idn:'NV-'+num(7), m:96, same:true, st:'bad', tag:'Tax fraud charge (bail)', recs:['Charged with tax fraud, 2026. On bail; passport not surrendered.'], w:[0.7,2,0.8]},
+        {n:N[1], age:41, nat:'Norvia', idn:'NV-'+num(7), m:90, same:true, st:'ok', tag:'No record', recs:['No record.'], w:[1,1,1]},
+        {n:'2 children', crowd:true, tag:'Not searched', st:'unk', note:'Children are not run through face matching.'}],
+      truth:`K-7 was the yacht <b>${nm}</b>: mast broken, engine dead, a family of four drifting toward the rocks.`,
+      lesson:'The owner really was facing a fraud charge, and that made the boat look like a getaway. But a record says nothing about tonight. The drift, the radio and the marina log showed a family in trouble.',
+      outH:{saved:'The family was rescued', partial:'Only some of the family were rescued', lost:'The yacht hit the rocks'},
+      boardTxt:'Cutter reached '+nm+': a frightened family, not fugitives.'};
+  }},
+  S1:{cat:'S', name:'Drug run on a stolen identity', mo:'run', stateless:true, build(r, sc, N, num){
+    const nm = ['SELA','MARETTA','KITE'][Math.floor(r()*3)];
+    return {
+      vessel:{name:nm, type:'Trawler · 14 m (claimed)', flag:'Oresk', mmsi:'273 '+num(6), owner:'Brine Holdings Ltd', port:'none on record'},
+      track:['Broadcasting AIS as “'+nm+'”', 'But the AIS track only starts 3 h ago, in open sea. No departure port.', [0.6,2.4,0.6]],
+      drift:['Under power, straight line, 26 knots', 'Heading for Gull Cove. No drift at all.', [0.3,3,0.6]],
+      hail:['No answer on channel 16', 'Three calls. The boat doesn’t change course.', [0.6,2.2,0.6]],
+      registry:[nm+': scrapped in 2024', 'The real '+nm+' was broken up. Someone is using its identity: a “zombie” ship.', [0.3,5,0.2]],
+      graph:[
+        {id:'v', label:nm, kind:'vessel', parent:null},
+        {id:'c', label:'Brine Holdings Ltd', kind:'company', parent:'v', text:'Registered 6 weeks ago. Address is a PO box. One director.', w:[0.8,1.6,0.7], flag:'warn'},
+        {id:'p', label:N[0], kind:'person', parent:'c', text:'Sole director of Brine Holdings.', w:[1,1.3,1]},
+        {id:'ph', label:'Phone ···'+num(4), kind:'phone', parent:'p', text:'Director’s phone. Last seen on a mast near Gull Cove, 40 minutes ago.', w:[0.5,2.5,0.5], flag:'bad'}],
+      drone:{video:['Drone: speedboat, 3 people, covered cargo', 'No fishing gear. Moving fast.', [0.4,4,0.3]],
+             thermal:['Thermal: 3 people, engines running very hot', 'Big cold block under a tarp: cargo, not fish.', [0.4,3,0.4]]},
+      cams:['Port cameras: no boat called '+nm+' in 2 years', 'Its claimed home port has never seen it.', [0.6,2,0.6]],
+      people:[
+        {n:N[0], age:41, nat:'Varnholm', idn:'VH-'+num(7), m:97, same:true, st:'bad', tag:'Convicted smuggler', recs:['Drug smuggling, 2019: 4 years. Released 2023.','Director of Brine Holdings Ltd (registered owner).'], w:[0.2,8,0.2]},
+        {n:N[1], age:29, nat:'Varnholm', idn:'VH-'+num(7), m:91, same:true, st:'ok', tag:'No record', recs:['No convictions. Registered fisherman.'], w:[1,1,1]},
+        {n:'Third person', crowd:true, tag:'Face covered', st:'unk', note:'No usable image.'}],
+      truth:`K-7 was a smuggling speedboat using the identity of a scrapped fishing boat, “${nm}”.`,
+      lesson:'The transponder said “fishing boat”. The registry showed a zombie identity, and the owning company led to a convicted smuggler. That chain of links is how analysts build a case.',
+      boardTxt:'Cutter boarded K-7: 400 kg of cargo, 3 arrested.'};
+  }},
+  S2:{cat:'S', name:'Fake mayday', mo:'decoy', stateless:true, build(r, sc, N, num){
+    const ms = ['ORLA','VESNA','KARIN B'][Math.floor(r()*3)];
+    return {
+      vessel:{name:'unnamed RIB', type:'Rigid inflatable · 9 m', flag:'none', mmsi:'none', owner:'unknown', port:'none'},
+      track:['No AIS, ever', 'Radar history: it split off from the cargo ship '+ms+', which loitered offshore for 6 hours.', [0.4,3,0.6]],
+      drift:['Claims engine failure, but holds 9 knots into the wind', 'A boat without power drifts downwind. This one is under power, straight for Gull Cove.', [0.2,5,0.5]],
+      hail:['“MAYDAY MAYDAY! Engine failure, sinking, ten people!”', 'Panicked voice. Won’t give a position or a boat name.', [4,0.7,0.4]],
+      registry:['No registration found', 'No name, no number, no flag. A stateless boat has no flag state to protect it.', [0.8,2.2,0.4]],
+      graph:[
+        {id:'v', label:'unnamed RIB', kind:'vessel', parent:null},
+        {id:'m', label:'Cargo ship '+ms, kind:'vessel', parent:'v', text:'Loitered 6 h outside our waters. Its AIS shows a route from a known drug port.', w:[0.5,2.5,0.7], flag:'warn'},
+        {id:'c', label:'Fastline Shipping', kind:'company', parent:'m', text:'Manager of '+ms+'. Two ships seized for cocaine in 2025.', w:[0.4,3,0.5], flag:'bad'}],
+      drone:{video:['Drone: 4 men, no life jackets, hull dry', 'Packages under a tarp. Nobody is bailing water.', [0.5,2.5,0.5]],
+             thermal:['Thermal: 4 people, both outboards hot', 'The engines are running. That is no engine failure.', [0.3,4,0.4]]},
+      cams:['Port cameras: no RIB like this in the harbour', 'It didn’t come from here.', [0.8,1.6,0.7]],
+      people:[
+        {n:N[0], age:36, nat:'Oresk', idn:'OR-'+num(7), m:71, same:false, st:'bad', tag:'Armed robbery (2018)', recs:['Armed robbery, 2018.'], w:[0.3,4,0.4],
+         truthNote:'Not him. The faces were half-covered and the match was weak. The real crew were never identified.'},
+        {n:'3 more', crowd:true, tag:'Faces covered', st:'unk', note:'Balaclavas. No usable images.'}],
+      truth:'K-7 was a smugglers’ RIB that had picked up cargo from the ship '+ms+'. The mayday was fake: it was meant to pull our boats onto a “rescue” and away from the coast.',
+      lesson:'A mayday is a strong clue, but words are cheap. Movement isn’t: a sinking boat drifts, and this one held a straight course under power. Always check what the radio says against what the radar shows.',
+      boardTxt:'Cutter boarded the RIB: 300 kg of cocaine, 4 arrested.'};
+  }},
+  S3:{cat:'S', name:'Illegal trawler in a closed zone', mo:'trawl', stateless:true, build(r, sc, N, num){
+    const nm = ['KORSHAVN','STELLA MAR','ODIN II'][Math.floor(r()*3)];
+    return {
+      vessel:{name:nm, type:'Trawler · 38 m', flag:'Belmara', mmsi:'611 '+num(6), owner:'Ocean Harvest Group', port:'Tarnby (abroad), 3 weeks ago'},
+      track:['AIS switched off at the edge of the closed zone', 'It was broadcasting normally until it entered the cod spawning zone 2 h ago.', [0.6,2.4,1.1]],
+      drift:['Slow 3-knot zigzag', 'That is a trawling pattern: it is fishing.', [0.4,1.5,1.5]],
+      hail:['“Just passing through, engine trouble”', 'But it is moving and trawling normally.', [0.8,1.8,0.7]],
+      registry:[nm+': flag withdrawn last month', 'Belmara struck it off for illegal fishing. Third flag change in two years. On the regional blacklist.', [0.3,5,0.3]],
+      graph:[
+        {id:'v', label:nm, kind:'vessel', parent:null},
+        {id:'c', label:'Ocean Harvest Group', kind:'company', parent:'v', text:'Owns 6 trawlers. Four are on illegal-fishing blacklists.', w:[0.5,3,0.5], flag:'bad'},
+        {id:'e', label:'Closed zone notice', kind:'doc', parent:'v', text:'Cod spawning zone closed to all fishing until March.', w:[1,1.5,0.7]}],
+      drone:{video:['Drone: nets out, fresh catch on deck', 'Seven crew working the winch. Young cod in the catch.', [0.4,3,1]],
+             thermal:['Thermal: 7 crew, winch motor hot', 'It is hauling nets.', [0.5,1.8,1.3]]},
+      cams:['Port cameras: never in our harbour', 'It lands its catch abroad.', [0.8,1.4,0.8]],
+      people:[
+        {n:N[0], age:55, nat:'Belmara', idn:'BM-'+num(7), m:90, same:true, st:'bad', tag:'Illegal fishing (2022, 2024)', recs:['Skipper. Convicted of illegal fishing twice.'], w:[0.4,3,0.6]},
+        {n:N[1], age:23, nat:'Oresk', idn:'OR-'+num(7), m:84, same:true, st:'ok', tag:'No record', recs:['No record.'], w:[1,1,1]},
+        {n:'5 more crew', crowd:true, tag:'Not in our records', st:'unk', note:'Foreign crew.'}],
+      truth:`K-7 was the trawler <b>${nm}</b>, fishing illegally in a closed spawning zone under a flag it had already lost.`,
+      lesson:'Illegal fishing is a crime too, and it hides in plain sight: the boat looked like normal fishing. The registry was the key. A withdrawn flag makes it stateless, which gave you the right to board.',
+      outH:{landed:'The trawler escaped with its catch', followed:'The trawler was followed and reported', intercepted:'Illegal trawler seized'},
+      boardTxt:'Cutter boarded '+nm+': 20 t of young cod, ship detained.'};
+  }},
+  L1:{cat:'L', name:'Research ship, broken transponder', mo:'survey', build(r, sc, N, num){
+    const permit = String(7000+Math.floor(r()*900));
+    return {
+      vessel:{name:'AURELLE', type:'Research ship · 62 m', flag:'Norvia', mmsi:'257 '+num(6), owner:'Halden Ocean Institute', port:'Port Halden, 2 days ago'},
+      track:['Track matches research ship AURELLE', 'Its AIS stopped 20 h ago at this spot. Size and speed fit.', [0.6,0.8,2]],
+      drift:['Slow, dead-straight lines, then a turn', 'A survey pattern, back and forth over the cable corridor.', [0.4,1.3,2.2]],
+      hail:['“Research ship AURELLE, permit '+permit+'”', '“Our transponder broke yesterday. We’ll be done by 03:00.”', [0.3,0.4,5]],
+      registry:['AURELLE: survey permit '+permit, 'Seabed survey along the cable corridor, valid tonight. Clean record.', [0.2,0.3,5]],
+      graph:[
+        {id:'v', label:'AURELLE', kind:'vessel', parent:null},
+        {id:'c', label:'Halden Ocean Inst.', kind:'company', parent:'v', text:'University research institute. Owns AURELLE.', w:[0.7,0.7,1.6]},
+        {id:'d', label:'Permit '+permit, kind:'doc', parent:'v', text:'Approved cable-corridor survey, tonight. Crew list of 20 attached.', w:[0.2,0.3,4], flag:'ok'},
+        {id:'p', label:'Dr. '+N[0], kind:'person', parent:'d', text:'Chief scientist named on the permit.', w:[0.8,0.8,1.5]}],
+      drone:{video:['Drone: survey ship towing a sonar', 'Crew in orange overalls.', [0.5,0.9,2.5]],
+             thermal:['Thermal: big ship, about 20 people', 'A warm sonar body towed astern, right over the cable.', [0.4,1.5,1.6]]},
+      cams:['Port cameras: AURELLE left Port Halden 2 days ago', 'Logged by the harbour master with its permit.', [0.4,0.5,3]],
+      people:[
+        {n:'Dr. '+N[0], age:47, nat:'Norvia', idn:'NV-'+num(7), m:95, same:true, st:'ok', tag:'Chief scientist', recs:['No record. Named on survey permit '+permit+'.'], w:[0.3,0.4,6]},
+        {n:N[1], age:26, nat:'Varnholm', idn:'VH-'+num(7), m:68, same:false, st:'warn', tag:'Protest arrest (2021)', recs:['Arrested at a protest against a cable project, 2021. Released, no charge.'], w:[0.8,2,0.6],
+         truthNote:'The deckhand was a different person: a student on the permit’s crew list.'},
+        {n:'18 crew', crowd:true, tag:'Match the permit crew list', st:'ok', note:'Faces match the crew list filed with the permit.'}],
+      truth:'K-7 was <b>AURELLE</b>, a licensed research ship. Its transponder had simply broken.',
+      lesson:'A dark ship over a cable looked like sabotage, and a weak match put a protester “on board”. The permit and the radio call showed licensed work.',
+      boardTxt:'Cutter boarded AURELLE. The captain shows the permit and protests.'};
+  }},
+  L2:{cat:'L', name:'Fisher hiding his spot', mo:'fish', build(r, sc, N, num){
+    const nm = ['TERNA','SKARV','MÅKE'][Math.floor(r()*3)], sk = N[0];
+    return {
+      vessel:{name:nm, type:'Fishing boat · 13 m', flag:'Varnholm', mmsi:'259 '+num(6), owner:sk, port:'Solvar, 04:00'},
+      track:['Track matches fishing boat '+nm, 'It switched AIS off 5 h ago. It did the same last month on the same bank.', [0.8,1.5,1.5]],
+      drift:['Slow trawl along the bank', 'Outside every closed zone. Normal fishing speed.', [0.5,1,2.5]],
+      hail:['Grumpy skipper: “AIS off so the others don’t steal my spot”', '“That’s legal for a boat my size out here. Leave me alone.”', [0.4,0.6,3.5]],
+      registry:[nm+': licence valid', 'Licensed for this bank. Under 15 m, so AIS is not required by law.', [0.4,0.5,3]],
+      graph:[
+        {id:'v', label:nm, kind:'vessel', parent:null},
+        {id:'p', label:sk, kind:'person', parent:'v', text:'Owner-skipper, 58. Warned in 2023 for switching AIS off inside a closed zone.', w:[0.7,2,0.9], flag:'warn'},
+        {id:'b', label:'Fish auction, Solvar', kind:'company', parent:'p', text:'Sells his catch at the legal auction every week. Paperwork in order.', w:[0.6,0.6,2.5], flag:'ok'}],
+      drone:{video:['Drone: nets out, 3 crew, normal fishing', 'Legal-size fish on deck.', [0.5,0.8,2.5]],
+             thermal:['Thermal: 3 crew, winch running', 'Looks like fishing, but heat can’t show what the catch is.', [0.6,1.2,1.6]]},
+      cams:['Port cameras: '+nm+' left Solvar at 04:00', 'Same routine as every week.', [0.6,0.6,2]],
+      people:[
+        {n:sk, age:58, nat:'Varnholm', idn:'VH-'+num(7), m:94, same:true, st:'warn', tag:'AIS warning (2023)', recs:['Warned for switching AIS off inside a closed zone, 2023. No fine.'], w:[0.7,1.6,1]},
+        {n:N[1], age:33, nat:'Varnholm', idn:'VH-'+num(7), m:66, same:false, st:'bad', tag:'Drug conviction (2016)', recs:['Drug possession with intent, 2016.'], w:[0.5,2.5,0.8],
+         truthNote:'Wrong man: the crewman was the skipper’s nephew. A 66% match is a guess.'},
+        {n:'1 more crew', crowd:true, tag:'Not searched', st:'unk', note:'Back turned.'}],
+      truth:`K-7 was <b>${nm}</b>, a licensed fishing boat. The skipper switched AIS off to keep his fishing spot secret, which is legal for a boat that small.`,
+      lesson:'“Dark” is not the same as “illegal”. Many fishers switch AIS off to hide good spots. The licence, the location and the skipper’s own explanation added up. The scary record belonged to a different man.',
+      boardTxt:'Cutter boarded '+nm+'. Nothing illegal; the skipper files a complaint.'};
+  }},
+  L3:{cat:'L', name:'Party yacht with a flat battery', mo:'anchor', build(r, sc, N, num){
+    const nm = ['BELLA NOX','SEAFIRE','LUNA'][Math.floor(r()*3)];
+    return {
+      vessel:{name:nm, type:'Motor yacht · 24 m (charter)', flag:'Norvia', mmsi:'257 '+num(6), owner:'Bluewake Charters', port:'Saltvik marina, 15:00'},
+      track:['Track matches charter yacht '+nm, 'AIS faded out 3 h ago as its battery died. It hasn’t moved since.', [1.3,0.7,1.6]],
+      drift:['Not moving at all', 'It is at anchor in a sheltered spot, not drifting.', [0.4,0.8,2.5]],
+      hail:['Music, then a guest on a handheld: “We’re fine!”', '“Just a flat battery. The skipper says we wait for morning.”', [0.6,0.5,3.5]],
+      registry:[nm+': charter yacht, valid', 'Bluewake Charters, licensed skipper on board.', [0.6,0.6,2.2]],
+      graph:[
+        {id:'v', label:nm, kind:'vessel', parent:null},
+        {id:'c', label:'Bluewake Charters', kind:'company', parent:'v', text:'Charter firm, 12 yachts. Clean safety record.', w:[0.7,0.7,1.5]},
+        {id:'d', label:'Charter booking', kind:'doc', parent:'c', text:'Wedding party, 14 guests, back at 10:00 tomorrow.', w:[0.5,0.4,3.5], flag:'ok'}],
+      drone:{video:['Drone: party lights, 14 people dancing', 'Nobody looks worried.', [0.6,0.8,2.2]],
+             thermal:['Thermal: 14 heat shapes moving around a lot', 'Busy deck, engine cold. Hard to tell a party from panic in heat alone.', [1.4,1,1.2]]},
+      cams:['Port cameras: left Saltvik marina at 15:00', 'Guests in wedding clothes carrying crates of drinks.', [0.5,0.5,3]],
+      people:[
+        {n:N[0], age:30, nat:'Norvia', idn:'NV-'+num(7), m:89, same:true, st:'bad', tag:'Assault conviction (2019)', recs:['Bar fight, 2019. Community service.'], w:[0.8,1.8,0.9]},
+        {n:N[1], age:29, nat:'Norvia', idn:'NV-'+num(7), m:92, same:true, st:'ok', tag:'No record', recs:['No record. The bride.'], w:[0.8,0.8,1.5]},
+        {n:'12 more guests', crowd:true, tag:'Party guests', st:'ok', note:'Matching the booking list.'}],
+      truth:`K-7 was <b>${nm}</b>, a charter yacht with a wedding party aboard. Its battery had died and it was safely at anchor.`,
+      lesson:'One guest had an old conviction, and a dark boat at night looks bad. But the yacht was anchored, the guests answered the radio, and the booking explained everything. Not every dark boat needs a response.',
+      boardTxt:'Cutter boarded '+nm+'. A wedding party, very annoyed.'};
+  }}
+};
+const STORY_KEYS = Object.keys(STORIES);
+function rollCase(seed){
+  const r = mulberry(hash(seed)), E = ENV_ORDER[Math.floor(r()*ENV_ORDER.length)], P = ENVS[E].prior, x = r();
+  const truth = x < P.D ? 'D' : x < P.D + P.S ? 'S' : 'L';
+  const story = truth + (1 + Math.floor(r()*3));
+  return {r, E, truth, story};
+}
+function truthOf(seed){ return rollCase(seed).truth; }
+function freshState(seed, lvl=1, daily=null){
+  const {r, E, truth, story} = rollCase(seed), Env = ENVS[E], St = STORIES[story];
+  const sc = { E, story, sx:(Env.near ? 470 : 310) + r()*40, sy:(Env.near ? 330 : 300) + r()*40,
+    storm0: Env.storm ? -10-r()*20 : -1e6, stormV: Env.storm ? 7.2+r()*0.8 : 0, people:0, dv:St.dv || 0.8 };
   const pick = a => a[Math.floor(r()*a.length)], num = n => String(Math.floor(r()*10**n)).padStart(n,'0');
   const names = []; while (names.length < 3){ const n = pick(FIRST)+' '+pick(LAST); if (!names.includes(n)) names.push(n); }
-  const hull = 'KA-'+(110+Math.floor(r()*780));
-  const C = {};
-  if (truth === 'D'){
-    C.vessel = {name:hull, type:'Fishing boat · 11 m', flag:'Varnholm (licence lapsed)', mmsi:'none', owner:'Lund Fishing AS', port:'Saltvik (abroad), 9 days ago'};
-    C.track = ['Track matches fishing boat '+hull, 'Its AIS went silent 9 h ago, 30 km west. The radar contact has drifted here since.', [2,0.8,0.9]];
-    C.registry = [hull+': licence lapsed', 'Owner Lund Fishing AS. A bill of sale says it was sold abroad last year.', [1.2,1.2,0.6]];
-    C.graph = [
-      {id:'v', label:hull, kind:'vessel', parent:null},
-      {id:'c', label:'Lund Fishing AS', kind:'company', parent:'v', text:'Registered owner of '+hull+'. Director: Petar Lund.', w:[1,1.1,1]},
-      {id:'e', label:'Overdue boat report', kind:'event', parent:'v', text:'3 days ago, families abroad reported an overdue fishing boat with about 40 people aboard. Hull number '+hull+'.', w:[5,0.5,0.5], flag:'ok'},
-      {id:'p', label:'Petar Lund', kind:'person', parent:'c', text:'Director, 52. Sold the boat abroad last year. Fined for illegal fishing in 2014.', w:[0.9,1.4,1], flag:'warn'}];
-    C.people = [
-      {n:names[0], age:34, nat:'Oresk', idn:'OR-'+num(7), m:88, same:true, st:'ok', tag:'Reported missing', recs:['Missing person report, 3 days ago: “Brother left by boat, no contact since.”'], w:[6,0.6,0.6]},
-      {n:'Petar Lund', age:52, nat:'Varnholm', idn:'VH-'+num(7), m:61, same:false, st:'warn', tag:'Illegal fishing fine (2014)', recs:['Fine for illegal fishing, 2014.','Director of Lund Fishing AS (boat owner).'], w:[0.6,2,0.8],
-       truthNote:'The man on deck was not Petar Lund. Lund sold the boat last year and was at home.'},
-      {n:(sc.people-2)+' more people', crowd:true, tag:'Not in our records', st:'unk', note:'Many children. No usable record matches.'}];
-  } else if (truth === 'S'){
-    C.vessel = {name:sc.sname, type:'Trawler · 14 m (claimed)', flag:'Oresk', mmsi:'273 '+num(6), owner:'Brine Holdings Ltd', port:'none on record'};
-    C.track = ['Broadcasting AIS as “'+sc.sname+'”', 'But the AIS track only starts 3 h ago, in open sea. No departure port.', [0.6,2.4,0.6]];
-    C.registry = [sc.sname+': scrapped in 2024', 'The real '+sc.sname+' was broken up. Someone is using its identity — a “zombie” ship.', [0.3,5,0.2]];
-    C.graph = [
-      {id:'v', label:sc.sname, kind:'vessel', parent:null},
-      {id:'c', label:'Brine Holdings Ltd', kind:'company', parent:'v', text:'Registered 6 weeks ago. Address is a PO box. One director.', w:[0.8,1.6,0.7], flag:'warn'},
-      {id:'p', label:names[0], kind:'person', parent:'c', text:'Sole director of Brine Holdings.', w:[1,1.3,1]},
-      {id:'ph', label:'Phone ···'+num(4), kind:'phone', parent:'p', text:'Director’s phone. Last seen on a mast near Gull Cove, 40 minutes ago.', w:[0.5,2.5,0.5], flag:'bad'}];
-    C.people = [
-      {n:names[0], age:41, nat:'Varnholm', idn:'VH-'+num(7), m:97, same:true, st:'bad', tag:'Convicted smuggler', recs:['Drug smuggling, 2019: 4 years. Released 2023.','Director of Brine Holdings Ltd (registered owner).'], w:[0.2,8,0.2]},
-      {n:names[1], age:29, nat:'Varnholm', idn:'VH-'+num(7), m:91, same:true, st:'ok', tag:'No record', recs:['No convictions. Registered fisherman.'], w:[1,1,1]},
-      {n:'Third person', crowd:true, tag:'Face covered', st:'unk', note:'No usable image.'}];
-  } else {
-    C.vessel = {name:'AURELLE', type:'Research ship · 62 m', flag:'Norvia', mmsi:'257 '+num(6), owner:'Halden Ocean Institute', port:'Port Halden, 2 days ago'};
-    C.track = ['Track matches research ship AURELLE', 'Its AIS stopped 20 h ago at this spot. Size and speed fit.', [0.6,0.8,2]];
-    C.registry = ['AURELLE: survey permit '+sc.permit, 'Seabed survey along the cable corridor, valid tonight. Clean record.', [0.2,0.3,5]];
-    C.graph = [
-      {id:'v', label:'AURELLE', kind:'vessel', parent:null},
-      {id:'c', label:'Halden Ocean Inst.', kind:'company', parent:'v', text:'University research institute. Owns AURELLE.', w:[0.7,0.7,1.6]},
-      {id:'d', label:'Permit '+sc.permit, kind:'doc', parent:'v', text:'Approved cable-corridor survey, 00:00–03:00 tonight. Crew list of 20 attached.', w:[0.2,0.3,4], flag:'ok'},
-      {id:'p', label:'Dr. '+names[0], kind:'person', parent:'d', text:'Chief scientist named on the permit.', w:[0.8,0.8,1.5]}];
-    C.people = [
-      {n:'Dr. '+names[0], age:47, nat:'Norvia', idn:'NV-'+num(7), m:95, same:true, st:'ok', tag:'Chief scientist', recs:['No record. Named on survey permit '+sc.permit+'.'], w:[0.3,0.4,6]},
-      {n:names[1], age:26, nat:'Varnholm', idn:'VH-'+num(7), m:68, same:false, st:'warn', tag:'Protest arrest (2021)', recs:['Arrested at a protest against a cable project, 2021. Released, no charge.'], w:[0.8,2,0.6],
-       truthNote:'The deckhand was a different person: a student on the permit’s crew list.'},
-      {n:'18 crew', crowd:true, tag:'Match the permit crew list', st:'ok', note:'Faces match the crew list filed with the permit.'}];
-  }
-  return C;
-}
-function freshState(seed, lvl=1, daily=null){
-  const r = mulberry(hash(seed));
-  const truth = ['D','S','L'][Math.floor(r()*3)];
-  const sc = { sx:310+r()*40, sy:300+r()*40, storm0:-10-r()*20, stormV:7.2+r()*0.8,
-    people:26+Math.floor(r()*22), sname:['SELA','MARETTA','KITE'][Math.floor(r()*3)], permit:String(7000+Math.floor(r()*900)) };
-  sc.C = buildCase(r, truth, sc);
+  sc.C = St.build(r, sc, names, num); sc.C.mo = St.mo;
   if (lvl >= 2) sc.stormV *= 1.15;
-  const G = { v:5, seed, phase:'play', t:0, speed:1, paused:true, truth, sc, units:{}, busy:null, done:{},
+  const G = { v:6, seed, phase:'play', t:0, speed:1, paused:true, truth, sc, units:{}, busy:null, done:{},
     findings:[], ticker:[], audit:[], graph:['v'], ids:{}, unlocked:false, override:false,
     decision:null, basis:null, closed:false, saved:0, res:null, stopT:null, sunk:false, trail:[],
     tab:'look', seen:{}, modal:{type:'alert'}, lvl, daily };
   for (const k in UNITS){ const b = BASES[UNITS[k].base]; G.units[k] = {st:'base', x:b.x+UNITS[k].off, y:b.y}; }
-  let t = 0; while (t < 200 && stormX(G,t) < cpos(G,t).x) t += 0.1;
-  sc.hitT = +t.toFixed(1); sc.sinkT = +(sc.hitT + 16).toFixed(1);
-  sc.landT = +((Math.hypot(COVE.x-sc.sx, COVE.y-sc.sy)-6)/6.5).toFixed(1);
+  let t = 0; if (Env.storm) while (t < 200 && stormX(G,t) < cpos(G,t).x) t += 0.1; else t = 200;
+  sc.hitT = +t.toFixed(1);
+  sc.sinkT = Env.storm ? +(sc.hitT + 16).toFixed(1) : (sc.fire ? 40 : Env.fast ? 46 : 60) + Math.round(r()*10);
+  if (lvl >= 2 && !Env.storm) sc.sinkT = Math.round(sc.sinkT * 0.87);
+  const v = St.mo === 'run' ? 6.5 : St.mo === 'decoy' ? 4 : 0;
+  sc.landT = v ? +((Math.hypot(COVE.x-sc.sx, COVE.y-sc.sy)-6)/v).toFixed(1) : 999;
   G.trail.push([Math.round(sc.sx), Math.round(sc.sy)]);
-  G.ticker.push({t:0, m:'ALERT: radar contact K-7 has no AIS match.'});
-  G.audit.push({t:0, m:'Case '+CASE_NO+' opened from radar alert'});
+  G.ticker.push({t:0, m:'ALERT: radar contact K-7 has no AIS match. '+Env.name+'.'});
+  G.audit.push({t:0, m:'Case '+CASE_NO+' opened from radar alert · '+Env.name.toLowerCase()});
   return G;
 }
 function stormX(G,t){ return G.sc.storm0 + G.sc.stormV*t; }
 function cpos(G,t){
-  const s = G.sc; let tt = G.stopT != null ? Math.min(t, G.stopT) : t;
-  if (G.truth === 'D'){ if (s.sinkT) tt = Math.min(tt, s.sinkT); return {x:s.sx+0.8*tt, y:s.sy+14*Math.sin(tt/6)+0.25*tt}; }
-  if (G.truth === 'S'){ const dx = COVE.x-s.sx, dy = COVE.y-s.sy, D = Math.hypot(dx,dy), d = Math.min(6.5*tt, D-6); return {x:s.sx+dx/D*d, y:s.sy+dy/D*d}; }
+  const s = G.sc, M = s.C.mo; let tt = G.stopT != null ? Math.min(t, G.stopT) : t;
+  if (M === 'drift'){ if (s.sinkT) tt = Math.min(tt, s.sinkT); return {x:s.sx+s.dv*tt, y:s.sy+14*Math.sin(tt/6)+0.25*tt}; }
+  if (M === 'anchor') return {x:s.sx+3*Math.sin(tt/4), y:s.sy+3*Math.cos(tt/5)};
+  if (M === 'run' || M === 'decoy'){ const v = M === 'run' ? 6.5 : 4, dx = COVE.x-s.sx, dy = COVE.y-s.sy, D = Math.hypot(dx,dy), d = Math.min(v*tt, D-6); return {x:s.sx+dx/D*d, y:s.sy+dy/D*d}; }
+  if (M === 'trawl' || M === 'fish'){ const t1 = Math.min(tt,70), x = s.sx + 0.7*t1, y = s.sy + 30*Math.sin(t1/5); if (tt <= 70) return {x, y}; const k = tt-70; return M === 'trawl' ? {x:x-6*k, y} : {x:x+3*k, y:y+1.5*k}; }
   const t1 = Math.min(tt,80), d = 1.6*t1, leg = 130, k = Math.floor(d/leg), f = (d%leg)/leg;
   let x = s.sx + 24*(d/leg), y = s.sy - 65 + (k%2 ? 130*(1-f) : 130*f);
   if (tt > 80) x -= 3*(tt-80);
@@ -766,11 +972,13 @@ function cpos(G,t){
 }
 // background traffic with AIS (for contrast with the dark contact)
 const TRAFFIC = [{n:'NORDVIK',y:150,v:5,x0:160},{n:'ASTER BAY',y:470,v:-4,x0:700},{n:'KELP',y:250,v:3,x0:420}];
+const LEISURE = [{n:'SAILING CLUB',y:390,v:2,x0:260},{n:'FERRY',y:205,v:-6,x0:620}];
+const trafficList = G => G && G.sc && ENVS[G.sc.E].drone === 'video' && !ENVS[G.sc.E].cams ? TRAFFIC.concat(LEISURE) : TRAFFIC;
 function trafficPos(s, t){ let x = s.x0 + s.v*t; x = 120 + ((x-120) % 600 + 600) % 600; return {x, y:s.y}; }
 
 // ---------- evidence ----------
 function probs(G){
-  const p = {D:.3, S:.4, L:.3};
+  const p = {...envOf(G).prior};
   for (const f of G.findings) if (f.w) HK.forEach((k,i) => p[k] *= f.w[i]);
   const s = p.D+p.S+p.L; HK.forEach(k => p[k] /= s); return p;
 }
@@ -779,14 +987,17 @@ function addFinding(key, title, text, w, src){
   if (GS.findings.some(f => f.key === key)) return;
   GS.findings.unshift({key, t:GS.t, title, text, w, src}); tick(title);
 }
-function hailResult(G){ const s = G.sc; return {
-  D:['Faint voice: “…engine… water… children…”','Then static.',[5,0.4,0.5]],
-  S:['No answer on channel 16','Three calls. The boat doesn’t change course.',[0.6,2.2,0.6]],
-  L:['“Research ship AURELLE, permit '+s.permit+'”','“Our transponder broke yesterday. We’ll be done by 03:00.”',[0.3,0.4,5]]}[G.truth]; }
-function droneResult(G){ const s = G.sc; return {
-  D:['Drone: '+s.people+' people packed on deck','Water in the hull. Some are waving.',[5,0.3,0.3]],
-  S:['Drone: speedboat, 3 people, covered cargo','No fishing gear. Moving fast.',[0.4,4,0.3]],
-  L:['Drone: survey ship with towed sonar','Crew in orange overalls.',[0.3,0.8,4]]}[G.truth]; }
+function hailResult(G){ return G.sc.C.hail; }
+function droneResult(G){
+  const C = G.sc.C, m = envOf(G).drone;
+  if (m === 'video') return C.drone.video;
+  const t = C.drone.thermal;
+  return m === 'fog' ? [t[0].replace('Thermal:', 'Through fog, faint:'), t[1], t[2].map(x => +Math.sqrt(x).toFixed(2))] : t;
+}
+function trackResult(G){
+  const t = G.sc.C.track;
+  return envOf(G).clutter ? [t[0], t[1]+' Radar shadows in the skerries make this match uncertain.', t[2].map(x => +Math.sqrt(x).toFixed(2))] : t;
+}
 function taskMin(id){ return TASKS[id] + ((GS && GS.lvl >= 3) ? 1 : 0); }
 const blind = G => G.lvl >= 4 && !G.closed;
 function vesselKnown(G){ return !!(G.done.track || G.done.drone); }
@@ -797,7 +1008,9 @@ function tick(m){ GS.ticker.push({t:GS.t, m}); if (GS.ticker.length > 30) GS.tic
 function audit(m){ GS.audit.push({t:GS.t, m}); }
 function finishTask(b){
   const G = GS, C = G.sc.C; tone(880,.07,'triangle',.06);
-  if (b.id === 'track'){ G.done.track = true; addFinding('track', C.track[0], C.track[1], C.track[2], 'Radar + AIS history'); G.badge = 'vessel'; }
+  if (b.id === 'track'){ G.done.track = true; const r = trackResult(G); addFinding('track', r[0], r[1], r[2], 'Radar + AIS history'); G.badge = 'vessel'; }
+  if (b.id === 'drift'){ G.done.drift = true; addFinding('drift', C.drift[0], C.drift[1], C.drift[2], 'Drift model · wind + current'); }
+  if (b.id === 'cams'){ G.done.cams = true; addFinding('cams', C.cams[0], C.cams[1], C.cams[2], 'Port cameras'); }
   if (b.id === 'hail'){ G.done.hail = true; const r = hailResult(G); addFinding('hail', r[0], r[1], r[2], 'VHF channel 16'); }
   if (b.id === 'registry'){ G.done.registry = true; addFinding('registry', C.registry[0], C.registry[1], C.registry[2], 'Ship registry'); }
   if (b.id === 'expand'){
@@ -814,7 +1027,6 @@ function applyRecords(){
   G.sc.C.people.forEach((p,i) => { if (!p.crowd && G.ids[i] === 'yes') addFinding('rec-'+i, p.n+': '+p.tag, p.recs[0], p.w, 'Police records'); });
 }
 function step(dt){
-  if (GS.op) return opStep(dt);
   const G = GS; G.t = +(G.t + dt).toFixed(2); const t = G.t, s = G.sc, c = cpos(G, t);
   const last = G.trail[G.trail.length-1];
   if (Math.hypot(c.x-last[0], c.y-last[1]) > 6){ G.trail.push([Math.round(c.x), Math.round(c.y)]); if (G.trail.length > 120) G.trail.shift(); }
@@ -825,12 +1037,17 @@ function step(dt){
       if (!G.sunk && t >= s.sinkT){ G.sunk = true; if (G.saved < s.people) tick('K-7 is sinking. '+(s.people-Math.floor(G.saved))+' people in the water.'); }
       if (G.saved >= s.people - 1e-6) resolve(G.sunk ? 'partial' : 'saved');
       else if (t >= s.sinkT + 10) resolve(G.saved >= 1 ? 'partial' : 'lost');
+    } else if (G.truth === 'S' && s.C.mo === 'trawl'){
+      if (G.stopT == null && t >= 80){
+        if (G.decision === 'shadow'){ resolve('followed'); tick('The trawler left our waters. The cutter handed its position to the fisheries agency.'); }
+        else { resolve('landed'); tick('The trawler slipped away west with its catch.'); }
+      }
     } else if (G.truth === 'S'){
       if (G.stopT == null && t >= s.landT){
         if (G.decision === 'shadow'){ resolve('followed'); tick('K-7 landed. Police guided by the cutter arrested 2 on the beach.'); }
         else { resolve('landed'); tick('K-7 landed at Gull Cove. The cargo is gone.'); }
       }
-    } else if (t >= 80 && G.stopT == null){ resolve('clear'); tick('AURELLE finished its survey and left.'); }
+    } else if (t >= 80 && G.stopT == null){ resolve('clear'); tick(s.C.vessel.name+' went on its way.'); }
     if (t >= 120 && !G.res) resolve(G.truth==='D' ? 'lost' : G.truth==='S' ? 'landed' : 'clear');
   }
   if (G.res && t >= G.res.t + 3){ G.phase = 'end'; G.modal = null; }
@@ -840,7 +1057,7 @@ function moveUnit(k, dt, c){
   const G = GS, u = G.units[k], U = UNITS[k];
   if (U.air && ['out','on','hoist'].includes(u.st) && stormX(G, G.t) >= u.x - 8){ u.st = 'ret'; tick(U.name+': storm too strong, turning back.'); }
   if (u.st === 'out'){
-    if (mv(u, c.x, c.y + (U.air ? -14 : 12), U.speed*dt)){ u.st = 'on'; arrive(k); }
+    if (mv(u, c.x, c.y + (U.air ? -14 : 12), U.speed*dt*(!U.air && envOf(G).slow ? envOf(G).slow : 1))){ u.st = 'on'; arrive(k); }
   } else if (['on','hoist','done','shadow'].includes(u.st)){
     u.x = c.x + (k==='drone' || k==='lifeboat' ? -20 : 20); u.y = c.y + (U.air ? -14 : 16);
     if (u.st === 'hoist'){
@@ -854,7 +1071,7 @@ function moveUnit(k, dt, c){
 function mv(u, x, y, d){ const dx = x-u.x, dy = y-u.y, L = Math.hypot(dx,dy); if (L <= d + 2){ u.x = x; u.y = y; return true; } u.x += dx/L*d; u.y += dy/L*d; return false; }
 function arrive(k){
   const G = GS, T = G.truth, u = G.units[k], s = G.sc; dirty = true;
-  if (k === 'drone'){ G.done.drone = true; const r = droneResult(G); addFinding('drone', r[0], r[1], r[2], 'Drone video'); tick('Drone over K-7. Faces visible: run a face match (People tab).'); G.badge = 'people'; return; }
+  if (k === 'drone'){ G.done.drone = true; const r = droneResult(G), f = facesOK(G); addFinding('drone', r[0], r[1], r[2], f ? 'Drone video' : 'Drone thermal camera'); tick(f ? 'Drone over K-7. Faces visible: run a face match (People tab).' : 'Drone over K-7. '+(envOf(G).drone === 'fog' ? 'Fog: only faint heat shapes.' : 'Dark: heat shapes only, no faces.')); if (f) G.badge = 'people'; return; }
   if (k === 'heli'){
     if (T === 'D' && !G.sunk && !G.res){ u.st = 'hoist'; tick('Helicopter is winching people up.'); }
     else { u.st = 'ret'; tick(T === 'S' ? 'Helicopter: the speedboat ignores us.' : T === 'L' ? 'Helicopter: nobody needs rescue.' : 'Helicopter: too late.'); }
@@ -872,8 +1089,8 @@ function arrive(k){
   if (G.res){ u.st = 'ret'; return; }
   if (G.decision === 'shadow'){ u.st = 'shadow'; tick('Cutter is shadowing K-7 at a distance.'); return; }
   u.st = 'done'; G.stopT = G.t;
-  if (T === 'S'){ resolve('intercepted'); tick('Cutter boarded K-7: 400 kg of cargo, 3 arrested.'); }
-  else { resolve('incident'); tick('Cutter boarded AURELLE. The captain shows the permit and protests.'); }
+  if (T === 'S'){ resolve('intercepted'); tick(s.C.boardTxt); }
+  else { resolve('incident'); tick(s.C.boardTxt); }
 }
 
 // ---------- decisions ----------
@@ -889,34 +1106,24 @@ const BASIS = {
   none:  {name:'No specific basis, just check', sub:'Boarding a foreign ship without grounds is unlawful.'}
 };
 function basisValid(G, b){
-  if (b === 'flag') return G.truth === 'S' && !!G.done.registry;
+  if (b === 'flag') return G.truth === 'S' && !!STORIES[G.sc.story].stateless && !!G.done.registry;
   if (b === 'waters') return cpos(G, G.t).x >= BORDER_X - 30 && probs(G).S >= 0.6;
   return false;
 }
 
 // ---------- actions ----------
 const H = {
-  start(d){ GS = freshState((d.seed || '').trim().toUpperCase().slice(0,24) || randomSeed(), CR.sel); tone(440,.12,'triangle'); },
-  daily(d){ const day = (d && d.day) || today(), arch = day !== today(); if (!arch && CR.daily[day]) return; const op = dailyOp(day), seed = 'DAILY-'+day;
-    GS = op === 'border' ? freshState(seed, 2, arch ? null : day) : Object.assign(opFresh(op, seed, 2), {daily: arch ? null : day}); GS.arch = arch ? day : null; tone(440,.12,'triangle'); },
+  rnd(){ H.start({new:1}); },
+  start(d){ GS = freshState(d.new ? randomSeed() : ((d.seed || '').trim().toUpperCase().slice(0,24) || randomSeed()), CR.sel); tone(440,.12,'triangle'); },
+  daily(d){ const day = (d && d.day) || today(), arch = day !== today(); if (!arch && CR.daily[day]) return; const seed = 'DAILY-'+day;
+    GS = freshState(seed, 2, arch ? null : day); GS.arch = arch ? day : null; tone(440,.12,'triangle'); },
   lvl(d){ const n = +d.n; if (n >= 1 && n <= CR.lvlMax){ CR.sel = n; saveCareer(); } },
   sound(){ CR.sound = !CR.sound; saveCareer(); if (CR.sound) tone(660,.1); },
   fx(){ CR.lowfx = !CR.lowfx; saveCareer(); applyFx(); },
   copy(d){ const t = shareText(d.day); try { navigator.clipboard.writeText(t).then(() => { const b = $('#copyb'); if (b) b.textContent = 'Copied'; }, () => {}); } catch(e){} GS.shareOpen = d.day; },
-  doResetAll(){ clearSave(); try { localStorage.removeItem(CAREER); } catch(e){} CR = blankCareer(); GS = {v:5, phase:'title', seed:randomSeed()}; },
+  doResetAll(){ clearSave(); try { localStorage.removeItem(CAREER); } catch(e){} CR = blankCareer(); GS = {v:6, phase:'title', seed:randomSeed()}; },
   close(){ const m = GS.modal; GS.modal = null; if (m && (m.type === 'alert' || m.first)) GS.paused = false; },
-  help(){ GS.modal = GS.op ? {type:'otut'} : {type:'help'}; },
-  opStart(d){ if (!OPS[d.op]) return; const seed = d.new ? randomSeed() : ((d.seed || '').trim().toUpperCase().slice(0,24) || randomSeed()); GS = opFresh(d.op, seed, CR.sel, d.tut === '1'); tone(440,.12,'triangle'); },
-  otask(d){ const G = GS, t = OPS[G.op].tasks.find(x => x.id === d.id); if (!t || G.busy || !opAvail(G, t)) return;
-    if (t.restricted && !G.logged && !G.override){ G.modal = {type:'opurp', id:t.id}; return; } opBegin(G, t); },
-  opurpLog(d){ const G = GS, O = OPS[G.op], t = O.tasks.find(x => x.id === d.id); if (G.busy) return; G.modal = null; G.logged = true; audit('Restricted access requested · purpose: '+O.code+' ('+O.kind.toLowerCase()+')'); opBegin(G, t, 1); },
-  opurpOver(d){ const G = GS, t = OPS[G.op].tasks.find(x => x.id === d.id); if (G.busy) return; G.modal = null; G.override = true; audit('ADMIN OVERRIDE · restricted data opened with no purpose stated'); tick('Override used. It will show in the audit.'); opBegin(G, t); },
-  oask(){ if (GS.closed) return; GS.modal = {type:'odecide', d:null}; },
-  opick(d){ GS.modal.d = d.d; },
-  oview(d){ GS.modal = {type:'oimg', id:d.id}; },
-  odecide(){ const G = GS, m = G.modal, d = m && m.d; if (!d) return; const O = OPS[G.op];
-    G.modal = null; G.decision = d; G.decidedAt = G.t; G.closed = true; G.paused = false; G.busy = null; G.tab = 'case'; G.judge = opJudge(G, d);
-    tone(110,.35,'sine',.2); buzz(30); audit('DECISION: '+O.dec[d].nm + (O.dec[d].need && !G.done[O.dec[d].need] ? ' · WITHOUT '+O.tasks.find(t => t.id === O.dec[d].need).nm.toUpperCase() : '')); tick('Decision: '+O.dec[d].nm+'.'); },
+  help(){ GS.modal = {type:'help'}; },
   achs(){ GS.modal = {type:'achs'}; },
   pause(){ if (GS.lvl >= 5 && GS.paused === false) return; GS.paused = !GS.paused; },
   speed(){ GS.speed = GS.speed === 1 ? 2 : 1; GS.paused = false; },
@@ -925,15 +1132,17 @@ const H = {
     const G = GS, id = d.id; if (G.closed || G.busy) return;
     if (id === 'track' && G.done.track) return;
     if (id === 'hail' && G.done.hail) return;
+    if (id === 'drift' && G.done.drift) return;
+    if (id === 'cams' && (G.done.cams || !envOf(G).cams)) return;
     if (id === 'registry' && (G.done.registry || !vesselKnown(G))) return;
-    if (id === 'face' && (G.done.face || !G.done.drone)) return;
+    if (id === 'face' && (G.done.face || !G.done.drone || !facesOK(G))) return;
     if (id === 'expand' && (!vesselKnown(G) || !G.graph.includes(d.arg))) return;
     const label = id === 'expand' ? 'Search around '+G.sc.C.graph.find(n=>n.id===d.arg).label : TASKNAME[id];
     G.busy = {id, arg:d.arg, start:G.t, end:+(G.t + taskMin(id)).toFixed(2), label};
     audit(label + (id === 'face' ? ' · drone video vs. national ID photos' : ''));
     if (G.modal && G.modal.type === 'node') G.modal = null;
   },
-  drone(){ const G = GS; if (G.closed || G.units.drone.st !== 'base' || G.done.drone) return; G.units.drone.st = 'out'; G.done.droneSent = true; tick('Drone launched.'); audit('Tasked drone to K-7'); },
+  drone(){ const G = GS; if (envOf(G).drone === 'grounded'){ tick('Drone grounded: the wind is too strong to launch.'); return; } if (G.closed || G.units.drone.st !== 'base' || G.done.drone) return; G.units.drone.st = 'out'; G.done.droneSent = true; tick('Drone launched.'); audit('Tasked drone to K-7'); },
   node(d){ GS.modal = {type:'node', id:d.id}; },
   ids(d){ GS.modal = {type:'idcards', i:+(d.i||0)}; },
   idnav(d){ const n = GS.sc.C.people.length; GS.modal = {type:'idcards', i:clamp(+d.i, 0, n-1)}; },
@@ -954,17 +1163,17 @@ const H = {
     if (d === 'pass') tick('You chose to watch and wait.');
   },
   reset(){ GS.modal = {type:'reset'}; },
-  doReset(){ clearSave(); GS = {v:5, phase:'title', seed:randomSeed()}; },
+  doReset(){ clearSave(); GS = {v:6, phase:'title', seed:randomSeed()}; },
   cancel(){ GS.modal = null; },
-  replay(){ if (GS.daily) return; GS = GS.op ? opFresh(GS.op, GS.seed, GS.lvl, GS.tut) : freshState(GS.seed, GS.lvl); },
-  newRun(){ GS = {v:5, phase:'title', seed:randomSeed()}; }
+  replay(){ if (GS.daily) return; GS = freshState(GS.seed, GS.lvl); },
+  newRun(){ GS = {v:6, phase:'title', seed:randomSeed()}; }
 };
-function randomSeed(){ const w = ['NIGHT','TIDE','GALE','HARBOR','SKERRY','BEACON','SWELL']; return w[Math.floor(Math.random()*w.length)]+'-'+(Math.floor(Math.random()*90)+10); }
+function randomSeed(){ const w = ['NIGHT','TIDE','GALE','HARBOR','SKERRY','BEACON','SWELL','FOG','DRIFT','KELP']; return w[Math.floor(Math.random()*w.length)]+'-'+(Math.floor(Math.random()*900)+100); }
 function act(name, data){
   if (!H[name] || !GS) return;
   const before = GS.phase; H[name](data || {});
   save(); dirty = true;
-  if (GS.phase !== before || ['start','replay','copy','lvl','sound','opStart','daily'].includes(name)) render(); else { frame(); renderModal(); }
+  if (GS.phase !== before || ['start','rnd','replay','copy','lvl','sound','daily'].includes(name)) render(); else { frame(); renderModal(); }
 }
 
 // ---------- rendering ----------
@@ -972,23 +1181,23 @@ function applyFx(){ document.documentElement.classList.toggle('lowfx', !!CR.lowf
 function render(){
   const app = $('#app'); applyFx();
   if (GS.phase === 'title'){ app.innerHTML = titleHTML(); app.classList.remove('fx'); }
-  else if (GS.phase === 'end'){ const fresh = !GS.recorded; if (GS.op){ recordOp(GS); app.innerHTML = opEndHTML(); } else { recordCase(GS); app.innerHTML = endHTML(); } app.classList.toggle('fx', fresh); window.scrollTo(0,0);
-    if (fresh){ const sc = GS.op ? opScore(GS) : score(GS), g = sc.grade; [523,659,784,1047].slice(0, {A:4,B:3,C:2,D:1,F:1}[g]).forEach((f,i) => tone(g==='F'?147:f, .18, 'triangle', .1, .35+i*.09)); if (GS.op ? !sc.good : !OUT[GS.res.kind].g) buzz(80); } }
-  else { app.innerHTML = GS.op ? opPlayHTML() : playHTML(); dirty = true; frame(); }
+  else if (GS.phase === 'end'){ const fresh = !GS.recorded; recordCase(GS); app.innerHTML = endHTML(); app.classList.toggle('fx', fresh); window.scrollTo(0,0);
+    if (fresh){ const g = score(GS).grade; [523,659,784,1047].slice(0, {A:4,B:3,C:2,D:1,F:1}[g]).forEach((f,i) => tone(g==='F'?147:f, .18, 'triangle', .1, .35+i*.09)); if (!OUT[GS.res.kind].g) buzz(80); } }
+  else { app.innerHTML = playHTML(); dirty = true; frame(); }
   renderModal();
 }
 function dailyHTML(){
   const day = today(), dr = CR.daily[day];
   const cal = [...Array(7)].map((_,i) => { const d = new Date(); d.setDate(d.getDate()-6+i); const k = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); const r = CR.daily[k], cls = r ? ('AB'.includes(r.g)?'g':r.g==='F'?'b':'') : '';
-    return k === day ? `<i class="${cls} now" title="Today">${r ? r.g : '·'}</i>` : `<button class="${cls}" data-act="daily" data-day="${k}" aria-label="Replay brief #${dailyNo(k)} (${opTitle(dailyOp(k))}) as practice">${r ? r.g : '·'}</button>`; }).join('');
-  return `<div class="daily">${I('clock',18)}<div class="dt"><b>Daily brief #${dailyNo(day)} · ${opTitle(dailyOp(day))}</b><span class="mute sm">${dr ? `Done today: grade ${dr.g}${dr.tier ? ' · ' + dr.tier : ''}. Next brief in <span class="cd">${untilTomorrow()}</span>` : 'Same case for everyone today · one attempt · clearance 2'}</span>
+    return k === day ? `<i class="${cls} now" title="Today">${r ? r.g : '·'}</i>` : `<button class="${cls}" data-act="daily" data-day="${k}" aria-label="Replay brief #${dailyNo(k)} (${dailyEnv(k)}) as practice">${r ? r.g : '·'}</button>`; }).join('');
+  return `<div class="daily">${I('clock',18)}<div class="dt"><b>Daily brief #${dailyNo(day)} · ${dailyEnv(day)}</b><span class="mute sm">${dr ? `Done today: grade ${dr.g}${dr.tier ? ' · ' + dr.tier : ''}. Next brief in <span class="cd">${untilTomorrow()}</span>` : 'Same case for everyone today · one attempt · clearance 2'}</span>
     <span class="sm streak">${streak() ? `Streak <b>${streak()}</b> day${streak() === 1 ? '' : 's'}` : 'No streak yet'}${CR.bestStreak ? ` · best ${CR.bestStreak}` : ''}</span><div class="cal">${cal}</div><span class="mute xs">Tap an earlier day to replay it as practice.</span></div>${dr ? `<button class="btn" data-act="copy" data-day="${day}" id="copyb" style="flex:none">Share</button>` : `<button class="btn pri" data-act="daily" style="flex:none">Play</button>`}</div>
   ${GS.shareOpen && dr ? `<textarea class="share" readonly aria-label="Share text">${esc(shareText(day))}</textarea>` : ''}`;
 }
 function profileHTML(){
   const L = lvlOf(CR.xp), lo = xpFor(L), hi = xpFor(L+1), day = today(), dr = CR.daily[day];
   const cal = [...Array(7)].map((_,i) => { const d = new Date(); d.setDate(d.getDate()-6+i); const k = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); const r = CR.daily[k], cls = r ? ('AB'.includes(r.g)?'g':r.g==='F'?'b':'') : '';
-    return k === day ? `<i class="${cls} now" title="Today">${r ? r.g : '·'}</i>` : `<button class="${cls}" data-act="daily" data-day="${k}" aria-label="Replay brief #${dailyNo(k)} (${opTitle(dailyOp(k))}) as practice">${r ? r.g : '·'}</button>`; }).join('');
+    return k === day ? `<i class="${cls} now" title="Today">${r ? r.g : '·'}</i>` : `<button class="${cls}" data-act="daily" data-day="${k}" aria-label="Replay brief #${dailyNo(k)} (${dailyEnv(k)}) as practice">${r ? r.g : '·'}</button>`; }).join('');
   const nAch = Object.keys(CR.ach).length;
   return `<div class="prof">${I('person',22)}<div class="xp"><div style="display:flex;justify-content:space-between;font-size:13px"><span class="rk">${rankOf(L)} · lvl ${L}</span><span class="mute">${CR.xp} XP · ${CR.cases} case${CR.cases===1?'':'s'}</span></div><div class="bar"><b style="width:${Math.round((CR.xp-lo)/(hi-lo)*100)}%"></b></div></div><button class="ib" data-act="sound" aria-label="Sound" aria-pressed="${!!CR.sound}">${CR.sound ? '♪' : '<s>♪</s>'}</button><button class="ib fxb" data-act="fx" aria-label="Low effects: solid panels, no animation" aria-pressed="${!!CR.lowfx}">${CR.lowfx ? 'FX off' : 'FX'}</button></div>
   <label style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);font-weight:600;margin-top:14px">Clearance</label>
@@ -996,13 +1205,20 @@ function profileHTML(){
   <div class="rule">${esc(LEVELS[CR.sel].rule)}${CR.lvlMax < 5 ? ` <span style="color:var(--dim)">· B or better at ${CR.lvlMax} unlocks ${CR.lvlMax+1}</span>` : ''}</div>
   <div class="tiny">${['D','S','L'].map(T => `<span class="flag ${CR.bests[T] ? 'ok' : 'unk'}">${HN[T]}: ${CR.bests[T] || '—'}</span>`).join('')}<span class="flag info">outcomes ${Object.keys(CR.outs).length}/8</span><span class="flag warn" data-act="achs" style="cursor:pointer">badges ${nAch}/${Object.keys(ACH).length}</span></div>`;
 }
+function casesHTML(){
+  const sE = CR.seenE || {}, sS = CR.seenS || {};
+  return `<label class="seclbl">Conditions · ${Object.keys(sE).length}/${ENV_ORDER.length} seen</label><div class="envs">${ENV_ORDER.map(k => `<span class="envc ${sE[k]?'on':''}">${I(ENVS[k].ic,14)} ${esc(ENVS[k].name)}</span>`).join('')}</div>
+  <label class="seclbl">Situations · ${Object.keys(sS).length}/${STORY_KEYS.length} seen</label><div class="envs">${STORY_KEYS.map(k => `<span class="envc ${sS[k]?'on':''}">${sS[k] ? esc(STORIES[k].name) : '? ? ?'}</span>`).join('')}</div>
+  <div class="row" style="margin-top:10px"><button class="btn" data-act="rnd" style="flex:1">New random case</button></div>`;
+}
 function titleHTML(){
   return `<div class="title">${CLASSBAR}<div class="stage"><div class="box"><div class="bh">${LOGO}LATTICE<span class="mute" style="font-weight:400;letter-spacing:0;margin-left:auto">Case ${CASE_NO}</span></div><div class="bb">
   <h1>Border Watch</h1>
-  <p>Six fictional cases. Work each one like an intelligence analyst: <b>collect</b>, <b>corroborate</b>, <b>vet</b> restricted data lawfully, then <b>decide</b> before the clock runs out. New to an operation? Press <b>Learn</b>.</p>
+  <p>A dark boat is heading for our coast. Work it like an intelligence analyst: <b>collect</b>, <b>corroborate</b>, <b>vet</b> restricted data lawfully, then <b>decide</b> before the clock runs out.</p>
+  <p class="mute sm">Every seed sets the weather, the boat and what really happened. The weather decides which tools work: fog hides faces, a gale grounds the drone, the skerries confuse the radar.</p>
   ${dailyHTML()}
   <ul class="how"><li>One daily brief, the same case for everyone. One attempt.</li><li>Your score lifts an uplink toward orbit: 100 points reaches 35,786 km.</li><li>The obvious answer is often right. Calling the unlikely one right, on evidence, scores extra.</li></ul>
-  ${opsListHTML()}
+  ${casesHTML()}
   ${profileHTML()}
   <div class="seedrow" style="display:block"><label for="seed">Scenario seed · same seed, same case</label><div style="display:flex;gap:6px;margin-top:6px"><input id="seed" value="${esc(GS.seed || 'NIGHT-01')}" maxlength="24"><button class="btn pri" data-act="start" style="flex:none">Open case</button></div></div>
   <p class="mute" style="font-size:12.5px">The seed decides what really happened. Everything is fictional. Works offline.</p>
@@ -1030,14 +1246,16 @@ function mapSVG(){
   for (const k in UNITS){ const U = UNITS[k];
     units += `<line id="ul-${k}" stroke="#3DD6F5" stroke-width="1.5" stroke-dasharray="5 5" stroke-opacity=".8" visibility="hidden"/>
     <g id="ug-${k}">${U.air ? `<path d="M-17,9 L-17,-2 A17,13 0 0 1 17,-2 L17,9 Z" fill="#7FE7FF" stroke="#04131A" stroke-width="2"/>` : `<rect x="-17" y="-11" width="34" height="22" fill="#7FE7FF" stroke="#111418" stroke-width="2"/>`}<text text-anchor="middle" y="${U.air?6:5}" font-size="11" font-weight="800" fill="#10161D">${U.lbl}</text></g>`; }
-  const traffic = TRAFFIC.map((s,i) => `<g id="tf${i}"><rect x="-7" y="-7" width="14" height="14" fill="#AAE5C2" stroke="#111418" stroke-width="1.5"/><path d="M${s.v>0?'9,0 L16,0':'-9,0 L-16,0'}" stroke="#72CA9B" stroke-width="1.5"/><text y="-12" text-anchor="middle" font-size="10.5" letter-spacing="1" fill="#72CA9B">${s.n}</text></g>`).join('');
+  const E = GS && GS.sc ? envOf(GS) : ENVS.storm, ek = GS && GS.sc ? GS.sc.E : 'storm';
+  const traffic = trafficList(GS).map((s,i) => `<g id="tf${i}"><rect x="-7" y="-7" width="14" height="14" fill="#AAE5C2" stroke="#111418" stroke-width="1.5"/><path d="M${s.v>0?'9,0 L16,0':'-9,0 L-16,0'}" stroke="#72CA9B" stroke-width="1.5"/><text y="-12" text-anchor="middle" font-size="10.5" letter-spacing="1" fill="#72CA9B">${s.n}</text></g>`).join('');
   return `<svg class="map" viewBox="100 60 900 470" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Sea map">
   <defs><linearGradient id="stg" x1="0" x2="1"><stop offset="0" stop-color="#4c5c75" stop-opacity=".6"/><stop offset=".9" stop-color="#71839f" stop-opacity=".55"/><stop offset="1" stop-color="#c3cfe2" stop-opacity=".8"/></linearGradient>
   <pattern id="rain" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(18)"><line x1="2" y1="0" x2="2" y2="8" stroke="#d5e0f0" stroke-opacity=".3"/></pattern></defs>
-  <rect x="0" y="0" width="1000" height="620" fill="#10161D"/>
+  <rect x="0" y="0" width="1000" height="620" fill="${{gale:'#16222E', calm:'#14212C', harbour:'#141A25'}[ek] || '#10161D'}"/>
   <g stroke="#19212A">${grid}</g>
   <path d="M806,300 C650,322 450,334 0,350" fill="none" stroke="#9881F3" stroke-opacity=".55" stroke-width="2" stroke-dasharray="2 8"/>
   <text x="118" y="374" font-size="12" letter-spacing="1.5" fill="#9881F3" fill-opacity=".85">UNDERSEA CABLE</text>
+  ${envLayer(ek)}
   ${traffic}
   <rect id="stR" x="0" y="0" width="0" height="620" fill="url(#stg)"/><rect id="stR2" x="0" y="0" width="0" height="620" fill="url(#rain)"/>
   <text id="stL" x="110" y="520" font-size="13" font-weight="700" letter-spacing="2" fill="#DCE0E5">STORM FRONT ▶</text>
@@ -1058,9 +1276,16 @@ function mapSVG(){
   </g>
   ${units}</svg>`;
 }
+function envLayer(ek){
+  if (ek === 'fog') return `<g pointer-events="none"><rect x="0" y="0" width="1000" height="620" fill="#c9d4df" fill-opacity=".10"/>${[[300,200,260,70],[520,330,300,80],[260,430,240,60],[640,150,220,60],[430,520,280,60]].map(e => `<ellipse cx="${e[0]}" cy="${e[1]}" rx="${e[2]}" ry="${e[3]}" fill="#dfe7ef" fill-opacity=".09"/>`).join('')}<text x="118" y="548" font-size="13" font-weight="700" letter-spacing="2" fill="#DCE0E5" fill-opacity=".8">FOG BANK · VISIBILITY 200 M</text></g>`;
+  if (ek === 'gale') return `<g pointer-events="none" stroke="#dfe7ef" stroke-opacity=".13" stroke-width="1.5">${[...Array(26)].map((_,i) => { const x = 120 + (i*137)%640, y = 90 + (i*71)%450; return `<path d="M${x},${y} q18,-6 36,0 t36,0"/>`; }).join('')}</g><text x="118" y="548" font-size="13" font-weight="700" letter-spacing="2" fill="#DCE0E5">GALE · 70 KM/H ▶</text>`;
+  if (ek === 'skerries') return `<g fill="#1E2329" stroke="#404854" stroke-width="1.2">${[[430,180,14,9],[470,220,10,7],[515,195,18,10],[560,240,12,8],[600,205,9,6],[450,280,16,9],[505,300,11,7],[548,325,15,9],[610,300,10,7],[655,270,13,8],[480,370,12,8],[530,400,17,9],[590,380,10,7],[640,350,14,9],[700,320,11,7],[690,230,9,6]].map(e => `<ellipse cx="${e[0]}" cy="${e[1]}" rx="${e[2]}" ry="${e[3]}"/>`).join('')}</g><text x="560" y="455" text-anchor="middle" font-size="12" letter-spacing="3" fill="#8F99A8">SKERRIES</text>`;
+  if (ek === 'harbour') return `<g pointer-events="none"><path d="M790,425 L700,380 L700,470 Z" fill="#3DD6F5" fill-opacity=".07"/><circle cx="790" cy="425" r="4" fill="#3DD6F5"/><text x="700" y="372" font-size="11" letter-spacing="1.5" fill="#3DD6F5" fill-opacity=".85">PORT CAMERAS</text></g>`;
+  if (ek === 'calm') return `<text x="118" y="548" font-size="13" font-weight="700" letter-spacing="2" fill="#DCE0E5" fill-opacity=".8">CALM · CLEAR · GOOD VISIBILITY</text>`;
+  return '';
+}
 function frame(){
   if (!GS || GS.phase !== 'play' || !$('#clock')) return;
-  if (GS.op) return opFrame();
   const G = GS, c = cpos(G, G.t), C = G.sc.C;
   $('#clock').textContent = hhmm(G.t);
   const bpH = I(G.paused ? 'play' : 'pause'); if ($('#bp')._h !== bpH){ $('#bp').innerHTML = bpH; $('#bp')._h = bpH; } $('#bp').classList.toggle('on', G.paused);
@@ -1068,15 +1293,16 @@ function frame(){
   const fx = clamp(stormX(G, G.t), 0, 1000);
   $('#stR').setAttribute('width', fx); $('#stR2').setAttribute('width', fx);
   $('#stL').setAttribute('x', Math.max(110, fx - 100)); $('#stL').setAttribute('visibility', fx > 150 ? 'visible' : 'hidden');
-  TRAFFIC.forEach((s,i) => { const p = trafficPos(s, G.t); $('#tf'+i).setAttribute('transform', `translate(${p.x.toFixed(1)},${p.y})`); });
+  trafficList(G).forEach((s,i) => { const p = trafficPos(s, G.t); $('#tf'+i).setAttribute('transform', `translate(${p.x.toFixed(1)},${p.y})`); });
   $('#trail').setAttribute('points', G.trail.map(p => p.join(',')).join(' ') + ` ${c.x.toFixed(1)},${c.y.toFixed(1)}`);
   // track history after replay
   const h = $('#hist');
   if (G.done.track){
-    const s = G.sc, pts = G.truth === 'D' ? `${s.sx-210},${s.sy-40} ${s.sx-120},${s.sy-20}` : G.truth === 'L' ? `${s.sx-60},${s.sy+40} ${s.sx-20},${s.sy+10}` : `${s.sx-60},${s.sy+30} ${s.sx-25},${s.sy+12}`;
+    const s = G.sc, M = s.C.mo, pts = M === 'drift' ? `${s.sx-210},${s.sy-40} ${s.sx-120},${s.sy-20}` : M === 'survey' || M === 'anchor' || M === 'fish' ? `${s.sx-60},${s.sy+40} ${s.sx-20},${s.sy+10}` : `${s.sx-60},${s.sy+30} ${s.sx-25},${s.sy+12}`;
     h.setAttribute('points', pts + ` ${G.trail[0].join(',')}`); h.setAttribute('visibility', 'visible');
   } else h.setAttribute('visibility', 'hidden');
   $('#cg').setAttribute('transform', `translate(${c.x.toFixed(1)},${c.y.toFixed(1)})`);
+  const Ev = envOf(G); $('#cg').setAttribute('opacity', Ev.clutter && Math.floor(G.t/3) % 4 === 0 ? .25 : G.sc.E === 'fog' ? .75 : 1);
   setTxt('#clabel', 'K-7' + (vesselKnown(G) ? ' · ' + C.vessel.name : ''));
   const pp = probs(G), bb = best(pp), sure = !blind(G) && G.findings.length && pp[bb] >= 0.75;
   const sym = !sure ? 'unknown' : bb === 'S' ? 'hostile' : 'neutral';
@@ -1090,7 +1316,8 @@ function frame(){
     else l.setAttribute('visibility', 'hidden');
   }
   const sIn = G.sc.hitT - G.t, bIn = (BORDER_X - c.x)/10;
-  let chips = `<span class="chip ${sIn < 10 && sIn > 0 ? 'hot' : ''}">${I('storm',12)} ${G.sc.hitT >= 200 ? 'storm behind' : sIn > 0 ? 'storm '+Math.ceil(sIn)+' min' : 'storm over K-7'}</span>`;
+  let chips = Ev.storm ? `<span class="chip ${sIn < 10 && sIn > 0 ? 'hot' : ''}">${I('storm',12)} ${G.sc.hitT >= 200 ? 'storm behind' : sIn > 0 ? 'storm '+Math.ceil(sIn)+' min' : 'storm over K-7'}</span>` : `<span class="chip">${I(Ev.ic,12)} ${esc(Ev.name)}</span>`;
+  if (Ev.drone === 'grounded') chips += `<span class="chip">${I('drone',12)} drone grounded</span>`;
   chips += `<span class="chip">${I('ship',12)} ${bIn > 0 ? 'border '+bIn.toFixed(0)+' km' : 'in our waters'}</span>`;
   if (G.truth === 'D' && (G.saved > 0 || G.sunk)) chips += `<span class="chip ${G.sunk?'hot':''}">rescued ${Math.floor(G.saved)}/${G.sc.people}</span>`;
   if (G.units.drone.st === 'out') chips += `<span class="chip">drone ${Math.ceil(Math.hypot(c.x-G.units.drone.x, c.y-G.units.drone.y)/UNITS.drone.speed)} min</span>`;
@@ -1101,43 +1328,54 @@ function frame(){
 }
 function setTxt(sel, v){ const el = $(sel); if (el && el.textContent !== v) el.textContent = v; }
 function setHTML(sel, v){ const el = $(sel); if (el && el._h !== v){ el.innerHTML = v; el._h = v; } }
+function flowList(G){ return facesOK(G) ? FLOW : FLOW.map(f => f[0] === 'people' ? ['people','Movement'] : f[0] === 'records' ? ['records','Links'] : f); }
 function flowState(G){
+  const fo = facesOK(G);
   const st = {detect:true, track:!!G.done.track, vessel:!!(G.done.registry || G.graph.length > 1),
-    people:G.done.face && Object.keys(G.ids).length >= G.sc.C.people.filter(p=>!p.crowd).length,
-    records:G.unlocked, decide:!!G.decision};
+    people: fo ? G.done.face && Object.keys(G.ids).length >= G.sc.C.people.filter(p=>!p.crowd).length : !!G.done.drift,
+    records: fo ? G.unlocked : G.graph.length > 2, decide:!!G.decision};
   return st;
 }
 function nextHint(G){
   if (G.closed) return 'Decision made. Watch the outcome on the map.';
   if (G.busy) return 'Analyst busy: '+G.busy.label+'…';
-  if (!G.done.track) return '<b>Correlate:</b> replay the contact’s track to see which ship it might be. <span class="mute">(Look tab)</span>';
-  if (!G.done.droneSent) return '<b>Get eyes on it:</b> send the drone now. It takes ~16 min to fly out.';
-  if (!G.done.registry) return '<b>Identify the vessel:</b> run a registry check and search around its owner. <span class="mute">(Vessel tab)</span>';
-  if (!G.done.drone) return 'Waiting for the drone. Meanwhile: call them on the radio, or search around the vessel.';
-  if (!G.done.face) return '<b>Identify people:</b> run a face match on the drone video. <span class="mute">(People tab)</span>';
-  if (G.sc.C.people.some((p,i) => !p.crowd && !G.ids[i])) return '<b>Resolve identities:</b> confirm or reject each face match. Weak matches are often wrong.';
-  if (!G.unlocked) return '<b>Vet:</b> police records are restricted. State your purpose to open them.';
-  return '<b>Decide:</b> you have the picture. Open the Decide tab.';
+  const E = envOf(G), fo = facesOK(G);
+  if (!G.done.track) return '<b>Correlate:</b> replay the contact’s track to see which ship it might be.' + (E.clutter ? ' The skerries make it fuzzy.' : '') + ' <span class="mute">(Look tab)</span>';
+  if (E.drone !== 'grounded' && !G.done.droneSent) return '<b>Get eyes on it:</b> send the drone now; it takes a while to fly out.' + (fo ? '' : ` <span class="mute">(${E.drone === 'fog' ? 'fog' : 'dark'}: heat only, no faces)</span>`);
+  if (!G.done.drift) return '<b>How does it move?</b> A drift check shows whether it has power, or is just drifting. <span class="mute">(Look tab)</span>';
+  if (!G.done.hail) return '<b>Ask them:</b> call on channel 16. People can lie on the radio; compare what they say with how they move.';
+  if (E.cams && !G.done.cams) return '<b>Check the cameras:</b> port cameras show what left the harbour. <span class="mute">(Look tab)</span>';
+  if (!G.done.registry) return '<b>Identify the vessel:</b> run a registry check. Is the identity real? <span class="mute">(Vessel tab)</span>';
+  if (G.graph.length < 3) return '<b>Search around:</b> tap ＋ on the link graph to find owners, reports and documents. <span class="mute">(Vessel tab)</span>';
+  if (fo){
+    if (!G.done.drone) return 'Waiting for the drone. Meanwhile, keep searching around the vessel.';
+    if (!G.done.face) return '<b>Identify people:</b> run a face match on the drone video. <span class="mute">(People tab)</span>';
+    if (G.sc.C.people.some((p,i) => !p.crowd && !G.ids[i])) return '<b>Resolve identities:</b> confirm or reject each face match. Weak matches are often wrong.';
+    if (!G.unlocked) return '<b>Vet:</b> police records are restricted. State your purpose to open them.';
+  }
+  return '<b>Decide:</b> you have the picture. Every minute counts. Open the Decide tab.';
 }
 const TABS = [['look','radar','Look'],['vessel','ship','Vessel'],['people','id','People'],['case','folder','Case'],['decide','scales','Decide']];
 function renderPanel(){
   const G = GS, C = G.sc.C, fl = flowState(G);
   const last = G.ticker[G.ticker.length-1];
   $('#ticker').innerHTML = last ? `<span class="tm">${hhmm(last.t)}</span>${esc(last.m)}` : '';
-  const cur = FLOW.find(f => !fl[f[0]]);
-  $('#flow').innerHTML = FLOW.map((f,j) => `<span class="${fl[f[0]] ? 'd' : cur && cur[0]===f[0] ? 'c' : ''}"><b>${fl[f[0]] ? '✓' : j+1}</b>${f[1]}</span>`).join('<em>›</em>');
+  const FL = flowList(G), cur = FL.find(f => !fl[f[0]]);
+  $('#flow').innerHTML = FL.map((f,j) => `<span class="${fl[f[0]] ? 'd' : cur && cur[0]===f[0] ? 'c' : ''}"><b>${fl[f[0]] ? '✓' : j+1}</b>${f[1]}</span>`).join('<em>›</em>');
   $('#tabs').innerHTML = TABS.map(t => `<button class="tab ${G.tab===t[0]?'on':''} ${t[0]==='decide'?'dec':''}" data-act="${t[0]==='decide'?'ask':'tab'}" data-t="${t[0]}" ${t[0]==='decide'&&G.closed?'disabled':''}><span class="ti">${I(t[1],18)}</span>${t[2]}${G.badge===t[0]&&G.tab!==t[0]?'<span class="bd"></span>':''}</button>`).join('');
   let h = `<div class="hint">${I('info')}<span>${nextHint(G)}</span></div>`;
   const pbar = id => G.busy && G.busy.id === id ? '<i class="pg" id="pg"></i>' : '';
   const actBtn = (act, id, ic, nm, ds, dis, done, extra='') => `<button class="act ${done?'done':''} ${G.busy&&G.busy.id===id?'go':''} ${extra}" data-act="${act}" data-id="${id}" ${dis?'disabled':''}><span class="ic">${I(ic,18)}</span><span class="nm">${nm}</span><span class="ds">${ds}</span>${pbar(id)}</button>`;
   const lock = G.closed || !!G.busy;
   if (G.tab === 'look'){
-    const ds = G.units.drone.st;
+    const ds = G.units.drone.st, E = envOf(G), fo = facesOK(G), gr = E.drone === 'grounded';
     h += `<div class="acts">
-      ${actBtn('task','track','track','Replay track','Match radar with AIS history · 2 min', lock || G.done.track, G.done.track)}
+      ${actBtn('task','track','track','Replay track', E.clutter ? 'Radar + AIS · fuzzy in the skerries · 2 min' : 'Match radar with AIS history · 2 min', lock || G.done.track, G.done.track)}
+      ${actBtn('task','drift','drift','Drift check','Power, or drifting with wind and current? · 2 min', lock || G.done.drift, G.done.drift)}
       ${actBtn('task','hail','radio','Call on ch. 16','Hail the vessel by radio · 3 min', lock || G.done.hail, G.done.hail)}
-      ${actBtn('drone','drone','drone','Send drone', ds==='out' ? 'On its way…' : G.done.drone ? 'Video live' : 'Live video · ~16 min flight', G.closed || ds!=='base' || G.done.drone, G.done.drone, ds==='out'?'go':'')}
-      ${actBtn('tab','people','id','Face match', G.done.drone ? 'Open People tab' : 'Needs the drone first', !G.done.drone, G.done.face)}
+      ${actBtn('drone','drone','drone','Send drone', gr ? 'Grounded: wind too strong' : ds==='out' ? 'On its way…' : G.done.drone ? (fo ? 'Video live' : 'Heat image only') : (fo ? 'Live video' : 'Thermal only, no faces') + ' · long flight', G.closed || gr || ds!=='base' || G.done.drone, G.done.drone, ds==='out'?'go':'')}
+      ${E.cams ? actBtn('task','cams','cam','Port cameras','Harbour-mouth footage · 2 min', lock || G.done.cams, G.done.cams) : ''}
+      ${actBtn('tab','people','id','Face match', !fo ? 'No faces in these conditions' : G.done.drone ? 'Open People tab' : 'Needs the drone first', !fo || !G.done.drone, G.done.face)}
     </div>`;
     h += latticeCard(G);
   }
@@ -1154,7 +1392,8 @@ function renderPanel(){
     }
   }
   if (G.tab === 'people'){
-    if (!G.done.drone) h += `<div class="card"><p class="mute">No faces yet. ${G.done.droneSent ? 'The drone is on its way.' : 'Send the drone (Look tab) to get video of the people on board.'}</p></div>`;
+    if (!facesOK(G)) h += `<div class="card"><div class="lbl"><span>People on board</span><span>${I(envOf(G).ic,12)} ${esc(envOf(G).name)}</span></div><p>No faces in these conditions: ${envOf(G).drone === 'grounded' ? 'the drone cannot fly in this wind' : envOf(G).drone === 'fog' ? 'the fog hides them' : 'it is dark, and thermal shows heat, not faces'}.</p><p class="mute sm" style="margin-top:6px">Build the case from how it moves, what they say on the radio, the registry and the link graph.</p></div>`;
+    else if (!G.done.drone) h += `<div class="card"><p class="mute">No faces yet. ${G.done.droneSent ? 'The drone is on its way.' : 'Send the drone (Look tab) to get video of the people on board.'}</p></div>`;
     else if (!G.done.face) h += `<div class="acts">${actBtn('task','face','people','Run face match','Drone video vs. national ID photos · 2 min', lock, false, 'wide')}</div>`;
     else {
       h += `<div class="card"><div class="lbl"><span>People on board</span><span>${G.unlocked ? (G.override ? '<span class="no">records: override</span>' : '<span class="ok">records: logged access</span>') : I('lock',12)+' records restricted'}</span></div><div style="display:flex;flex-direction:column;gap:8px">${C.people.map((p,i) => personRow(G,p,i)).join('')}</div></div>`;
@@ -1169,7 +1408,7 @@ function renderPanel(){
   if (G.tab === 'decide' && G.closed) h += `<div class="card"><div class="verdict">Decision: ${I(DEC[G.decision].icon)} ${DEC[G.decision].name}</div><p class="mute sm">Time runs fast to the outcome.</p></div>`;
   $('#body').innerHTML = h;
 }
-function latticeCard(G){ return assessCard(G, probs(G), G.findings.length, HK, HN, HC, 'Most dark boats here were criminal.'); }
+function latticeCard(G){ return assessCard(G, probs(G), G.findings.length, HK, HN, HC, envOf(G).base); }
 function personRow(G, p, i){
   if (p.crowd) return `<div class="pcard" style="cursor:default"><span class="av">+</span><span class="nm">${esc(p.n)}</span><span class="mt"></span><span><span class="flag ${p.st}">${esc(p.tag)}</span></span></div>`;
   const st = G.ids[i], recVisible = st === 'yes' && G.unlocked;
@@ -1229,15 +1468,15 @@ function renderModal(){
   const m = GS && GS.modal, box = $('#modal');
   if (!m || (GS.phase !== 'play' && m.type !== 'achs')){ box.innerHTML = ''; return; }
   const G = GS, C = G.sc ? G.sc.C : null; let h = '';
-  if (G.op && ['obrief','otut','opurp','oimg','odecide'].includes(m.type)) h = opModal(m);
-  if (m.type === 'alert' || m.type === 'help') h = `${m.type==='alert' ? `<div class="alert"><b>${I('alert',14)} ALERT · ${hhmm(G.t)} · RADAR</b><div>Radar contact <b>K-7</b> has no matching AIS signal. ${((BORDER_X - G.sc.sx)/10).toFixed(0)} km from the border, heading for the coast.</div></div>` : '<h2>How to work the case</h2>'}
+  if (m.type === 'alert' || m.type === 'help') h = `${m.type==='alert' ? `<div class="alert"><b>${I('alert',14)} ALERT · ${hhmm(G.t)} · RADAR</b><div>Radar contact <strong>K-7</strong> has no matching AIS signal. ${((BORDER_X - G.sc.sx)/10).toFixed(0)} km from the border.</div></div>` : '<h2>How to work the case</h2>'}
+    <div class="envb">${I(envOf(G).ic,18)}<div><b>${esc(envOf(G).name)}</b><span>${esc(envOf(G).brief)}</span></div></div>
     <ol class="steps">
-     <li><span><b>Correlate</b> the blip with AIS history: which ship is it?</span></li>
+     <li><span><b>Correlate</b> the blip with AIS history, and <b>check its drift</b>: does it have power?</span></li>
+     <li><span><b>Ask</b> on the radio, but compare what they say with how they move.</span></li>
      <li><span><b>Identify the vessel</b>: registry check, then search around its owner.</span></li>
-     <li><span><b>Identify people</b>: drone video → face match → confirm or reject each match.</span></li>
-     <li><span><b>Vet</b>: open police records with a stated purpose. Everything is logged.</span></li>
+     <li><span><b>Identify people</b> when the drone can see faces, then <b>vet</b> records with a stated purpose.</span></li>
      <li><span><b>Decide</b>: rescue, board, shadow or let it pass.</span></li></ol>
-    <p class="mute sm">The clock runs: 1 s = 1 min. A storm is coming. Space pauses.</p>
+    <p class="mute sm">Weather and light decide which tools work. Every check costs minutes. 1 s = 1 min. Space pauses.</p>
     <div class="row"><button class="btn pri" data-act="close">${m.type==='alert' ? 'Open the case' : 'Back'}</button></div>`;
   if (m.type === 'idcards'){
     const ppl = C.people.map((p,i) => i).filter(i => !C.people[i].crowd), k = Math.max(0, ppl.indexOf(m.i)), i = ppl[k] ?? ppl[0];
@@ -1272,7 +1511,7 @@ function renderModal(){
   if (m.type === 'achs') h = `<h2>${I('check',18)} Badges</h2>${Object.keys(ACH).map(id => `<div class="ach" style="${CR.ach[id]?'':'opacity:.45'}">${CR.ach[id]?I('check',14):I('lock',14)}<span><b>${ACH[id][0]}</b> · ${ACH[id][1]}${CR.ach[id]?` <span class="mute">${CR.ach[id]}</span>`:''}</span></div>`).join('')}<div class="row"><button class="btn" data-act="cancel">Close</button></div>`;
   if (m.type === 'reset') h = `<h2>Start over?</h2><p><b>Reset case</b> deletes this case only. <b>Reset everything</b> also wipes your rank, clearances, archive and badges.</p>
     <div class="row"><button class="btn" data-act="cancel">Cancel</button><button class="btn red" data-act="doReset">Reset case</button></div><div class="row" style="margin-top:6px"><button class="btn red" data-act="doResetAll">Reset everything</button></div>`;
-  box.innerHTML = `<div class="modalbg" data-act="${['alert','help','idcards','oimg','obrief','otut'].includes(m.type)?'close':'cancel'}"><div class="sheet" role="dialog" aria-modal="true">${h}</div></div>`;
+  box.innerHTML = `<div class="modalbg" data-act="${['alert','help','idcards'].includes(m.type)?'close':'cancel'}"><div class="sheet" role="dialog" aria-modal="true">${h}</div></div>`;
 }
 
 // ---------- debrief ----------
@@ -1286,10 +1525,11 @@ function missedClue(G){
   // the single most telling clue the player never collected (honest "what you missed")
   const C = G.sc.C, ti = HK.indexOf(G.truth), have = new Set(G.findings.map(f => f.key)), cand = [];
   const add = (key, tool, title, w) => { if (!have.has(key) && w) cand.push({tool, title, r: w[ti] / Math.max(...w.filter((_,i)=>i!==ti))}); };
-  add('track', 'Replay track', C.track[0], C.track[2]); add('hail', 'Radio call', hailResult(G)[0], hailResult(G)[2]);
-  add('registry', 'Registry check', C.registry[0], C.registry[2]); add('drone', 'Drone', droneResult(G)[0], droneResult(G)[2]);
+  add('track', 'Replay track', trackResult(G)[0], trackResult(G)[2]); add('drift', 'Drift check', C.drift[0], C.drift[2]); add('hail', 'Radio call', hailResult(G)[0], hailResult(G)[2]);
+  add('registry', 'Registry check', C.registry[0], C.registry[2]); if (envOf(G).drone !== 'grounded') add('drone', 'Drone', droneResult(G)[0], droneResult(G)[2]);
+  if (envOf(G).cams) add('cams', 'Port cameras', C.cams[0], C.cams[2]);
   C.graph.forEach(n => n.w && add('g-'+n.id, 'Search around', n.label+': '+n.text, n.w));
-  C.people.forEach((p,i) => !p.crowd && p.same && add('rec-'+i, 'Police records', p.n+': '+p.tag, p.w));
+  if (facesOK(G)) C.people.forEach((p,i) => !p.crowd && p.same && add('rec-'+i, 'Police records', p.n+': '+p.tag, p.w));
   return cand.filter(c => c.r > 1.5).sort((a,b) => b.r - a.r)[0] || null;
 }
 function score(G){
@@ -1299,10 +1539,11 @@ function score(G){
   s += callPts; L.push([J >= 70 ? 'Sound call for the evidence you had' : J >= 45 ? 'Shaky call for the evidence you had' : 'The evidence didn’t support this call', callPts]);
   let idp = 0; G.sc.C.people.forEach((p,i) => { if (p.crowd || !G.ids[i]) return; idp += ((G.ids[i]==='yes') === p.same) ? 5 : -8; });
   s += idp; L.push(['Identity matches resolved', idp]);
-  const acc = G.override ? -10 : G.unlocked ? 10 : 0; s += acc; L.push([G.override ? 'Records opened by override' : G.unlocked ? 'Records opened with a logged purpose' : 'Records never opened', acc]);
+  if (facesOK(G)){ const acc = G.override ? -10 : G.unlocked ? 10 : 0; s += acc; L.push([G.override ? 'Records opened by override' : G.unlocked ? 'Records opened with a logged purpose' : 'Records never opened', acc]); }
+  else { const n = G.findings.length, d = n >= 5 ? 20 : n >= 4 ? 10 : 0; s += d; L.push(['No faces to match: built the picture from other sources', d]); }
   const ev = G.findings.length >= 3 ? 10 : 0; s += ev; L.push([ev ? 'Gathered evidence before acting' : 'Acted on little evidence', ev]);
   if (G.decision === 'board'){ const b = G.basisOK ? 5 : -15; s += b; L.push([G.basisOK ? 'Boarding had a valid legal basis' : 'Boarding had no valid legal basis', b]); }
-  const needle = !!G.decision && againstOdds({D:.3, S:.4, L:.3}, G.truth, PAY[G.decision][G.truth]);
+  const needle = !!G.decision && againstOdds(envOf(G).prior, G.truth, PAY[G.decision][G.truth]);
   if (needle){ s += 8; L.push(['Against the odds: the less likely answer, called right', 8]); }
   s = clamp(s, 0, 100);
   return {s, L, needle, grade: s >= 85 ? 'A' : s >= 70 ? 'B' : s >= 50 ? 'C' : s >= 30 ? 'D' : 'F'};
@@ -1334,24 +1575,19 @@ function careerCard(G){
 }
 function endHTML(){
   const G = GS, o = OUT[G.res.kind], sc = score(G), s = G.sc, C = s.C, p = probs(G), lb = best(p);
-  const truth = {D:`K-7 was a broken-down fishing boat (${esc(C.vessel.name)}) with <b>${s.people} people</b> aboard, including children.`,
-    S:`K-7 was a smuggling speedboat using the identity of a scrapped fishing boat, “${esc(s.sname)}”.`,
-    L:`K-7 was <b>AURELLE</b>, a licensed research ship. Its transponder had simply broken.`}[G.truth];
-  const lesson = {D:'A dark boat and a man with an old fine made this look criminal. The real clues were cheap: the radio, the drift, the overdue-boat report. The weak face match pointed at the wrong man.',
-    S:'The transponder said “fishing boat”. The registry showed a zombie identity, and the face match found a convicted smuggler who also directed the owning company. That chain of links is how analysts build a case.',
-    L:'A dark ship over a cable looked like sabotage, and a weak match put a protester “on board”. The permit and the radio call showed licensed work.'}[G.truth];
+  const truth = C.truth, lesson = esc(C.lesson), Ev = envOf(G), head = (C.outH && C.outH[G.res.kind]) || o.h;
   const fp = C.people.map((x,i) => ({x,i})).filter(o => !o.x.crowd);
   return `${CLASSBAR}<div class="end">
    <div class="hero ${o.g?'good':'bad'}"><div class="grade ${o.g?'ok':'no'}">${sc.grade}</div>
-    <div class="meta">CASE ${CASE_NO} · ${hhmm(G.res.t)} · SEED ${esc(G.seed)}</div>
-    <h1>${o.h}</h1><p>${truth}</p>${G.truth==='D' ? `<p style="margin-top:8px"><b>${Math.floor(G.saved)} of ${s.people}</b> rescued.</p>` : ''}</div>
+    <div class="meta">CASE ${CASE_NO} · ${esc(Ev.name.toUpperCase())} · ${hhmm(G.res.t)} · SEED ${esc(G.seed)}</div>
+    <h1>${esc(head)}</h1><p>${truth}</p>${G.truth==='D' ? `<p style="margin-top:8px"><b>${Math.floor(G.saved)} of ${s.people}</b> rescued.</p>` : ''}</div>
    <div class="card"><div class="lbl"><span>Your decision</span><span>${hhmm(G.decidedAt ?? G.res.t)}</span></div>
     <div class="verdict">${G.decision ? I(DEC[G.decision].icon,18)+' '+DEC[G.decision].name : 'None'}</div>
     ${G.decision === 'board' ? `<p class="sm" style="margin-top:4px">Legal basis: ${esc(BASIS[G.basis].name)} — ${G.basisOK ? '<span class="ok">valid</span>' : '<span class="no">not valid</span>'}</p>` : ''}
     <p class="mute sm" style="margin-top:4px">Lattice said <span style="color:${HC[lb]}">${HN[lb]} (${Math.round(p[lb]*100)}%)</span>. The truth: <span style="color:${HC[G.truth]}">${HN[G.truth]}</span>.</p></div>
-   <div class="card"><div class="lbl"><span>Who was really on board</span></div>
+   ${!facesOK(G) ? `<div class="card"><div class="lbl"><span>Situation</span><span>${esc(STORIES[G.sc.story].name)}</span></div><p class="mute sm">No faces could be seen in ${esc(Ev.name.toLowerCase())}. This case had to be solved from movement, radio, registry and links.</p></div>` : `<div class="card"><div class="lbl"><span>Who was really on board</span><span>${esc(STORIES[G.sc.story].name)}</span></div>
     ${fp.map(({x,i}) => `<div class="ev" style="border-color:${x.same?'var(--green)':'var(--red)'}"><b>${esc(x.n)} · ${x.m}% match → ${x.same ? 'really them' : 'NOT them'}</b>
-      <span>You ${G.ids[i]==='yes'?'confirmed':G.ids[i]==='no'?'rejected':'never resolved'} this match. ${((G.ids[i]==='yes')===x.same && G.ids[i]) ? '<span class="ok">✓</span>' : G.ids[i] ? '<span class="no">✗</span>' : ''} ${x.truthNote ? esc(x.truthNote) : ''}</span></div>`).join('')}</div>
+      <span>You ${G.ids[i]==='yes'?'confirmed':G.ids[i]==='no'?'rejected':'never resolved'} this match. ${((G.ids[i]==='yes')===x.same && G.ids[i]) ? '<span class="ok">✓</span>' : G.ids[i] ? '<span class="no">✗</span>' : ''} ${x.truthNote ? esc(x.truthNote) : ''}</span></div>`).join('')}</div>`}
    ${debriefExtra(G, sc, p, lb)}
    ${uplinkCard(G, sc)}
    <div class="card"><div class="lbl"><span>Score</span><span>${sc.s}/100</span></div><div class="sc">${sc.L.map(l => `<div><span>${esc(l[0])}</span><b class="${l[1]>0?'ok':l[1]<0?'no':'mute'}">${l[1]>0?'+':''}${l[1]}</b></div>`).join('')}</div></div>
@@ -1364,7 +1600,7 @@ function endHTML(){
   </div>`;
 }
 
-// ================= OPERATIONS: data-driven cases (all fictional) =================
+// ---------- extra icons ----------
 Object.assign(ICONS, {
   sat:'<rect x="6" y="6" width="4" height="4"/><path d="M6 8H1.5M10 8h4.5M3 5.5v5M13 5.5v5M8 10v3.5M6.5 13.5h3"/>',
   coin:'<circle cx="8" cy="8" r="6.5"/><path d="M8 4v8M10.3 5.8H7.2a1.2 1.2 0 0 0 0 2.4h1.6a1.2 1.2 0 0 1 0 2.4H5.7"/>',
@@ -1374,496 +1610,13 @@ Object.assign(ICONS, {
   flame:'<path d="M8 14.5c-3 0-4.5-2-4.5-4.5 0-3 3-4.5 3-8 2 1.5 3 3 3 4.5 1-.5 1.5-1.5 1.5-2.5 1.5 1.5 2 3.5 2 6 0 2.5-2 4.5-5 4.5z"/>',
   cam:'<rect x="1.5" y="4" width="9" height="8" rx="1"/><path d="M10.5 7l4-2.5v7l-4-2.5"/>',
   key:'<circle cx="5" cy="8" r="3"/><path d="M8 8h7M12.5 8v2.5M14.5 8v2"/>',
-  flag:'<path d="M3 15V1.5M3 2.5h9l-2 3 2 3H3"/>'
+  flag:'<path d="M3 15V1.5M3 2.5h9l-2 3 2 3H3"/>',
+  fog:'<path d="M2 5.5h12M1 8h10M4 10.5h11M2 13h9"/>',
+  wind:'<path d="M1.5 6h9a2 2 0 1 0-2-2M1.5 9.5h11.5a2 2 0 1 1-2 2M1.5 12.5h5"/>',
+  sun:'<circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3"/>',
+  island:'<path d="M1 12.5c2-1 3.5-1 5 0s3 1 5 0 2.5-1 4 0M3 11l2-4 2 2 2-4 3 6"/>',
+  drift:'<path d="M1.5 5c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 2.5-1.5 4 0M1.5 10c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 2.5-1.5 4 0"/><path d="M11 13.5h3.5V10"/>'
 });
-const OPK = ['A','B','C'];
-const OPS = {
- ridge: {
-  name:'Iron Ridge', kind:'Military operation', ic:'shield', code:'OP-IR', start:300, deadline:70, dlTxt:'column at the pass',
-  hyp:{A:'Assault force', B:'Military exercise', C:'Civilian evacuation'}, col:{A:'#FF7A45', B:'#56B4E9', C:'#F0E442'},
-  prior:{A:.35, B:.4, C:.25}, base:'Most columns near this line in past years were exercises.', tutT:'B', places:['Lake Orla','the Vesk valley','Upper Tarn'],
-  alert:'Border radar sees a column of about 120 vehicles on the Kestrian side, driving toward <b>Karven Pass</b>. At this speed it reaches the pass in about {DL} minutes.',
-  learn:'A military column could be an attack, a training exercise, or people fleeing a disaster. Each tool sees a different part of the picture. Satellites only pass overhead at set times, so plan around the next pass.',
-  tabs:[['look','radar','Sensors'],['intel','doc','Intel'],['people','person','People']],
-  restrictName:'Signals intercept',
-  tasks:[
-   {id:'sat', tab:'look', ic:'sat', nm:'Satellite pass', ds:'Optical photo of the column', min:3, at:12, cloud:true, img:'column', src:'Satellite (optical)', rel:1, r:{
-     A:['Satellite: ~40 armoured vehicles and fuel trucks','Tracked vehicles spaced for an attack, bridging gear at the rear.',[4,.6,.2]],
-     B:['Satellite: vehicles in neat rows, umpire flags','White crosses on the roofs and a field kitchen: exercise markings.',[.4,4,.4]],
-     C:['Satellite: buses, tractors and private cars','Hundreds of civilian vehicles, many towing trailers full of furniture.',[.2,.3,6]]}},
-   {id:'drone', tab:'look', ic:'drone', nm:'Drone overflight', ds:'Close-up video, stays on our side', min:6, src:'Drone video', rel:.9, r:{
-     A:['Drone: crews painting over exercise markings','Air-defence vehicles have moved to the front of the column.',[3.5,.4,.5]],
-     B:['Drone: referees in yellow vests','Umpires film the column. No live ammunition is visible.',[.4,3.5,.5]],
-     C:['Drone: families walking beside the road','A few soldiers direct traffic. People carry bags and children.',[.3,.5,5]]}},
-   {id:'sigint', tab:'look', ic:'radio', nm:'Radio intercept', ds:'Restricted · logged purpose', min:3, restricted:true, src:'Signals intercept', rel:.8, r:{
-     A:['Intercept: units ordered to radio silence','Going silent before a move is a classic warning sign.',[3,.7,.8]],
-     B:['Intercept: “Exercise Northwind, phase 2”','Open chatter about exercise phases and scoring.',[.5,3.5,.7]],
-     C:['Intercept: “route the buses to the pass”','Police and army talk about moving people away from flooding.',[.4,.6,4]]}},
-   {id:'notice', tab:'intel', ic:'doc', nm:'Exercise notices', ds:'Treaty notifications · 2 min', min:2, src:'Vesta Accord register', rel:1, r:{
-     A:['No exercise was notified','The Vesta Accord requires exercises this size to be announced. Nothing was filed.',[2.5,.3,1.2]],
-     B:['Exercise “Northwind” notified 3 weeks ago','2,000 troops near Karven Pass this week, filed under the Vesta Accord.',[.5,5,.6]],
-     C:['No exercise was notified','Nothing was filed for this week.',[1.6,.3,1.5]]}},
-   {id:'osint', tab:'intel', ic:'search', nm:'Local news & posts', ds:'Open sources · 2 min', min:2, src:'Open-source monitoring', rel:.8, r:{
-     A:['Locals post tanks at the fuel depot','Posts say soldiers told villagers to stay indoors.',[2.5,1,.6]],
-     B:['Army channel: “Northwind begins”','The Kestrian army posted a training video this morning.',[.6,3,.8]],
-     C:['Posts: the dam at {P} is failing','People share evacuation orders from the regional governor.',[.3,.4,5]]}},
-   {id:'hotline', tab:'intel', ic:'phone', nm:'Military hotline', ds:'Call the other side · 3 min', min:3, src:'Military hotline', rel:.85, r:{
-     A:['Hotline: no answer','The Kestrian duty officer does not pick up.',[2.5,.7,.8]],
-     B:['Hotline: “Training, as notified”','The duty officer confirms an exercise and invites observers.',[.4,4,.8]],
-     C:['Hotline: “Civil emergency, we may need to cross”','They ask permission to move people through the pass.',[.3,.5,5]]}},
-   {id:'cmdr', tab:'people', ic:'id', nm:'Identify the commander', ds:'Needs drone or satellite · 2 min', min:2, needs:['drone','sat'], src:'Order-of-battle files', rel:.9, r:{
-     A:['Commander: Gen. {S}, assault brigade','Seen on video. Leads a front-line assault brigade.',[3,1,.5]],
-     B:['Commander: Col. {S}, training school','Runs the army school that organises exercises.',[.6,3,.8]],
-     C:['Commander: Maj. {S}, civil defence','Heads the civil-defence engineer battalion.',[.4,.7,4]]}},
-   {id:'liaison', tab:'people', ic:'people', nm:'Ask a liaison officer', ds:'Human source · 4 min', min:4, src:'Liaison officer', rel:.7, r:{
-     A:['Liaison: “All leave was cancelled”','A contact says soldiers’ leave was cancelled two days ago.',[2.5,.8,.8]],
-     B:['Liaison: “It’s Northwind, every autumn”','He has seen the same exercise four years running.',[.6,2.5,.8]],
-     C:['Liaison: “Floods up the valley, it’s chaos”','His family in {P} were told to leave.',[.5,.6,3]]}}],
-  dec:{
-   block:{nm:'Raise readiness, block the pass', ic:'shield', sub:'Troops and barriers', pay:{A:100,B:35,C:10}, out:{A:'The column stopped at your barriers and turned back.', B:'You mobilised against a drill. Kestria calls it provocation.', C:'Thousands of flood refugees were stuck at a closed pass.'}},
-   warn: {nm:'Warn through diplomats', ic:'phone', sub:'Talk first, prepare quietly', pay:{A:55,B:80,C:60}, out:{A:'The warning bought time, but the column crossed first.', B:'Kestria confirmed the drill. Calm restored.', C:'Talks opened the pass, but slowly.'}},
-   watch:{nm:'Monitor with drones', ic:'eye', sub:'Watch and wait', pay:{A:25,B:100,C:45}, out:{A:'You watched an attack begin.', B:'The exercise ended and the column drove home.', C:'Refugees waited at the pass for hours.'}},
-   open: {nm:'Open a humanitarian corridor', ic:'people', sub:'Let people through, with checks', pay:{A:0,B:40,C:100}, out:{A:'You opened the gate to an armed column.', B:'An empty corridor for a drill. Wasted effort, no harm.', C:'Families crossed safely through the pass.'}}},
-  timeout:{A:0,B:60,C:20},
-  truth:{A:'It was an <b>assault force</b> under Gen. {S}. The markings were painted over to look like a drill.', B:'It was <b>Exercise Northwind</b>, notified three weeks earlier under the treaty.', C:'It was a <b>civilian evacuation</b>: the dam at {P} was failing and the army was moving people out.'},
-  lesson:{A:'No notice, radio silence and an unanswered hotline add up. Each alone is weak; together they are a pattern.', B:'The cheapest check, the treaty register, settled it. Look for the boring explanation before the scary one.', C:'Open sources were fastest: locals posted the evacuation before any official channel did.'},
-  tut:[{t:'notice', x:'Start cheap: check whether an exercise was <b>notified</b> under the treaty. <span class="mute">(Intel tab)</span>'},
-       {t:'hotline', x:'Ask the other side directly on the <b>military hotline</b>.'},
-       {t:'sat', x:'The <b>satellite</b> passes at a set time. When the button unlocks, take the photo. <span class="mute">(Sensors tab)</span>'},
-       {t:'decide', x:'Three sources agree. Open <b>Decide</b> and hold to confirm.'}],
-  map:{target:{label:'COLUMN', pts:[[140,438],[300,415],[420,380],[520,340],[620,300],[700,275],[790,252]]}, marks:[{show:'osint', pos:{A:null,B:null,C:[240,150]}, label:'DAM FAILING', kind:'hot'}]}
- },
- lantern: {
-  name:'Lantern', kind:'Terrorist hunt', ic:'target', code:'OP-LN', start:1260, deadline:60, dlTxt:'last bus & ferry',
-  hyp:{A:'Hiding in a flat', B:'Leaving by night bus', C:'Leaving by ferry'}, col:{A:'#FF7A45', B:'#56B4E9', C:'#F0E442'},
-  prior:{A:.34, B:.33, C:.33}, base:'With no evidence, every exit is equally likely.', tutT:'C', places:['Brekkvik','Solvar','Tarnby'],
-  alert:'<b>{S}</b>, wanted over a bomb plot, slipped away from a police check an hour ago. The last bus south and the last ferry both leave in about {DL} minutes. Find him before he is gone.',
-  learn:'A manhunt is about narrowing places, not proving guilt. Each source points somewhere on the map; informants and blurry cameras can point the wrong way. Phone and travel data are restricted: you must log why you need them.',
-  tabs:[['look','radar','Sensors'],['intel','doc','Intel'],['people','person','People']], subject:'{S} · 31 · wanted for planning a bombing',
-  restrictName:'Phone, bank and travel data',
-  tasks:[
-   {id:'cell', tab:'look', ic:'phone', nm:'Phone location', ds:'Restricted · logged purpose', min:2, restricted:true, src:'Mobile network', rel:.85, r:{
-     A:['Phone: mast near Kessel Street','His phone last connected to the mast over the Kessel Street flats.',[4,.6,.6]],
-     B:['Phone: mast at the central station','Last connection: central station, 12 minutes ago.',[.6,4,.6]],
-     C:['Phone: mast at the harbour','Last connection: ferry terminal, 10 minutes ago.',[.6,.6,4]]}},
-   {id:'cctv', tab:'look', ic:'cam', nm:'City CCTV review', ds:'Scan camera footage · 4 min', min:4, img:'cctv', src:'City cameras', rel:.8, r:{
-     A:['CCTV: a man like {S} enters a stairwell','Kessel Street, 20:31. Hood up, carrying groceries.',[3,.7,.7]],
-     B:['CCTV: possible match buys a bus ticket','Station hall, 20:48. Face partly hidden.',[.6,3,.8]],
-     C:['CCTV: possible match in the ferry queue','Harbour gate, 20:52. Backpack and cap.',[.7,.7,3]]}},
-   {id:'plates', tab:'look', ic:'search', nm:'Number-plate cameras', ds:'His brother’s car · 2 min', min:2, src:'Plate readers', rel:.9, r:{
-     A:['Brother’s car parked on Kessel Street','Logged at 20:25 and still there.',[3,.8,.8]],
-     B:['Brother’s car at the station drop-off','Logged at 20:44, left after two minutes.',[.6,3,.7]],
-     C:['Brother’s car in the harbour car park','Entered at 20:40.',[.7,.7,3]]}},
-   {id:'tickets', tab:'intel', ic:'doc', nm:'Travel bookings', ds:'Restricted · bus & ferry lists', min:2, restricted:true, src:'Carrier passenger lists', rel:.95, r:{
-     A:['No bookings in any of his names','No ticket under his name or known aliases.',[2.2,.6,.6]],
-     B:['Bus ticket under alias “{A}”','Night bus to {P}, paid cash at a kiosk.',[.3,5,.4]],
-     C:['Ferry ticket under alias “{A}”','Foot passenger, last ferry, prepaid card.',[.3,.4,5]]}},
-   {id:'card', tab:'intel', ic:'coin', nm:'Card payments', ds:'Restricted · bank data', min:2, restricted:true, src:'Bank records', rel:.9, r:{
-     A:['Card: groceries near Kessel St, 20:29','Enough food for several days.',[3.5,.5,.6]],
-     B:['Card: cash withdrawal at the station','300 crowns at 20:46.',[.6,3,.8]],
-     C:['Card: harbour café, 20:55','One coffee, paid by card.',[.6,.8,3]]}},
-   {id:'tip', tab:'intel', ic:'radio', nm:'Informant tip', ds:'Fast but unreliable · 1 min', min:1, src:'Informant', rel:.6, r:{
-     A:['Informant: “He’s with his cousin”','The cousin rents a flat on Kessel Street.',[2.5,.8,.8]],
-     B:['Informant: “He’ll go south by road”','Says he heard it from a friend.',[.8,2.5,.8]],
-     C:['Informant: “He has a friend on the ferries”','Says the friend can hide him on board.',[.8,.8,2.5]]}},
-   {id:'assoc', tab:'people', ic:'graph', nm:'Known associates', ds:'Search around him · 2 min', min:2, src:'Police intelligence', rel:.85, r:{
-     A:['Cousin {S2} lives on Kessel Street','Questioned last year about a fake passport.',[2.5,.8,.8]],
-     B:['Friend {S2} drives the night bus','On the southern route this week.',[.7,2.5,.8]],
-     C:['Friend {S2} is a ferry deckhand','On shift tonight.',[.7,.8,2.5]]}},
-   {id:'warrant', tab:'people', ic:'key', nm:'Search warrant', ds:'Judge on call · 4 min', min:4, src:'Court', fact:'Judge signed a search warrant for the Kessel Street flat.'}],
-  dec:{
-   raid:   {nm:'Raid the Kessel Street flat', ic:'key', sub:'Armed police', need:'warrant', pay:{A:100,B:20,C:20}, out:{A:'{S} was arrested in the flat without a shot fired.', B:'The flat was empty. {S} left on the night bus.', C:'The flat was empty. {S} sailed on the ferry.'}},
-   station:{nm:'Stake out the station', ic:'eye', sub:'Plain-clothes team', pay:{A:20,B:100,C:25}, out:{A:'Nobody came. {S} stayed hidden in the flat.', B:'{S} was arrested boarding the bus.', C:'Nobody came. {S} sailed on the ferry.'}},
-   ferry:  {nm:'Check the ferry', ic:'anchor', sub:'Hold departure, check IDs', pay:{A:20,B:25,C:100}, out:{A:'A delayed ferry, no suspect. He was in the flat.', B:'No suspect on board. He left by bus.', C:'{S} was found in a crew cabin and arrested.'}},
-   wide:   {nm:'Alert every exit, keep searching', ic:'search', sub:'Spread thin', pay:{A:50,B:55,C:55}, out:{A:'Found the next morning, after a long search.', B:'Caught at the next stop by a thin patrol.', C:'Spotted too late; arrested on arrival abroad.'}}},
-  timeout:{A:30,B:0,C:0},
-  truth:{A:'{S} was <b>hiding in his cousin’s flat</b> on Kessel Street.', B:'{S} was <b>on the night bus</b> under the alias “{A}”.', C:'{S} was <b>on the ferry</b> under the alias “{A}”, helped by a deckhand.'},
-  lesson:{A:'Groceries for days, a parked car and a cousin nearby: someone planning to stay, not leave.', B:'A cash withdrawal and an alias ticket are what leaving looks like. The informant is the weakest source here.', C:'The ticket list is restricted for good reason, but it was the decisive clue. Logging your purpose kept it lawful.'},
-  tut:[{t:'plates', x:'Start with the <b>number-plate cameras</b>: where did his brother’s car go? <span class="mute">(Sensors tab)</span>'},
-       {t:'tickets', x:'Check the <b>travel bookings</b>. They are restricted: state your purpose so it is logged. <span class="mute">(Intel tab)</span>'},
-       {t:'assoc', x:'Look at <b>known associates</b>: who could help him? <span class="mute">(People tab)</span>'},
-       {t:'decide', x:'The map, the ticket and the friend point to one exit. <b>Decide</b>.'}],
-  map:{marks:[
-    {show:'cell', pos:{A:[320,190],B:[560,320],C:[860,430]}, kind:'ping', label:'PHONE'},
-    {show:'cctv', pos:{A:[290,215],B:[585,350],C:[840,455]}, kind:'cam', label:'CCTV'},
-    {show:'plates', pos:{A:[345,165],B:[530,345],C:[810,420]}, kind:'car', label:'CAR'}]}
- },
- bellwether: {
-  name:'Bellwether', kind:'Attack prevention', ic:'flame', code:'OP-BW', start:1080, deadline:85, dlTxt:'festival gates open',
-  hyp:{A:'Real attack plot', B:'Hoax to cause panic', C:'Misread: harmless person'}, col:{A:'#FF7A45', B:'#F0E442', C:'#56B4E9'},
-  prior:{A:.25, B:.35, C:.4}, base:'Most online threats against events turn out to be hoaxes or misreads.', tutT:'B', places:['Brekkvik','Solvar','Tarnby'],
-  alert:'A post threatens the <b>Lantern Festival</b> tonight: “north gate, when the lights go on”. It came from the account of <b>{S}</b>. 30,000 people arrive when the gates open in about {DL} minutes.',
-  learn:'Preventing an attack means acting before you are sure, without wrecking an innocent life. Arresting someone needs a warrant. Cancelling the festival has a cost too. Look for details only a real plotter would know.',
-  tabs:[['look','radar','Sensors'],['intel','doc','Intel'],['people','person','People']], subject:'{S} · 24 · account that posted the threat',
-  restrictName:'Purchase records',
-  tasks:[
-   {id:'venue', tab:'look', ic:'cam', nm:'Venue cameras', ds:'Last 3 nights · 3 min', min:3, img:'cctv', src:'Venue cameras', rel:.85, r:{
-     A:['Venue: the same van at the north gate 3 nights running','The driver photographs the crowd barriers.',[3,.7,.6]],
-     B:['Venue: nothing unusual','Normal setup crews, no repeat visitors.',[.5,1.5,1.5]],
-     C:['Venue: {S} is on the stage crew','He films the stage because he is building it.',[.4,.7,4]]}},
-   {id:'van', tab:'look', ic:'search', nm:'Trace the van', ds:'Plate and rental · 2 min', min:2, needs:['venue'], src:'Vehicle register', rel:.9, r:{
-     A:['Van rented with a false licence','The licence belongs to a man who died in 2022.',[4,.5,.4]],
-     B:['No van linked to the threat','The vans on camera belong to food stalls.',[.6,1.6,1.4]],
-     C:['Van belongs to Fjell Staging','The festival’s own stage contractor.',[.4,.6,3.5]]}},
-   {id:'msg', tab:'intel', ic:'doc', nm:'Analyse the message', ds:'Wording and metadata · 2 min', min:2, src:'Threat analysis', rel:.9, r:{
-     A:['Message names the gate code','It includes details that were never public.',[3.5,.5,.8]],
-     B:['Message copied from an old hoax','Word for word the same as a 2023 hoax in {P}.',[.3,5,.8]],
-     C:['Posted from a hijacked account','The login came from abroad, minutes after a password reset.',[.6,1.5,3]]}},
-   {id:'hoaxdb', tab:'intel', ic:'search', nm:'Hoax database', ds:'Shared with other cities · 1 min', min:1, src:'Hoax database', rel:1, r:{
-     A:['No similar hoaxes recorded','',[1.5,.4,1.2]],
-     B:['Same text sent to 6 other events today','A prank group is running a “panic challenge”.',[.3,5,.6]],
-     C:['No similar hoaxes recorded','',[1.3,.5,1.3]]}},
-   {id:'buys', tab:'intel', ic:'coin', nm:'Purchase records', ds:'Restricted · logged purpose', min:2, restricted:true, src:'Retail warning scheme', rel:.9, r:{
-     A:['Fertiliser and fuel bought in small amounts','Four shops in one week: a classic warning sign.',[5,.4,.4]],
-     B:['No unusual purchases','',[.5,1.5,1.5]],
-     C:['Cables, stage lights, gaffer tape','Matches stage-building work.',[.4,.8,3]]}},
-   {id:'bg', tab:'people', ic:'id', nm:'Background check', ds:'Records on {S} · 2 min', min:2, src:'Police records', rel:.85, r:{
-     A:['{S} attended meetings of a banned group','Seen at two meetings last spring.',[3.5,.7,.6]],
-     B:['{S}: no extremism, prank chat groups','Friends run a channel known for fake threats.',[.5,2.5,1.2]],
-     C:['{S}: stagehand, clean record','Reported his account hacked yesterday.',[.4,.6,4]]}},
-   {id:'talk', tab:'people', ic:'people', nm:'Interview a contact', ds:'Human source · 4 min', min:4, src:'Interview', rel:.7, r:{
-     A:['Ex-partner: “He talked about making history”','',[2.5,.8,.8]],
-     B:['Friend: “A joke that got out of hand”','',[.6,2.5,1]],
-     C:['Colleague: “He’s been rigging lights all week”','',[.6,.8,2.5]]}},
-   {id:'warrant', tab:'people', ic:'key', nm:'Arrest warrant', ds:'Judge on call · 4 min', min:4, src:'Court', fact:'Judge granted an arrest warrant for {S}.'}],
-  dec:{
-   cancel:{nm:'Cancel and evacuate', ic:'alert', sub:'Close the festival', pay:{A:90,B:30,C:20}, out:{A:'The grounds were cleared. A bomb was found in a van at the north gate.', B:'30,000 people sent home. The pranksters celebrated online.', C:'Festival cancelled over a hacked account.'}},
-   arrest:{nm:'Arrest the suspect', ic:'key', sub:'Needs a warrant', need:'warrant', pay:{A:100,B:50,C:0}, out:{A:'{S} was arrested. The van and its cargo were seized.', B:'{S} confessed to the prank. A heavy fine, no attack.', C:'You arrested an innocent stagehand on live TV.'}},
-   secure:{nm:'Visible security, bag checks', ic:'shield', sub:'Festival goes ahead', pay:{A:55,B:100,C:80}, out:{A:'Guards found the van, but only after a scare at the gate.', B:'The night passed calmly with extra guards.', C:'The festival went ahead safely.'}},
-   none:  {nm:'No action', ic:'check', sub:'Treat as noise', pay:{A:0,B:60,C:100}, out:{A:'The threat was real and nobody acted on it.', B:'Nothing happened. The hoax fizzled.', C:'Nothing happened, as it should.'}}},
-  timeout:{A:0,B:60,C:100},
-  truth:{A:'It was a <b>real plot</b>. {S} had rented a van with a false licence and stockpiled fertiliser.', B:'It was a <b>hoax</b>: a prank group sent the same text to six events.', C:'{S} was a <b>stagehand whose account was hacked</b>.'},
-  lesson:{A:'Specific non-public details plus purchases plus a scouting van: that combination is what separates a plot from noise.', B:'The hoax database took one minute and explained everything. Check whether a threat is copied before you chase it.', C:'Filming the stage looks sinister until you learn he builds it. Innocent explanations deserve a real look.'},
-  tut:[{t:'msg', x:'Start with the <b>message itself</b>: is it specific, or copied? <span class="mute">(Intel tab)</span>'},
-       {t:'hoaxdb', x:'Check the <b>hoax database</b>: has this text been seen elsewhere?'},
-       {t:'bg', x:'Run a <b>background check</b> on the account owner. <span class="mute">(People tab)</span>'},
-       {t:'decide', x:'Weigh the cost of each action. <b>Decide</b> before the gates open.'}],
-  map:{marks:[{show:'van', pos:{A:[700,245],B:null,C:[760,360]}, kind:'car', label:'VAN'}, {show:'bg', pos:[300,200], kind:'home', label:'{S}'}]}
- },
- ledger: {
-  name:'Ledger', kind:'Follow the money', ic:'coin', code:'OP-LG', start:540, deadline:90, dlTxt:'big transfer leaves',
-  hyp:{A:'Funding an armed group', B:'Tax fraud ring', C:'Legal family remittances'}, col:{A:'#FF7A45', B:'#F0E442', C:'#56B4E9'},
-  prior:{A:.3, B:.35, C:.35}, base:'Most flagged payment patterns are fraud or nothing at all.', tutT:'A', places:['Red Pass','Ostrel','Solvar'],
-  alert:'The bank flagged payments from <b>{CO}</b>, a small firm run by <b>{S}</b>. A transfer of 480,000 crowns leaves the country in about {DL} minutes.',
-  learn:'Money leaves a trail even when people don’t. Follow where it goes, who receives it and when it moves. Bank and crypto data are restricted, and freezing accounts needs a court order.',
-  tabs:[['look','graph','Money'],['intel','doc','Intel'],['people','person','People']], subject:'{S} · director of {CO}',
-  restrictName:'Bank and crypto records',
-  tasks:[
-   {id:'sar', tab:'look', ic:'alert', nm:'Suspicious-activity report', ds:'What the bank saw · 1 min', min:1, src:'Bank report', rel:1, r:{
-     A:['Many transfers just under the reporting limit','9,900 again and again to the same 3 accounts.',[2.2,2,.4]],
-     B:['Invoices for goods that never shipped','Payments match invoices with no customs record.',[.7,3,.4]],
-     C:['Small, regular transfers abroad','Wage-sized payments every payday.',[.4,.5,4]]}},
-   {id:'ledger', tab:'look', ic:'graph', nm:'Transaction graph', ds:'Restricted · follow the money', min:3, restricted:true, img:'ledger', src:'Bank records', rel:.95, r:{
-     A:['Money fans out to 3 shells, then one account','The last account belongs to a “charity” on a sanctions list.',[5,.6,.3]],
-     B:['Money loops back to {S}','Through 4 companies and back to his private account.',[.5,5,.3]],
-     C:['Money goes to 40 families in {P}','Many receivers, small amounts.',[.3,.4,5]]}},
-   {id:'crypto', tab:'look', ic:'key', nm:'Crypto exchange records', ds:'Restricted · 2 min', min:2, restricted:true, src:'Exchange records', rel:.9, r:{
-     A:['Coins sent to a known wallet','The wallet appeared in a past weapons purchase.',[4,.7,.3]],
-     B:['Coins used to hide profits','Bought here, sold abroad, cash back to {S}.',[.6,3,.4]],
-     C:['No crypto activity','',[.7,.7,1.8]]}},
-   {id:'reg', tab:'intel', ic:'building', nm:'Company registry', ds:'Who owns what · 2 min', min:2, src:'Company registry', rel:1, r:{
-     A:['{S} also runs a “charity” with no staff','It has no projects and no website.',[3,1.2,.5]],
-     B:['{CO} shares an address with 30 firms','A mailbox known for shell companies.',[1.2,3,.5]],
-     C:['{CO} is a real recruitment agency','40 farm workers on its payroll.',[.4,.6,3.5]]}},
-   {id:'travel', tab:'intel', ic:'doc', nm:'Travel records', ds:'Where {S} goes · 2 min', min:2, src:'Border records', rel:.85, r:{
-     A:['{S} flew near {P} three times','A region where an armed group operates.',[3,.8,.7]],
-     B:['{S} flew to a tax haven twice','Both trips line up with big transfers.',[.7,3,.6]],
-     C:['{S} rarely travels','One holiday last summer.',[.6,.8,2]]}},
-   {id:'order', tab:'intel', ic:'key', nm:'Court freezing order', ds:'Apply to a judge · 5 min', min:5, src:'Court', fact:'A judge granted an order to freeze the accounts of {CO}.'},
-   {id:'recv', tab:'people', ic:'people', nm:'Who receives it', ds:'Match receivers · 2 min', min:2, needs:['ledger','sar'], src:'Name matching', rel:.8, r:{
-     A:['Receiver {S2}: wanted for arms trafficking','Named in an international notice.',[4,.6,.3]],
-     B:['Receiver {S2}: {S}’s brother-in-law','Owns a car dealer that never declares a profit.',[.6,3,.6]],
-     C:['Receivers are workers’ relatives','Names match the payroll addresses.',[.3,.5,4]]}},
-   {id:'timing', tab:'people', ic:'clock', nm:'Match payments to events', ds:'Timeline analysis · 3 min', min:3, src:'Timeline analysis', rel:.75, r:{
-     A:['Payments spike before attacks in {P}','Each spike lands a week before an attack.',[3.5,.7,.5]],
-     B:['Payments spike at tax deadlines','',[.6,3,.6]],
-     C:['Payments follow paydays','Twice a month, like clockwork.',[.4,.6,3.5]]}}],
-  dec:{
-   freeze:{nm:'Freeze the accounts', ic:'lock', sub:'Needs a court order', need:'order', pay:{A:100,B:70,C:10}, out:{A:'The money was frozen before it reached the armed group.', B:'The fraud stopped; investigators took over the accounts.', C:'40 families got nothing this month because of your freeze.'}},
-   follow:{nm:'Keep following the money', ic:'eye', sub:'Let it move, watch where', pay:{A:45,B:70,C:60}, out:{A:'You mapped the network, but the money arrived.', B:'You mapped the whole fraud for a later case.', C:'You watched wages go home. Time spent, no harm.'}},
-   tax:   {nm:'Refer to the tax authority', ic:'doc', sub:'Civil case', pay:{A:20,B:100,C:40}, out:{A:'A tax letter while the money funded weapons.', B:'Tax inspectors raided the firm the next week.', C:'An audit found nothing wrong.'}},
-   close: {nm:'Close the file', ic:'check', sub:'No further action', pay:{A:0,B:10,C:100}, out:{A:'The transfer reached an armed group.', B:'The fraud carried on.', C:'Closed correctly: legal remittances.'}}},
-  timeout:{A:0,B:10,C:100},
-  truth:{A:'{CO} was <b>funding an armed group</b> through a fake charity and {S2}.', B:'{CO} was a <b>tax fraud</b>: money looped back to {S} through shells.', C:'{CO} pays <b>wages that workers send home</b> to families in {P}.'},
-  lesson:{A:'Structuring under the limit, a sanctioned end receiver and timing before attacks: each link alone is weak, the chain is strong.', B:'Money that comes back to the sender is the signature of round-tripping, not of terrorism.', C:'Many small receivers on paydays is what remittances look like. Freezing them hurts families, not criminals.'},
-  tut:[{t:'sar', x:'Read the bank’s <b>suspicious-activity report</b> first. <span class="mute">(Money tab)</span>'},
-       {t:'ledger', x:'Open the <b>transaction graph</b>. Bank data is restricted: log your purpose.'},
-       {t:'order', x:'Freezing accounts needs a <b>court order</b>. Apply now; it takes 5 minutes. <span class="mute">(Intel tab)</span>'},
-       {t:'decide', x:'The money ends with a sanctioned group. <b>Decide</b>.'}],
-  map:{marks:[{show:'ledger', kind:'arc', pts:{A:[[300,240],[520,170],[860,200]], B:[[300,240],[660,420],[310,250]], C:[[300,240],[760,330]]}}]}
- },
- skyglass: {
-  name:'Skyglass', kind:'Satellite imagery', ic:'sat', code:'OP-SG', start:480, deadline:120, dlTxt:'ministers’ briefing',
-  hyp:{A:'Missile site', B:'Open-pit mine', C:'Farm irrigation'}, col:{A:'#FF7A45', B:'#F0E442', C:'#56B4E9'},
-  prior:{A:.3, B:.35, C:.35}, base:'Most new construction in remote valleys is mining or farming.', tutT:'C', places:['Halvik valley','Dren basin','Upper Sora'],
-  alert:'A source says something big is being built in the <b>{P}</b>, Kestria. Ministers want a briefing in about {DL} minutes: is it a threat?',
-  learn:'Satellites only see a place when their orbit passes over it, and optical cameras can’t see through cloud. Radar works through cloud; thermal shows heat at night; comparing with old images shows what changed.',
-  tabs:[['look','sat','Imagery'],['intel','doc','Intel'],['people','person','People']],
-  restrictName:'Export-control records', cloud:{p:.4},
-  tasks:[
-   {id:'thermal', tab:'look', ic:'flame', nm:'Night thermal image', ds:'Last night, archive · 2 min', min:2, img:'thermal', src:'Thermal satellite', rel:.85, r:{
-     A:['Thermal: heat from inside the hillside','Warm vents: possibly an underground hall.',[3,.8,.6]],
-     B:['Thermal: a crusher plant running at night','',[.6,3,.6]],
-     C:['Thermal: cool, wet fields','One warm pump house.',[.4,.6,3]]}},
-   {id:'opt', tab:'look', ic:'image', nm:'Optical satellite pass', ds:'Sharp photo · clouds block it', min:3, at:18, cloud:true, img:'site', src:'Optical satellite', rel:1, r:{
-     A:['Optical: two concrete pads with blast walls','A ring road and a guarded gate.',[4,.4,.3]],
-     B:['Optical: a stepped pit and dump trucks','Terraces cut into the hillside.',[.3,4,.4]],
-     C:['Optical: round green fields','Irrigation circles and a pump house.',[.2,.3,5]]}},
-   {id:'sar', tab:'look', ic:'radar', nm:'Radar (SAR) pass', ds:'Sees through cloud', min:3, at:42, img:'sar', src:'Radar satellite', rel:.9, r:{
-     A:['Radar: long metal objects on trailers','About 12 m each, lined up.',[3.5,.6,.5]],
-     B:['Radar: excavators and a crusher','Heavy machinery at the pit.',[.5,3.5,.6]],
-     C:['Radar: pipes and water tanks','Pipelines run from the river.',[.4,.6,3.5]]}},
-   {id:'change', tab:'look', ic:'graph', nm:'Compare with archive', ds:'Before vs. now · needs a new image', min:3, needs:['opt','sar'], img:'change', src:'Change detection', rel:.95, r:{
-     A:['Change: road widened, fence and nets added','Built in 5 months, partly under camouflage.',[3.5,.7,.5]],
-     B:['Change: hillside cut back 40 m','Waste-rock piles grow every month.',[.5,3.5,.5]],
-     C:['Change: desert turned green','Fields appeared after a canal was dug.',[.3,.5,4]]}},
-   {id:'trade', tab:'intel', ic:'doc', nm:'Export-control records', ds:'Restricted · logged purpose', min:2, restricted:true, src:'Export controls', rel:.9, r:{
-     A:['Shipments of rocket-fuel chemicals','Bought through a front company.',[4,.5,.4]],
-     B:['Licensed mining explosives and drills','',[.6,3,.5]],
-     C:['Irrigation pumps from a farm supplier','',[.4,.6,3.5]]}},
-   {id:'jobs', tab:'intel', ic:'search', nm:'Job ads & local news', ds:'Open sources · 2 min', min:2, src:'Open sources', rel:.75, r:{
-     A:['Ads for “propellant engineers”, clearance needed','',[3,.6,.6]],
-     B:['Ads for drivers and blasters at {CO} Minerals','',[.5,3,.6]],
-     C:['News: “Valley farm feeds three villages”','',[.4,.6,3]]}},
-   {id:'analyst', tab:'people', ic:'person', nm:'Ask an imagery analyst', ds:'Needs any image · 3 min', min:3, needs:['opt','sar','thermal'], src:'Imagery analyst', rel:.8, r:{
-     A:['Analyst: “Pads the size for launchers”','',[3,.8,.6]],
-     B:['Analyst: “A classic open-pit layout”','',[.6,3,.7]],
-     C:['Analyst: “Pivot circles, 800 m each”','',[.4,.6,3]]}},
-   {id:'dipl', tab:'people', ic:'phone', nm:'Diplomatic contacts', ds:'Human source · 3 min', min:3, src:'Embassy', rel:.7, r:{
-     A:['Embassy: “Area closed to foreigners”','',[2.5,.8,.8]],
-     B:['Embassy: “A mining licence was sold”','',[.7,2.5,.8]],
-     C:['Embassy: “Aid project, we can visit”','',[.6,.7,2.5]]}}],
-  dec:{
-   inspect:{nm:'Brief allies, demand inspection', ic:'alert', sub:'Public pressure', pay:{A:100,B:30,C:10}, out:{A:'Inspectors confirmed a missile site. Allies acted together.', B:'Inspectors found a mine. An awkward climb-down.', C:'You accused a farm project in public. Trust damaged.'}},
-   query:  {nm:'Ask Kestria quietly', ic:'phone', sub:'Diplomatic channel', pay:{A:55,B:80,C:70}, out:{A:'Kestria denied it. You lost time.', B:'Kestria shared the mining licence.', C:'Kestria invited you to visit the farms.'}},
-   watch:  {nm:'Order more satellite passes', ic:'sat', sub:'Keep collecting', pay:{A:40,B:70,C:70}, out:{A:'More images came, slowly, while building went on.', B:'More images confirmed a mine.', C:'More images confirmed the farms.'}},
-   close:  {nm:'Close: no threat', ic:'check', sub:'Tell ministers it’s fine', pay:{A:0,B:100,C:100}, out:{A:'You told ministers a missile site was nothing.', B:'Correct: a mine, no threat.', C:'Correct: a farm project, no threat.'}}},
-  timeout:{A:20,B:60,C:60},
-  truth:{A:'It was a <b>missile site</b> under construction, partly camouflaged.', B:'It was an <b>open-pit mine</b> run by {CO} Minerals.', C:'It was a <b>farm irrigation project</b> feeding three villages.'},
-  lesson:{A:'No single image proved it; pads plus trailers plus chemical imports did. Combining sensors is the job.', B:'Terraces, crushers and blasting licences: a mine looks exactly like a mine once you check the boring options.', C:'Green circles are irrigation. When the optical pass was clouded, radar and thermal still answered.'},
-  tut:[{t:'thermal', x:'Start with last night’s <b>thermal image</b>: it’s already in the archive.'},
-       {t:'opt', x:'The <b>optical satellite</b> passes soon. When it unlocks, take the photo. Clouds may block it.'},
-       {t:'sar', x:'Cloudy? That’s what <b>radar</b> is for: it sees through cloud. Wait for its pass.'},
-       {t:'change', x:'Now <b>compare with the archive</b> to see what changed.'},
-       {t:'decide', x:'You have three sensors. Brief the ministers: <b>Decide</b>.'}],
-  tutCloud:true,
-  map:{target:{label:'SAT', loop:30, pts:[[120,520],[1000,80]]}, marks:[{show:null, pos:[600,300], kind:'site', label:'SITE'}]}
- }
-};
-const OPS_ORDER = ['ridge','lantern','bellwether','ledger','skyglass'];
-
-// ---------- operations engine ----------
-const OPN = () => OPS[GS.op];
-function fill(s, G){ const V = G.V; return String(s).replace(/\{(S2|S|A|P|CO|DL)\}/g, (m,k) => k === 'DL' ? G.deadline : V[k]); }
-function fillE(s, G){ return fill(esc(s), G); }
-function opFresh(op, seed, lvl=1, tut=false){
-  const O = OPS[op], r = mulberry(hash(op + ':' + seed)), pick = a => a[Math.floor(r()*a.length)];
-  let truth = O.tutT;
-  if (!tut){ const x = r(); let acc = 0; truth = 'C'; for (const k of OPK){ acc += O.prior[k]; if (x < acc){ truth = k; break; } } }
-  const nm = () => pick(FIRST) + ' ' + pick(LAST);
-  const V = {S:nm(), S2:nm(), A:pick(FIRST) + ' ' + pick(['Lund','Rask','Veid','Holm']), P:pick(O.places), CO:pick(['Nordhav','Brask','Vellum','Tarn','Ostro'])};
-  while (V.S2 === V.S) V.S2 = nm();
-  const mis = {};
-  for (const t of O.tasks) if (!tut && t.r && r() > t.rel) mis[t.id] = pick(OPK.filter(k => k !== truth));
-  const cloud = !!O.cloud && (tut ? !!O.tutCloud : r() < O.cloud.p);
-  let dl = tut ? O.deadline + 20 : Math.round(O.deadline * (0.92 + r()*0.16));
-  if (lvl >= 2 && !tut) dl = Math.round(dl * 0.87);
-  return {v:5, op, seed, phase:'play', t:0, speed:1, paused:true, truth, lvl:tut ? 1 : lvl, daily:null, tut, V, mis, cloud, deadline:dl,
-    done:{}, findings:[], ticker:[{t:0, m:O.code+' opened: '+O.kind.toLowerCase()+', deadline in '+dl+' min'}], audit:[], tab:'look', badge:null, busy:null, logged:false, override:false,
-    decision:null, closed:false, res:null, modal:{type:tut ? 'otut' : 'obrief', first:true}, tstep:0};
-}
-function opProbs(G){
-  const O = OPS[G.op], p = {...O.prior};
-  for (const f of G.findings) if (f.w) OPK.forEach((k,i) => p[k] *= f.w[i]);
-  const s = OPK.reduce((a,k) => a + p[k], 0); OPK.forEach(k => p[k] /= s); return p;
-}
-const opBest = p => OPK.reduce((a,b) => p[b] > p[a] ? b : a, 'A');
-function opTaskMin(t){ return t.min + (GS.lvl >= 3 ? 1 : 0); }
-function opAvail(G, t){
-  if (G.closed || G.done[t.id]) return false;
-  if (t.at && G.t < t.at) return false;
-  if (t.needs && !t.needs.some(n => G.done[n])) return false;
-  return true;
-}
-function opResult(G, t){
-  if (t.fact) return {title:fill(t.fact, G), text:'', w:null};
-  if (t.cloud && G.cloud) return {title:'Clouds cover the target', text:'This image is unusable. Other sensors may see through cloud.', w:[1,1,1], cloudy:true};
-  const k = G.mis[t.id] || G.truth, x = t.r[k];
-  let w = x[2]; if (G.mis[t.id]) w = w.map(v => +Math.sqrt(v).toFixed(2));
-  return {title:fill(x[0], G), text:fill(x[1], G), w, k, mis:!!G.mis[t.id]};
-}
-function opBegin(G, t, extra=0){
-  G.busy = {id:t.id, start:G.t, end:+(G.t + opTaskMin(t) + extra).toFixed(2), label:t.nm};
-  audit(t.nm + (t.restricted ? ' · restricted data' : ''));
-}
-function opFinish(b){
-  const G = GS, O = OPS[G.op], t = O.tasks.find(x => x.id === b.id);
-  G.done[t.id] = true; tone(880,.07,'triangle',.06);
-  const r = opResult(G, t);
-  G.findings.unshift({key:t.id, t:G.t, title:r.title, text:r.text, w:r.w, src:t.src, img:t.img && !r.cloudy ? t.img : (r.cloudy ? 'cloud' : null), k:r.k, mis:r.mis});
-  tick(r.title); G.badge = 'case';
-  if (t.img) G.modal = {type:'oimg', id:t.id};
-  const st = G.tut && O.tut[G.tstep]; if (st && st.t === t.id) G.tstep++;
-  if (G.tut && O.tut[G.tstep] && O.tut[G.tstep].t === 'sar' && !G.cloud) G.tstep++;
-  dirty = true;
-}
-function opStep(dt){
-  const G = GS; G.t = +(G.t + dt).toFixed(2);
-  if (G.busy && G.t >= G.busy.end - 1e-6){ const b = G.busy; G.busy = null; opFinish(b); }
-  if (!G.closed && G.t >= G.deadline){
-    G.closed = true; G.decision = 'timeout'; G.decidedAt = G.t; G.judge = 0; G.busy = null;
-    audit('DEADLINE PASSED · no decision'); tick('Time is up: '+OPS[G.op].dlTxt+'.');
-  }
-  if (G.closed && !G.res && G.t >= G.decidedAt + 6) G.res = {t:G.t};
-  if (G.res && G.t >= G.res.t + 3){ G.phase = 'end'; G.modal = null; }
-}
-function opJudge(G, d){ const p = opProbs(G), D = OPS[G.op].dec[d]; return OPK.reduce((a,T) => a + p[T]*D.pay[T], 0); }
-function opPay(G){ const O = OPS[G.op]; return G.decision === 'timeout' ? O.timeout[G.truth] : O.dec[G.decision].pay[G.truth]; }
-function opScore(G){
-  const O = OPS[G.op], L = [], pay = opPay(G);
-  let s = Math.round(pay * 0.45); L.push([pay >= 80 ? 'Outcome: the right call' : pay >= 50 ? 'Outcome: partly right' : 'Outcome: it went wrong', s]);
-  if (G.decision === 'timeout'){ L.push(['Ran out of time: no decision', -10]); s -= 10; }
-  else {
-    const J = G.judge ?? opJudge(G, G.decision), cp = Math.round(J * 0.2); s += cp;
-    L.push([J >= 70 ? 'Sound call for the evidence you had' : J >= 45 ? 'Shaky call for the evidence you had' : 'The evidence didn’t support this call', cp]);
-    const need = O.dec[G.decision].need;
-    if (need){ const ok = !!G.done[need]; const v = ok ? 5 : -15; s += v; L.push([ok ? 'Acted with the legal paperwork in place' : 'Acted without a '+O.tasks.find(t => t.id === need).nm.toLowerCase(), v]); }
-    if (G.decidedAt <= G.deadline * 0.75){ s += 5; L.push(['Decided with time to spare', 5]); }
-  }
-  if (O.tasks.some(t => t.restricted)){ const a = G.override ? -10 : G.logged ? 10 : 0; s += a; L.push([G.override ? 'Restricted data opened by override' : G.logged ? 'Restricted data opened with a logged purpose' : 'Restricted data never opened', a]); }
-  const ev = G.findings.filter(f => f.w).length >= 3 ? 10 : 0; s += ev; L.push([ev ? 'Gathered evidence before acting' : 'Acted on little evidence', ev]);
-  const needle = G.decision !== 'timeout' && againstOdds(O.prior, G.truth, pay);
-  if (needle){ s += 8; L.push(['Against the odds: the less likely answer, called right', 8]); }
-  s = clamp(s, 0, 100);
-  return {s, L, needle, grade:letter(s), good: pay >= 80};
-}
-function recordOp(G){
-  if (G.recorded) return; G.recorded = true;
-  const sc = opScore(G), before = lvlOf(CR.xp), lvlBefore = CR.lvlMax;
-  CR.ob = CR.ob || {};
-  const gain = Math.round(XPG[sc.grade] * (1 + 0.1*(G.lvl-1)) * (G.tut ? 0.5 : 1)) + (CR.ob[G.op] ? 0 : 50);
-  CR.xp += gain; CR.cases++; sessionCases++;
-  const order = 'ABCDF';
-  if (!CR.ob[G.op] || order.indexOf(sc.grade) < order.indexOf(CR.ob[G.op])) CR.ob[G.op] = sc.grade;
-  CR.tel.dec[G.op+':'+G.decision] = (CR.tel.dec[G.op+':'+G.decision] || 0) + 1;
-  CR.tel.grade[sc.grade] = (CR.tel.grade[sc.grade] || 0) + 1;
-  if (!G.tut && G.lvl === CR.lvlMax && G.lvl < 5 && 'AB'.includes(sc.grade)) CR.lvlMax++;
-  newAch = [];
-  const give = id => { if (!CR.ach[id]){ CR.ach[id] = today(); newAch.push(id); } };
-  give('first');
-  if (G.tut){ give('trained'); CR.tut = CR.tut || {}; CR.tut[G.op] = 1; }
-  if (OPS_ORDER.every(k => CR.ob[k])) give('ops');
-  if (!G.tut){ recordDaily(G, sc, opPay(G), give); if (sc.needle && sc.grade === 'A') give('needle'); }
-  if (CR.lvlMax >= 5) give('lvl5');
-  G.meta = {gain, before, after:lvlOf(CR.xp), unlocked: CR.lvlMax > lvlBefore ? CR.lvlMax : 0, ach:newAch.slice(), xpAfter:CR.xp};
-  saveCareer(); save();
-}
-
-// ----- op rendering -----
-function opPlayHTML(){
-  const O = OPN();
-  return `<div class="hdr">${CLASSBAR}<div class="top"><div class="brand">${LOGO}<span>LATTICE</span><span class="crumb">${GS.daily ? 'Daily #'+dailyNo(GS.daily) : GS.arch ? 'Archive #'+dailyNo(GS.arch) : esc(O.kind)}<i>/</i>${O.code}<i>/</i>${GS.tut ? 'Tutorial' : 'Clearance '+GS.lvl}</span></div>
-   <div class="clock" id="clock"></div>
-   <button class="ib" id="bp" data-act="pause" aria-label="Pause" ${GS.lvl>=5?'disabled style="opacity:.35"':''}></button>
-   <button class="ib" id="bs" data-act="speed" aria-label="Speed"></button>
-   <button class="ib" data-act="help" aria-label="How to play">${I('help')}</button>
-   <button class="ib" data-act="reset" aria-label="Reset">${I('reset')}</button></div>
-  <div class="flow" id="flow"></div></div>
-  <div class="main">
-   <div class="mapcol">${opMapSVG(GS)}<div class="chips" id="chips"></div><div class="ticker" id="ticker"></div></div>
-   <div class="panel"><div class="body" id="body"></div><nav class="tabs" id="tabs"></nav></div>
-  </div>`;
-}
-function opMapBase(op){
-  let g = '';
-  for (let x=200; x<1000; x+=100) g += `<line x1="${x}" y1="60" x2="${x}" y2="560"/>`;
-  for (let y=100; y<560; y+=100) g += `<line x1="100" y1="${y}" x2="1000" y2="${y}"/>`;
-  const T = (x,y,s,c='#7FB6CC',sz=12,a='middle') => `<text x="${x}" y="${y}" text-anchor="${a}" font-size="${sz}" letter-spacing="1.5" fill="${c}">${s}</text>`;
-  let b = `<rect x="0" y="0" width="1100" height="620" fill="#07111A"/><g stroke="rgba(61,214,245,.10)">${g}</g>`;
-  if (op === 'ridge'){
-    for (let i=0;i<7;i++) b += `<ellipse cx="${380+i*12}" cy="${190-i*6}" rx="${210-i*28}" ry="${90-i*12}" fill="none" stroke="rgba(120,200,150,.18)"/><ellipse cx="${560+i*8}" cy="${470-i*4}" rx="${170-i*22}" ry="${60-i*8}" fill="none" stroke="rgba(120,200,150,.16)"/>`;
-    b += `<path d="M640,60 L1000,60 L1000,560 L640,560 Z" fill="rgba(36,64,82,.35)"/>`;
-    b += `<path d="M120,440 C300,420 420,380 520,340 S700,270 800,250 L1000,230" fill="none" stroke="#5a6b78" stroke-width="5"/><path d="M120,440 C300,420 420,380 520,340 S700,270 800,250 L1000,230" fill="none" stroke="#9fb0bd" stroke-width="1" stroke-dasharray="8 8"/>`;
-    b += `<line x1="640" y1="60" x2="640" y2="560" stroke="#F5B544" stroke-opacity=".75" stroke-dasharray="10 8" stroke-width="2"/>`;
-    b += T(632,84,'DEMARCATION LINE','#F5B544',13,'end') + T(800,232,'KARVEN PASS','#EAF6FB',13) + T(900,520,'VARNHOLM','#2f5266',20) + T(250,520,'KESTRIA','#2f5266',20) + T(330,300,'ORLA') + `<rect x="324" y="306" width="10" height="10" fill="#AAE5C2"/>`;
-  } else if (op === 'lantern' || op === 'bellwether'){
-    for (let x=140; x<1000; x+=60) b += `<line x1="${x}" y1="60" x2="${x+20}" y2="560" stroke="#1d2c38" stroke-width="${x%180===140?6:2}"/>`;
-    for (let y=90; y<560; y+=55) b += `<line x1="100" y1="${y}" x2="1000" y2="${y-15}" stroke="#1d2c38" stroke-width="${y%165===90?6:2}"/>`;
-    b += `<path d="M700,560 C760,470 860,430 1000,400 L1000,560 Z" fill="rgba(36,90,120,.55)" stroke="rgba(61,214,245,.5)"/>`;
-    if (op === 'lantern'){
-      const S = (x,y,l) => `<rect x="${x-9}" y="${y-9}" width="18" height="18" fill="none" stroke="#EAF6FB" stroke-width="2"/>` + T(x,y-16,l,'#EAF6FB',12);
-      b += S(320,190,'KESSEL ST FLATS') + S(560,330,'CENTRAL STATION') + S(860,440,'FERRY TERMINAL');
-    } else {
-      b += `<rect x="640" y="250" width="200" height="130" rx="6" fill="rgba(245,181,68,.12)" stroke="#F5B544" stroke-width="2"/>` + T(740,320,'FESTIVAL GROUNDS','#F5B544',13) + T(700,242,'NORTH GATE','#EAF6FB',11);
-    }
-  } else if (op === 'ledger'){
-    b += `<path d="M150,140 C220,90 380,110 420,180 C450,260 360,330 250,320 C170,310 120,220 150,140Z" fill="rgba(36,64,82,.55)" stroke="rgba(61,214,245,.45)"/>`;
-    b += `<path d="M470,110 C560,70 720,90 800,140 C900,190 960,260 900,300 C820,350 700,330 640,280 C560,240 450,190 470,110Z" fill="rgba(36,64,82,.45)" stroke="rgba(61,214,245,.35)"/>`;
-    b += `<ellipse cx="660" cy="430" rx="50" ry="22" fill="rgba(36,64,82,.45)" stroke="rgba(61,214,245,.35)"/>`;
-    const C = (x,y,l,c='#7FB6CC') => `<circle cx="${x}" cy="${y}" r="5" fill="${c}"/>` + T(x,y-12,l,c,11);
-    b += C(300,240,'VARNHOLM','#EAF6FB') + C(520,170,'OSTREL') + C(860,200,'RED PASS','#FF8A96') + C(760,330,'SOLVAR') + C(660,420,'ISLA BRENT');
-  } else if (op === 'skyglass'){
-    for (let i=0;i<6;i++) b += `<ellipse cx="600" cy="300" rx="${330-i*45}" ry="${150-i*20}" fill="none" stroke="rgba(200,170,120,.16)"/>`;
-    b += `<path d="M120,520 L1000,80" stroke="rgba(167,139,250,.6)" stroke-dasharray="3 7" stroke-width="2"/>` + T(170,470,'SATELLITE GROUND TRACK','#A78BFA',11,'start');
-    b += T(600,250,'{P}','#EAF6FB',13);
-  }
-  return b;
-}
-function opMarks(G){
-  const O = OPS[G.op]; let s = '';
-  for (const m of O.map.marks || []){
-    if (m.show && !G.done[m.show]) continue;
-    const k = (m.show && G.mis[m.show]) || G.truth;
-    if (m.kind === 'arc'){ const pts = m.pts[k]; s += `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="#F5B544" stroke-width="2.5" stroke-dasharray="7 5"/>` + pts.slice(1).map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="8" fill="none" stroke="#F5B544" stroke-width="2"/>`).join(''); continue; }
-    const pos = Array.isArray(m.pos) ? m.pos : m.pos[k]; if (!pos) continue;
-    const [x,y] = pos, lab = fillE(m.label, G);
-    if (m.kind === 'ping') s += `<circle cx="${x}" cy="${y}" r="42" fill="rgba(61,214,245,.12)" stroke="#3DD6F5" stroke-dasharray="4 4"/><circle cx="${x}" cy="${y}" r="4" fill="#3DD6F5"/>`;
-    else if (m.kind === 'site') s += `<g transform="translate(${x},${y})"><path d="${SYM.unknown}" fill="#F0B726" stroke="#111418" stroke-width="2"/><text y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#111418">?</text></g>`;
-    else s += `<g transform="translate(${x},${y})"><rect x="-9" y="-7" width="18" height="14" rx="2" fill="${m.kind==='hot'?'#FF8A96':'#F5B544'}" stroke="#111418" stroke-width="1.5"/></g>`;
-    s += `<text x="${x}" y="${y + (m.kind==='ping'?-48:-14)}" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="1" fill="#F8C76A">${lab}</text>`;
-  }
-  return s;
-}
-function opMapSVG(G){
-  const O = OPS[G.op], tg = O.map.target;
-  return `<svg class="map" viewBox="100 60 900 470" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Operation map">
-   ${fill(opMapBase(G.op), G)}<g id="omk"></g>
-   ${tg ? `<g id="otg"><circle r="20" fill="none" stroke="#FBB360" stroke-width="1.5"><animate attributeName="r" values="10;28;10" dur="2.2s" repeatCount="indefinite"/><animate attributeName="stroke-opacity" values=".8;0;.8" dur="2.2s" repeatCount="indefinite"/></circle>
-     <path d="${SYM.unknown}" fill="${G.op==='skyglass'?'#A78BFA':'#F0B726'}" stroke="#111418" stroke-width="2"/><text y="-24" text-anchor="middle" font-size="12" font-weight="700" letter-spacing="1" fill="#FBD065">${tg.label}</text></g>` : ''}</svg>`;
-}
-function opTargetPos(G){
-  const tg = OPS[G.op].map.target; if (!tg) return null;
-  const f = tg.loop ? (G.t % tg.loop) / tg.loop : clamp(G.t / G.deadline, 0, 1), P = tg.pts;
-  const seg = f * (P.length - 1), i = Math.min(P.length - 2, Math.floor(seg)), u = seg - i;
-  return {x:P[i][0] + (P[i+1][0]-P[i][0])*u, y:P[i][1] + (P[i+1][1]-P[i][1])*u};
-}
-function opFrame(){
-  const G = GS, O = OPN();
-  $('#clock').textContent = hhmm(G.t);
-  const bpH = I(G.paused ? 'play' : 'pause'); if ($('#bp')._h !== bpH){ $('#bp').innerHTML = bpH; $('#bp')._h = bpH; } $('#bp').classList.toggle('on', G.paused);
-  setTxt('#bs', G.speed + '×');
-  const p = opTargetPos(G); if (p) $('#otg').setAttribute('transform', `translate(${p.x.toFixed(1)},${p.y.toFixed(1)})`);
-  setHTML('#omk', opMarks(G));
-  const left = G.deadline - G.t;
-  let chips = `<span class="chip ${left < 10 && left > 0 ? 'hot' : ''}">${I('clock',12)} ${left > 0 ? esc(O.dlTxt)+' '+Math.ceil(left)+' min' : 'deadline passed'}</span>`;
-  const nx = O.tasks.filter(t => t.at && !G.done[t.id] && G.t < t.at).sort((a,b) => a.at - b.at)[0];
-  if (nx) chips += `<span class="chip">${I('sat',12)} ${esc(nx.nm.replace(' pass',''))} in ${Math.ceil(nx.at - G.t)} min</span>`;
-  if (G.busy) chips += `<span class="chip busy">${I('clock',12)} ${esc(G.busy.label)}</span>`;
-  setHTML('#chips', chips);
-  const pg = $('#pg'); if (pg && G.busy) pg.style.width = clamp((G.t-G.busy.start)/(G.busy.end-G.busy.start)*100, 0, 100) + '%';
-  if (dirty){ dirty = false; opPanel(); }
-}
-function opHint(G){
-  const O = OPS[G.op];
-  if (G.closed) return G.decision === 'timeout' ? 'Time ran out before you decided.' : 'Decision made. Watch the outcome.';
-  if (G.tut){ const st = O.tut[G.tstep]; if (st) return `<span class="flag info">Tutorial ${G.tstep+1}/${O.tut.length}</span> ${st.x}`; }
-  if (G.busy) return 'Analyst busy: '+esc(G.busy.label)+'…';
-  const nx = O.tasks.find(t => opAvail(G, t) && t.r);
-  const n = G.findings.filter(f => f.w).length;
-  if (n >= 4) return `<b>You have a picture.</b> Decide before the deadline, or keep checking.`;
-  if (nx){ const tab = O.tabs.find(x => x[0] === nx.tab); return `<b>Next:</b> ${esc(nx.nm)} <span class="mute">(${tab[2]} tab)</span>${n ? '' : ' · or read the briefing with <b>?</b>'}`; }
-  return '<b>Decide:</b> open the Decide tab.';
-}
 function assessCard(G, p, n, keys, names, cols, base){
   const b = keys.reduce((a,k) => p[k] > p[a] ? k : a, keys[0]);
   if (blind(G)) return `<div class="card"><div class="lbl"><span>Lattice assessment</span><span>${I('lock',12)} clearance 4</span></div><div class="mute sm">Assessment switched off at this clearance. You have ${n} piece${n===1?'':'s'} of evidence in the Case tab: weigh them yourself.</div></div>`;
@@ -1872,154 +1625,6 @@ function assessCard(G, p, n, keys, names, cols, base){
   return `<div class="card"><div class="lbl"><span>Lattice assessment</span></div>${verdict}
     <div class="tri">${keys.map(k => `<b style="width:${(p[k]*100).toFixed(1)}%;background:${cols[k]}"></b>`).join('')}</div>
     <div class="legend">${keys.map(k => `<span style="color:${cols[k]}">${esc(names[k])} ${Math.round(p[k]*100)}%</span>`).join('')}</div></div>`;
-}
-function opPanel(){
-  const G = GS, O = OPN(), n = G.findings.filter(f => f.w).length;
-  const last = G.ticker[G.ticker.length-1];
-  $('#ticker').innerHTML = last ? `<span class="tm">${hhmm(last.t)}</span>${esc(last.m)}` : '';
-  const hasR = O.tasks.some(t => t.restricted);
-  const fl = [['Alert',true],['Collect',n>=1],['Corroborate',n>=3],['Vet',!hasR || G.logged || G.override],['Decide',!!G.decision]];
-  const cur = fl.findIndex(f => !f[1]);
-  $('#flow').innerHTML = fl.map((f,j) => `<span class="${f[1] ? 'd' : j===cur ? 'c' : ''}"><b>${f[1] ? '✓' : j+1}</b>${f[0]}</span>`).join('<em>›</em>');
-  const tabs = [...O.tabs, ['case','folder','Case'], ['decide','scales','Decide']], tutT = G.tut && O.tut[G.tstep] ? O.tut[G.tstep].t : null;
-  const tutTab = tutT === 'decide' ? 'decide' : tutT ? O.tasks.find(t => t.id === tutT).tab : null;
-  $('#tabs').innerHTML = tabs.map(t => `<button class="tab ${G.tab===t[0]?'on':''} ${t[0]==='decide'?'dec':''} ${tutTab===t[0]&&G.tab!==t[0]?'pulse':''}" data-act="${t[0]==='decide'?'oask':'tab'}" data-t="${t[0]}" ${t[0]==='decide'&&G.closed?'disabled':''}><span class="ti">${I(t[1],18)}</span>${t[2]}${G.badge===t[0]&&G.tab!==t[0]?'<span class="bd"></span>':''}</button>`).join('');
-  let h = `<div class="hint">${I('info')}<span>${opHint(G)}</span></div>`;
-  const btn = t => {
-    const busy = G.busy && G.busy.id === t.id, wait = t.at && G.t < t.at && !G.done[t.id];
-    let ds = fill(t.ds, G); if (wait) ds = 'Next pass in '+Math.ceil(t.at - G.t)+' min'; else if (t.needs && !t.needs.some(x => G.done[x]) && !G.done[t.id]) ds = 'Needs: '+t.needs.map(x => O.tasks.find(y => y.id===x).nm).join(' or ');
-    else if (!t.restricted && !wait) ds = ds.includes('min') ? ds : ds + ' · ' + opTaskMin(t) + ' min';
-    return `<button class="act ${G.done[t.id]?'done':''} ${busy?'go':''} ${tutT===t.id?'pulse':''}" data-act="otask" data-id="${t.id}" ${(!opAvail(G,t) || G.busy) && !busy ? 'disabled' : ''}><span class="ic">${I(t.restricted && !G.done[t.id] ? 'lock' : t.ic,18)}</span><span class="nm">${esc(t.nm)}</span><span class="ds">${esc(ds)}</span>${busy?'<i class="pg" id="pg"></i>':''}</button>`;
-  };
-  const tl = O.tasks.filter(t => t.tab === G.tab);
-  if (tl.length) h += `<div class="acts">${tl.map(btn).join('')}</div>`;
-  if (G.tab === 'people' && O.subject) h += `<div class="card"><div class="lbl"><span>Subject</span><span>${G.logged ? '<span class="ok">access logged</span>' : G.override ? '<span class="no">override</span>' : ''}</span></div><div class="pcard" style="cursor:default"><span class="av">${esc(initials(G.V.S))}</span><span class="nm">${fillE(O.subject, G)}</span><span class="mt"></span><span class="mute sm">Being linked to something is not proof.</span></div></div>`;
-  if (G.tab === 'look') h += assessCard(G, opProbs(G), n, OPK, O.hyp, O.col, O.base);
-  if (G.tab === 'case'){
-    h += assessCard(G, opProbs(G), n, OPK, O.hyp, O.col, O.base);
-    h += G.findings.length ? `<div class="card"><div class="lbl"><span>Evidence</span><span>${G.findings.length}</span></div>${G.findings.map(f => `<div class="ev" style="border-color:${f.w ? O.col[opBest({A:f.w[0],B:f.w[1],C:f.w[2]})] : 'var(--line)'}"><b>${esc(f.title)}</b>${f.text ? `<span>${esc(f.text)}</span>` : ''}<span class="src">${hhmm(f.t)} · ${esc(f.src)}${f.img ? ` · <button class="lnk" data-act="oview" data-id="${f.key}">view image</button>` : ''}</span></div>`).join('')}</div>` : '';
-    h += `<div class="card"><div class="lbl"><span>Audit log</span><span>every query is recorded</span></div><div class="audit">${G.audit.slice().reverse().map(a => `<div class="${/OVERRIDE/.test(a.m)?'no':''}">${hhmm(a.t)} ${esc(a.m)}</div>`).join('')}</div></div>`;
-  }
-  if (G.tab === 'decide' && G.closed) h += `<div class="card"><div class="verdict">${G.decision === 'timeout' ? 'No decision in time' : 'Decision: '+esc(O.dec[G.decision].nm)}</div><p class="mute sm">Time runs fast to the outcome.</p></div>`;
-  $('#body').innerHTML = h;
-}
-// ----- evidence images (generated, seeded) -----
-function opImg(G, id){
-  const f = G.findings.find(x => x.key === id); if (!f || !f.img) return '';
-  const k = f.k || G.truth, r = mulberry(hash(G.seed + id)), R = (a,b) => a + r()*(b-a);
-  let s = '', cap = '';
-  const V = (x,y,w,h,c,rot=0) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}" transform="rotate(${rot} ${x+w/2} ${y+h/2})"/>`;
-  if (f.img === 'cloud'){
-    s = `<rect width="300" height="150" fill="#4a5560"/>` + [...Array(14)].map(() => `<ellipse cx="${R(0,300)}" cy="${R(0,150)}" rx="${R(40,90)}" ry="${R(20,40)}" fill="#e8eef2" fill-opacity="${R(.55,.9)}"/>`).join('');
-    cap = 'OPTICAL · CLOUD COVER 94%';
-  } else if (f.img === 'column'){
-    s = `<rect width="300" height="150" fill="#3a4632"/><path d="M0,95 C80,85 160,70 300,40" stroke="#6b6650" stroke-width="18" fill="none"/>`;
-    for (let i=0;i<13;i++){ const x = 10 + i*22, y = 92 - i*4.2 + R(-2,2);
-      if (k==='A') s += V(x,y-4,14,8,'#1f2a1a',-12) + `<line x1="${x+7}" y1="${y}" x2="${x+18}" y2="${y-3}" stroke="#111" stroke-width="2"/>`;
-      if (k==='B') s += V(x,y-4,14,8,'#56614a',-12) + `<path d="M${x+4},${y-3} l6,5 M${x+10},${y-3} l-6,5" stroke="#fff" stroke-width="1.3"/>`;
-      if (k==='C') s += i%3===0 ? V(x,y-4,20,7,'#e0b23a',-12) : V(x+2,y-3,9,6,['#c44','#48c','#ddd','#3a3'][i%4],-12); }
-    if (k==='B') s += [0,1,2].map(i => `<path d="M${40+i*30},130 l10,-14 l10,14z" fill="#8a8f70"/>`).join('');
-    if (k==='C') s += [...Array(20)].map(() => `<circle cx="${R(0,300)}" cy="${R(100,118)}" r="1.6" fill="#f2e6c9"/>`).join('');
-    cap = 'OPTICAL · 0.5 m · COLUMN NEAR ORLA';
-  } else if (f.img === 'site' || f.img === 'change'){
-    const pic = (kk, ox, w, old) => { let q = `<rect x="${ox}" width="${w}" height="150" fill="#8a7a5c"/>`;
-      if (old) return q + `<path d="M${ox},120 C${ox+w*.4},110 ${ox+w*.6},130 ${ox+w},118" stroke="#6d6148" stroke-width="4" fill="none"/>`;
-      if (kk==='A') q += `<path d="M${ox+10},120 C${ox+w*.3},40 ${ox+w*.7},40 ${ox+w-10},120" stroke="#cfc6b4" stroke-width="5" fill="none"/>` + [.35,.65].map(p => `<circle cx="${ox+w*p}" cy="75" r="14" fill="#bdb8ae" stroke="#5c5545" stroke-width="4"/>`).join('') + `<rect x="${ox+w*.45}" y="100" width="${w*.12}" height="22" fill="#4f5b3a" fill-opacity=".8"/>`;
-      if (kk==='B') q += [0,1,2,3].map(i => `<ellipse cx="${ox+w*.5}" cy="75" rx="${w*.42-i*w*.08}" ry="${55-i*12}" fill="${['#9a8462','#86704f','#73603f','#5b4a31'][i]}"/>`).join('') + [0,1,2].map(i => V(ox+w*(.25+i*.2),40+i*18,8,5,'#e3c23a')).join('');
-      if (kk==='C') q += [[.28,48],[.7,52],[.45,108]].map(([p,y]) => `<circle cx="${ox+w*p}" cy="${y}" r="${w*.17}" fill="#4f8a3a"/><line x1="${ox+w*p}" y1="${y}" x2="${ox+w*p+w*.16}" y2="${y}" stroke="#ddd"/>`).join('') + `<path d="M${ox},140 L${ox+w},132" stroke="#3a7ab0" stroke-width="4"/>`;
-      return q; };
-    if (f.img === 'site'){ s = pic(k, 0, 300, false); cap = 'OPTICAL · 0.5 m · '+G.V.P.toUpperCase(); }
-    else { s = pic(k, 0, 148, true) + pic(k, 152, 148, false) + `<rect x="148" width="4" height="150" fill="#07111A"/><text x="8" y="16" font-size="10" fill="#fff" font-weight="700">BEFORE · 6 MONTHS AGO</text><text x="160" y="16" font-size="10" fill="#fff" font-weight="700">NOW</text>`; cap = 'CHANGE DETECTION'; }
-  } else if (f.img === 'sar'){
-    s = `<rect width="300" height="150" fill="#0b0b0b"/>` + [...Array(260)].map(() => `<rect x="${R(0,300)}" y="${R(0,150)}" width="1.5" height="1.5" fill="#777"/>`).join('');
-    if (k==='A') s += [0,1,2,3].map(i => `<rect x="${90+i*30}" y="${60+i*3}" width="22" height="5" fill="#fff"/>`).join('');
-    if (k==='B') s += [[80,50],[150,90],[210,60]].map(([x,y]) => `<rect x="${x}" y="${y}" width="12" height="9" fill="#fff"/><circle cx="${x+20}" cy="${y+4}" r="3" fill="#ddd"/>`).join('');
-    if (k==='C') s += `<path d="M20,120 L280,40" stroke="#fff" stroke-width="2"/>` + [70,140,210].map(x => `<circle cx="${x}" cy="${120-(x-20)*.31}" r="6" fill="none" stroke="#fff" stroke-width="2"/>`).join('');
-    cap = 'RADAR (SAR) · SEES THROUGH CLOUD';
-  } else if (f.img === 'thermal'){
-    s = `<rect width="300" height="150" fill="#120a2a"/>`;
-    const spot = (x,y,rad,c) => `<circle cx="${x}" cy="${y}" r="${rad}" fill="${c}" fill-opacity=".85"/>`;
-    if (k==='A') s += spot(150,80,26,'#ff3d00') + spot(150,80,12,'#ffe14d') + spot(110,95,8,'#ff8a00');
-    if (k==='B') s += spot(200,70,20,'#ff8a00') + spot(200,70,8,'#ffe14d') + `<rect x="60" y="60" width="90" height="40" fill="#5b2a8a"/>`;
-    if (k==='C') s += [[80,60],[160,70],[230,90]].map(([x,y]) => spot(x,y,30,'#1b4dbf')).join('') + spot(130,115,6,'#ff8a00');
-    cap = 'THERMAL · NIGHT · WARM = BRIGHT';
-  } else if (f.img === 'cctv'){
-    s = `<rect width="300" height="150" fill="#2b3036"/><rect x="0" y="110" width="300" height="40" fill="#3b4046"/>`;
-    if (G.op === 'lantern'){ const bg = {A:'<rect x="20" y="20" width="60" height="90" fill="#4a4f55"/><rect x="34" y="40" width="30" height="70" fill="#1c1f22"/>', B:'<rect x="20" y="30" width="260" height="20" fill="#4a4f55"/><text x="150" y="45" text-anchor="middle" font-size="11" fill="#cfd6dd">TICKETS</text>', C:'<path d="M0,90 L300,80 L300,110 L0,110Z" fill="#244a63"/>'}[k]; s += bg + `<circle cx="160" cy="62" r="11" fill="#55595e"/><rect x="146" y="73" width="28" height="42" rx="6" fill="#55595e"/>`; }
-    else s += `<rect x="20" y="40" width="80" height="40" rx="4" fill="#d8d8d8"/><rect x="30" y="48" width="20" height="14" fill="#556"/><circle cx="40" cy="82" r="7" fill="#111"/><circle cx="88" cy="82" r="7" fill="#111"/>` + (k==='C' ? '<text x="60" y="70" text-anchor="middle" font-size="8" fill="#333">FJELL</text>' : '') + `<circle cx="180" cy="62" r="10" fill="#55595e"/><rect x="168" y="72" width="24" height="40" rx="6" fill="#55595e"/>`;
-    s += `<rect width="300" height="150" fill="url(#scan)" opacity=".3"/>`;
-    cap = 'CCTV · '+hhmm(f.t).replace(':','')+' · LOW RES';
-  } else if (f.img === 'ledger'){
-    const V2 = G.V, rows = {
-      A:[[V2.CO,'Hearth Aid Fund','9,900'],[V2.CO,'Hearth Aid Fund','9,900'],[V2.CO,'Olen Exports','9,800'],['Hearth Aid Fund','Acct. in Red Pass','29,500'],['Acct. in Red Pass','Wallet …7f3a','29,100']],
-      B:[[V2.CO,'Dalby Consult','48,000'],['Dalby Consult','Ostrel Imports','47,500'],['Ostrel Imports','Isla Brent Ltd','47,200'],['Isla Brent Ltd',V2.S+' (private)','46,900']],
-      C:[[V2.CO,'40 accounts in '+V2.P,'312 avg'],[V2.CO,'Payroll ref. 11/25','9,600'],['Worker K. Saar','Family, '+V2.P,'350'],['Worker J. Telin','Family, '+V2.P,'410']]}[k];
-    return `<table class="ledg"><tr><th>From</th><th>To</th><th>Crowns</th></tr>${rows.map(x => `<tr><td>${esc(x[0])}</td><td>${esc(x[1])}</td><td>${x[2]}</td></tr>`).join('')}</table><span class="src">Bank records · transaction graph</span>`;
-  }
-  return `<svg class="oimg" viewBox="0 0 300 150" role="img" aria-label="${esc(f.title)}"><defs><pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="2" fill="#000"/></pattern></defs>${s}<rect x="0" y="134" width="300" height="16" fill="rgba(0,0,0,.6)"/><text x="6" y="146" font-size="10" font-family="monospace" fill="#9FDCEB">${esc(cap)}</text></svg>`;
-}
-function opModal(m){
-  const G = GS, O = OPN();
-  if (m.type === 'obrief') return `<div class="alert"><b>${I('alert',14)} ${O.code} · ${hhmm(G.t)} · ${esc(O.kind.toUpperCase())}</b><div>${fill(O.alert, G)}</div></div>
-    <p class="sm">${esc(O.learn)}</p>
-    <p class="mute sm">Tools: <b>${O.tabs.map(t => t[2]).join(', ')}</b> tabs. Every check costs minutes. The clock runs: 1 s = 1 min. Space pauses.</p>
-    <div class="row">${CR.tut && CR.tut[G.op] ? '' : `<button class="btn" data-act="opStart" data-op="${G.op}" data-tut="1">Tutorial first</button>`}<button class="btn pri" data-act="close">Open the case</button></div>`;
-  if (m.type === 'otut') return `<h2>${I(O.ic,18)} ${m.first ? 'Tutorial: ' : ''}${esc(O.name)} · ${esc(O.kind)}</h2><p class="sm">${esc(O.learn)}</p>
-    <ol class="steps">${O.tut.map(s => `<li><span>${s.x.replace(/<span class="mute">.*?<\/span>/,'')}</span></li>`).join('')}</ol>
-    <p class="mute sm">${m.first ? 'The hint bar guides you step by step, and the next tool glows.' : 'In a normal case nobody tells you the order: pick tools by what they cost and what they can rule out.'}</p>
-    <div class="row"><button class="btn pri" data-act="close">${m.first ? 'Start' : 'Back'}</button></div>`;
-  if (m.type === 'opurp'){ const t = O.tasks.find(x => x.id === m.id);
-    return `<h2>${I('lock',18)} ${esc(O.restrictName)}</h2><p>This data is restricted. To use it you must state why. The request and your purpose go into the audit log that oversight reviews.</p>
-    <button class="btn choice" data-act="opurpLog" data-id="${t.id}"><b>Purpose: ${O.code}, ${esc(O.kind.toLowerCase())}</b><small>Logged · +1 min. Covers all restricted data in this case.</small></button>
-    <button class="btn choice red" data-act="opurpOver" data-id="${t.id}"><b>Use admin override</b><small>No wait, no purpose stated. Flagged in the audit.</small></button>
-    <div class="row"><button class="btn" data-act="cancel">Cancel</button></div>`; }
-  if (m.type === 'oimg'){ const f = G.findings.find(x => x.key === m.id);
-    return `<div class="lbl"><span>${esc(f.src)}</span><span>${hhmm(f.t)}</span></div><h2>${esc(f.title)}</h2>${opImg(G, m.id)}<p class="mute sm">${esc(f.text)}</p><div class="row"><button class="btn pri" data-act="close">Add to case</button></div>`; }
-  if (m.type === 'odecide'){
-    const p = opProbs(G), b = opBest(p), n = G.findings.filter(f => f.w).length;
-    return `<h2>Decide</h2><p class="mute sm">One decision. ${blind(G) ? 'No assessment at this clearance.' : `Lattice says: <b style="color:${O.col[b]}">${esc(O.hyp[b])} ${Math.round(p[b]*100)}%</b>`} from ${n} piece${n===1?'':'s'} of evidence.</p>
-      ${Object.keys(O.dec).map(k => { const D = O.dec[k], nd = D.need && O.tasks.find(t => t.id === D.need);
-        return `<button class="btn choice ${m.d===k?'on':''}" data-act="opick" data-d="${k}"><b>${I(D.ic)} ${esc(D.nm)}</b> <span class="mute">· ${esc(D.sub)}</span>${nd ? `<small class="${G.done[nd.id]?'ok':'wn'}">${G.done[nd.id] ? '✓ '+esc(nd.nm)+' obtained' : '⚠ No '+esc(nd.nm.toLowerCase())+' yet: acting now would be unlawful'}</small>` : ''}</button>`; }).join('')}
-      ${!n ? '<p class="wn sm">You haven’t gathered any evidence yet.</p>' : ''}
-      <div class="row"><button class="btn" data-act="cancel">Not yet</button><button class="btn pri hold" data-act="odecide" ${m.d ? '' : 'disabled'}><span>${m.d ? 'Hold to confirm: '+esc(O.dec[m.d].nm) : 'Pick an action'}</span></button></div>`;
-  }
-  return '';
-}
-function opEndHTML(){
-  const G = GS, O = OPN(), sc = opScore(G), p = opProbs(G), lb = opBest(p), n = G.findings.filter(f => f.w).length;
-  const head = G.decision === 'timeout' ? 'Time ran out. '+fill({A:'The threat played out unopposed.', B:'Nothing was done; it mostly blew over.', C:'Nothing was done.'}[G.truth], G) : fill(O.dec[G.decision].out[G.truth], G);
-  const J = G.decision === 'timeout' ? 0 : (G.judge ?? opJudge(G, G.decision));
-  const luck = !sc.good && J >= 70 ? `<p class="sm" style="margin-top:6px"><span class="flag info">good read, bad luck</span> Your evidence really did point this way.</p>` : sc.good && J < 45 && G.decision !== 'timeout' ? `<p class="sm" style="margin-top:6px"><span class="flag warn">lucky</span> It worked out, but your evidence didn’t support this call.</p>` : '';
-  const mis = G.findings.filter(f => f.mis);
-  const have = new Set(G.findings.map(f => f.key)), ti = OPK.indexOf(G.truth);
-  const miss = O.tasks.filter(t => t.r && !have.has(t.id)).map(t => ({t, q:t.r[G.truth][2][ti] / Math.max(...t.r[G.truth][2].filter((_,i) => i !== ti))})).filter(x => x.q > 1.5).sort((a,b) => b.q - a.q)[0];
-  const cf = Object.keys(O.dec).map(k => `<div class="${G.decision===k?'you':''} ${O.dec[k].pay[G.truth]===100?'best':''}"><b>${letter(O.dec[k].pay[G.truth])}</b>${esc(O.dec[k].nm)}${G.decision===k?' · you':''}</div>`).join('');
-  return `${CLASSBAR}<div class="end">
-   <div class="hero ${sc.good?'good':'bad'}"><div class="grade ${sc.good?'ok':'no'}">${sc.grade}</div>
-    <div class="meta">${O.code} · ${esc(O.kind.toUpperCase())} · ${hhmm(G.res.t)} · SEED ${esc(G.seed)}${G.tut ? ' · TUTORIAL' : ''}</div>
-    <h1>${esc(head)}</h1><p>${fill(O.truth[G.truth], G)}</p></div>
-   <div class="card"><div class="lbl"><span>Your decision</span><span>${hhmm(G.decidedAt)}</span></div>
-    <div class="verdict">${G.decision === 'timeout' ? 'None: the deadline passed' : I(O.dec[G.decision].ic,18)+' '+esc(O.dec[G.decision].nm)}</div>
-    <p class="mute sm" style="margin-top:4px">${n ? `Your evidence pointed to <b style="color:${O.col[lb]}">${esc(O.hyp[lb])} (${Math.round(p[lb]*100)}%)</b>.` : 'You decided with no evidence, on the base rate alone.'} The truth: <b style="color:${O.col[G.truth]}">${esc(O.hyp[G.truth])}</b>.</p>${luck}</div>
-   <div class="card"><div class="lbl"><span>Clues</span><span>${n} collected</span></div>
-    ${mis.length ? mis.map(f => `<div class="ev" style="border-color:var(--red)"><b>Misleading: ${esc(f.src)}</b><span>“${esc(f.title)}” pointed the wrong way. Sources like this are wrong sometimes.</span></div>`).join('') : ''}
-    ${miss ? `<div class="ev" style="border-color:var(--amber)"><b>Missed: ${esc(miss.t.nm)}</b><span>${esc(fill(miss.t.r[G.truth][0], G))}</span></div>` : '<p class="mute sm">You found every telling clue.</p>'}</div>
-   <div class="card"><div class="lbl"><span>How each call would have ended</span></div><div class="cf">${cf}</div></div>
-   ${uplinkCard(G, sc)}
-   <div class="card"><div class="lbl"><span>Score</span><span>${sc.s}/100</span></div><div class="sc">${sc.L.map(l => `<div><span>${esc(l[0])}</span><b class="${l[1]>0?'ok':l[1]<0?'no':'mute'}">${l[1]>0?'+':''}${l[1]}</b></div>`).join('')}</div></div>
-   <div class="card"><div class="lbl"><span>The lesson</span></div><p>${esc(O.lesson[G.truth])}</p></div>
-   <div class="card"><div class="lbl"><span>Audit log (what oversight sees)</span></div><div class="audit">${G.audit.map(a => `<div class="${/OVERRIDE/.test(a.m)?'no':''}">${hhmm(a.t)} ${esc(a.m)}</div>`).join('')}</div></div>
-   ${careerCard(G)}
-   <div style="display:flex;gap:8px"><button class="btn pri" data-act="newRun">All operations</button>${G.daily ? `<button class="btn" data-act="copy" data-day="${G.daily}" id="copyb">Share result</button>` : `<button class="btn" data-act="opStart" data-op="${G.op}" data-new="1">${G.tut ? 'Play for real' : 'New '+esc(O.name)+' case'}</button>`}</div>
-   ${G.daily && G.shareOpen ? `<textarea class="share" readonly aria-label="Share text">${esc(shareText(G.daily))}</textarea>` : ''}
-  </div>`;
-}
-function opsListHTML(){
-  CR.ob = CR.ob || {};
-  const row = (ic, nm, kind, best, play, tut) => `<div class="oprow"><span class="oi">${I(ic,22)}</span><span class="on"><b>${nm}</b><small>${kind}${best ? ` · best <span class="ok">${best}</span>` : ''}</small></span>${tut}${play}</div>`;
-  return `<label class="seclbl">Operations</label><div class="ops">
-    ${row('ship','Border Watch','Sea border · unknown boat', ['D','S','L'].map(T => CR.bests[T]).filter(Boolean).sort()[0], `<button class="btn pri" data-act="start">Play</button>`, '<span></span>')}
-    ${OPS_ORDER.map(k => { const O = OPS[k]; return row(O.ic, O.name, O.kind, CR.ob[k], `<button class="btn pri" data-act="opStart" data-op="${k}">Play</button>`, `<button class="btn" data-act="opStart" data-op="${k}" data-tut="1">Learn</button>`); }).join('')}</div>`;
 }
 
 // ---------- input & loop ----------
@@ -2037,7 +1642,7 @@ document.addEventListener('click', e => {
   if (el.classList.contains('hold') && e.detail !== 0) return;
   if (el.classList.contains('modalbg') && e.target !== el) return;
   const d = {...el.dataset};
-  if (d.act === 'start' || d.act === 'opStart'){ const inp = $('#seed'); d.seed = inp ? inp.value : ''; }
+  if (d.act === 'start'){ const inp = $('#seed'); d.seed = inp ? inp.value : ''; }
   act(d.act, d);
 });
 document.addEventListener('keydown', e => {
@@ -2045,7 +1650,7 @@ document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT'){ if (e.key === 'Enter' && GS.phase === 'title') act('start', {seed:e.target.value}); return; }
   if (GS.phase !== 'play') return;
   if (e.key === ' '){ e.preventDefault(); if (!GS.modal) act('pause'); }
-  if (e.key === 'Escape' && GS.modal) act(['alert','help','idcards','oimg','obrief','otut'].includes(GS.modal.type) ? 'close' : 'cancel');
+  if (e.key === 'Escape' && GS.modal) act(['alert','help','idcards'].includes(GS.modal.type) ? 'close' : 'cancel');
 });
 let ticks = 0;
 addEventListener('visibilitychange', () => { if (document.hidden && GS) save(); });
@@ -2071,12 +1676,15 @@ window.LatticeTests = { run(){
   r.push(['same seed, same case', JSON.stringify(a.sc) === JSON.stringify(b.sc) && a.truth === b.truth]);
   const seen = new Set(); for (let i=0;i<60;i++) seen.add(truthOf('S'+i));
   r.push(['all three cases occur', seen.size === 3]);
+  const envs = new Set(); for (let i=0;i<80;i++) envs.add(rollCase('E'+i).E);
+  r.push(['all six conditions occur', envs.size === 6]);
+  r.push(['every situation builds', STORY_KEYS.every(k => { let sd = null; for (let i=0;i<4000 && !sd;i++) if (rollCase('Q'+i).story === k) sd = 'Q'+i; return sd && freshState(sd).sc.C.people.length > 0; })]);
   r.push(['every case has a weak or strong face match', ['D','S','L'].every(T => { let s='S0'; for (let i=0;i<80&&truthOf(s)!==T;i++) s='S'+(i+1); return freshState(s).sc.C.people.some(p => !p.crowd); })]);
   return {passed: r.every(x => x[1]), results: r};
 } };
 
 loadCareer();
-GS = load() || {v:5, phase:'title', seed:'NIGHT-01'};
+GS = load() || {v:6, phase:'title', seed:'NIGHT-01'};
 if (GS.phase === 'play' && GS.lvl == null) GS.lvl = 1;
 render();
 if (location.hash === '#selftest') console.log('selftest', JSON.stringify(LatticeTests.run()));
