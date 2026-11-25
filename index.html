@@ -357,6 +357,83 @@ svg.graph{background:radial-gradient(circle at 50% 50%,rgba(61,214,245,.08),tran
 .act.wide{display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center}
 .act.wide .ic{grid-row:1/3;height:auto}
 @media(max-width:760px){.kv2{font-size:12px;gap:3px 8px}.kv2 small{font-size:8.5px}.card .src{font-size:10px}}
+
+/* ================= v9 research pass: legibility, access, Low FX ================= */
+:root{--glass:blur(12px) saturate(140%);--mute:#B4C7D3;--dim:#8BA3B3;--focus:#FFE08A}
+/* glass that carries text must be near-opaque (>=.8) */
+.panel{background:rgba(7,15,22,.86)}
+.sheet{background:rgba(7,15,22,.93)}
+.top{background:rgba(6,13,20,.88)}.flow{background:rgba(6,13,20,.82)}
+.chip{background:rgba(4,11,17,.82)}.ticker{background:rgba(4,11,17,.84)}
+.box{background:rgba(7,15,22,.84)}
+.card{background:rgba(255,255,255,.035)}
+/* glow only on decoration, never on reading text */
+.verdict,.clock,.tab.on,.brand span:first-of-type,.grade{text-shadow:none}
+.verdict .pct{font:600 .82em var(--mono);color:var(--ink);opacity:.85;margin-left:4px}
+.clock,.grade,.cf div b,.pcard .mt,.match>b,.audit div,.kv2,.legend{font-variant-numeric:tabular-nums}
+/* type scale: labels >=11px, body >=12px */
+.lbl,.card>.lbl{font-size:11.5px;letter-spacing:.1em}
+.tab{font-size:11.5px;min-height:52px;justify-content:center}
+.chip{font-size:11px}
+.legend{font-size:11.5px;letter-spacing:.03em;text-transform:none;gap:6px;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.kv2 small{font-size:10.5px;letter-spacing:.08em}
+.act .ds{font-size:12px}
+.src{font-size:11px}
+.idc .f{font-size:11px}
+/* 10-icon frequency array + shape-coded glyphs (colour is never the only cue) */
+.ten{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:9px;max-width:240px}
+.gl{display:inline-block;width:10px;height:10px;background:var(--c,currentColor);flex:none}
+.ten .gl{width:100%;height:auto;aspect-ratio:1}
+.gD{border-radius:50%}                         /* distress: circle */
+.gS{clip-path:polygon(50% 0,100% 100%,0 100%)} /* criminal: triangle */
+.gL{border-radius:2px}                         /* legitimate: square */
+.legend .gl{background:currentColor}
+/* focus + touch */
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+button:focus:not(:focus-visible){outline:none}
+.btn{min-height:44px}
+.ib{min-width:40px;min-height:40px}
+.fxb{font:700 11px var(--mono);letter-spacing:.06em;min-width:52px}
+.ib[aria-pressed="true"].fxb{color:var(--acc)}
+/* calmer motion: slower sweep, fewer layers */
+.mapcol::after{animation-duration:11s;opacity:.7}
+/* Low FX: solid panels, no blur, no scanlines/sweeps (also the WCAG 2.2.2 pause control) */
+html.lowfx *,html.lowfx *::before,html.lowfx *::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html.lowfx .mapcol::after,html.lowfx .title .stage::before{animation:none;display:none}
+html.lowfx .mapcol::before{background:none}
+html.lowfx .panel,html.lowfx .sheet,html.lowfx .box{background:#0A141C}
+html.lowfx .top,html.lowfx .flow,html.lowfx .chip,html.lowfx .ticker{background:#08111A}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+ .panel,.sheet,.box{background:#0A141C}.top,.flow,.chip,.ticker{background:#08111A}}
+@media (prefers-reduced-transparency:reduce),(prefers-contrast:more){
+ *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+ .panel,.sheet,.box{background:#0A141C}.top,.flow,.chip,.ticker{background:#08111A}
+ .mapcol::before{background:none}:root{--line:rgba(140,215,245,.45);--line2:rgba(140,215,245,.3)}}
+@media(max-width:760px){
+ :root{--hdr:86px}
+ .top{height:44px}
+ .ib{min-width:40px;min-height:40px}
+ .tab{font-size:10.5px;min-height:46px;padding:4px 2px}
+ .chip{font-size:10.5px;padding:2px 6px}
+ .ticker{font-size:11.5px}
+ .card>.lbl{font-size:10.5px}
+ .legend{font-size:10.5px}
+ .kv2 small{font-size:10px}
+ .act .ds{font-size:11.5px}
+ .ten{gap:3px;margin-top:7px}
+ .classbar{font-size:9px}
+}
+@media(max-width:760px) and (max-height:760px){svg.graph{max-height:min(110px,16vh)}}
+
+/* hold-to-confirm fill */
+.hold{position:relative;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:none}
+.hold span{position:relative;z-index:1}
+.hold::after{content:"";position:absolute;inset:0;background:rgba(255,255,255,.45);transform:scaleX(0);transform-origin:left;pointer-events:none}
+.hold.arming::after{transform:scaleX(1);transition:transform .7s linear}
+/* report P1: label floor 12px desktop, 11px phone */
+.lbl,.card>.lbl{font-size:12px}
+@media(max-width:760px){.card>.lbl,.lbl{font-size:11px}.legend{font-size:11px}.tab{font-size:11px}.chip{font-size:11px}}
 </style>
 </head>
 <body>
@@ -371,7 +448,7 @@ const BASES = { air:{x:885,y:190}, port:{x:805,y:432} };
 const COVE = {x:752,y:134};
 const HK = ['D','S','L'];
 const HN = {D:'In distress', S:'Criminal', L:'Legitimate'};
-const HC = {D:'#32A467', S:'#E76A6E', L:'#4C90F0'};
+const HC = {D:'#F0E442', S:'#FF7A45', L:'#56B4E9'}; // Okabe-Ito based: safe for red-green colour blindness
 const CASE_NO = '26-0417';
 const UNITS = {
   drone:   {base:'air',  off:-18, speed:35,   air:true, col:'#b48cff', lbl:'DR', name:'Drone'},
@@ -435,7 +512,7 @@ function clearSave(){ try { localStorage.removeItem(SAVE); } catch(e){ storageOK
 
 // ---------- career (meta-progression, stored apart from the case) ----------
 const CAREER = 'lattice-career-v1';
-function blankCareer(){ return {v:1, xp:0, lvlMax:1, sel:1, cases:0, bests:{}, outs:{}, ach:{}, daily:{}, tel:{dec:{}, grade:{}}, sound:true}; }
+function blankCareer(){ return {v:1, xp:0, lvlMax:1, sel:1, cases:0, bests:{}, outs:{}, ach:{}, daily:{}, tel:{dec:{}, grade:{}}, sound:true, lowfx:false}; }
 let CR = blankCareer(), sessionCases = 0, newAch = [];
 function loadCareer(){ try { const s = localStorage.getItem(CAREER); if (s){ const o = JSON.parse(s); if (o && o.v === 1) CR = Object.assign(blankCareer(), o); } } catch(e){ storageOK = false; } }
 function saveCareer(){ try { localStorage.setItem(CAREER, JSON.stringify(CR)); } catch(e){ storageOK = false; } }
@@ -739,6 +816,7 @@ const H = {
   daily(){ const day = today(); if (CR.daily[day]) return; GS = freshState('DAILY-'+day, 2, day); tone(440,.12,'triangle'); },
   lvl(d){ const n = +d.n; if (n >= 1 && n <= CR.lvlMax){ CR.sel = n; saveCareer(); } },
   sound(){ CR.sound = !CR.sound; saveCareer(); if (CR.sound) tone(660,.1); },
+  fx(){ CR.lowfx = !CR.lowfx; saveCareer(); applyFx(); },
   copy(d){ const t = shareText(d.day); try { navigator.clipboard.writeText(t).then(() => { const b = $('#copyb'); if (b) b.textContent = 'Copied'; }, () => {}); } catch(e){} GS.shareOpen = d.day; },
   doResetAll(){ clearSave(); try { localStorage.removeItem(CAREER); } catch(e){} CR = blankCareer(); GS = {v:5, phase:'title', seed:randomSeed()}; },
   close(){ const m = GS.modal; GS.modal = null; if (m && m.type === 'alert') GS.paused = false; },
@@ -794,8 +872,9 @@ function act(name, data){
 }
 
 // ---------- rendering ----------
+function applyFx(){ document.documentElement.classList.toggle('lowfx', !!CR.lowfx); }
 function render(){
-  const app = $('#app');
+  const app = $('#app'); applyFx();
   if (GS.phase === 'title'){ app.innerHTML = titleHTML(); app.classList.remove('fx'); }
   else if (GS.phase === 'end'){ const fresh = !GS.recorded; recordCase(GS); app.innerHTML = endHTML(); app.classList.toggle('fx', fresh); window.scrollTo(0,0);
     if (fresh){ const g = score(GS).grade; [523,659,784,1047].slice(0, {A:4,B:3,C:2,D:1,F:1}[g]).forEach((f,i) => tone(g==='F'?147:f, .18, 'triangle', .1, .35+i*.09)); if (!OUT[GS.res.kind].g) buzz(80); } }
@@ -806,7 +885,7 @@ function profileHTML(){
   const L = lvlOf(CR.xp), lo = xpFor(L), hi = xpFor(L+1), day = today(), dr = CR.daily[day];
   const cal = [...Array(7)].map((_,i) => { const d = new Date(); d.setDate(d.getDate()-6+i); const k = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); const r = CR.daily[k]; return `<i class="${r ? ('AB'.includes(r.g)?'g':r.g==='F'?'b':'') : ''}" title="${k}">${r ? r.g : '·'}</i>`; }).join('');
   const nAch = Object.keys(CR.ach).length;
-  return `<div class="prof">${I('person',22)}<div class="xp"><div style="display:flex;justify-content:space-between;font-size:13px"><span class="rk">${rankOf(L)} · lvl ${L}</span><span class="mute">${CR.xp} XP · ${CR.cases} case${CR.cases===1?'':'s'}</span></div><div class="bar"><b style="width:${Math.round((CR.xp-lo)/(hi-lo)*100)}%"></b></div></div><button class="ib" data-act="sound" aria-label="Sound">${CR.sound ? '♪' : '<s>♪</s>'}</button></div>
+  return `<div class="prof">${I('person',22)}<div class="xp"><div style="display:flex;justify-content:space-between;font-size:13px"><span class="rk">${rankOf(L)} · lvl ${L}</span><span class="mute">${CR.xp} XP · ${CR.cases} case${CR.cases===1?'':'s'}</span></div><div class="bar"><b style="width:${Math.round((CR.xp-lo)/(hi-lo)*100)}%"></b></div></div><button class="ib" data-act="sound" aria-label="Sound" aria-pressed="${!!CR.sound}">${CR.sound ? '♪' : '<s>♪</s>'}</button><button class="ib fxb" data-act="fx" aria-label="Low effects: solid panels, no animation" aria-pressed="${!!CR.lowfx}">${CR.lowfx ? 'FX off' : 'FX'}</button></div>
   <div class="daily">${I('clock',18)}<div class="dt"><b>Daily case #${dailyNo(day)}</b><span class="mute sm">${dr ? `Done today: grade ${dr.g}. A new one tomorrow.` : 'Same case for everyone today · one attempt · clearance 2'}</span><div class="cal">${cal}</div></div>${dr ? `<button class="btn" data-act="copy" data-day="${day}" id="copyb" style="flex:none">Share</button>` : `<button class="btn pri" data-act="daily" style="flex:none">Play</button>`}</div>
   ${GS.shareOpen && dr ? `<textarea class="share" readonly aria-label="Share text">${esc(shareText(day))}</textarea>` : ''}
   <label style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);font-weight:600;margin-top:14px">Clearance</label>
@@ -988,10 +1067,17 @@ function latticeCard(G){
   const p = probs(G), b = best(p), n = G.findings.length;
   if (blind(G)) return `<div class="card"><div class="lbl"><span>Lattice assessment</span><span>${I('lock',12)} clearance 4</span></div><div class="mute sm">Assessment switched off at this clearance. You have ${n} piece${n===1?'':'s'} of evidence in the Case tab: weigh them yourself.</div></div>`;
   const verdict = !n ? `<div class="verdict mute">No evidence yet</div><div class="mute sm">Lattice’s starting guess comes from past cases: most dark boats here were criminal. That’s a base rate, not evidence.</div>`
-    : `<div class="verdict" style="color:${HC[b]}">${HN[b]} · ${Math.round(p[b]*100)}%</div><div class="mute sm">${p[b] < .75 ? 'Not sure yet.' : 'Fairly sure'} · based on ${n} piece${n>1?'s':''} of evidence you collected.</div>`;
-  return `<div class="card"><div class="lbl"><span>Lattice assessment</span></div>${verdict}
-    <div class="tri">${HK.map(h => `<b style="width:${(p[h]*100).toFixed(1)}%;background:${HC[h]}"></b>`).join('')}</div>
-    <div class="legend">${HK.map(h => `<span style="color:${HC[h]}">${HN[h]}</span>`).join('')}</div></div>`;
+    : `<div class="verdict" style="color:${HC[b]}">${likely(p[b])} ${HN[b].toLowerCase()} <span class="pct">${Math.round(p[b]*100)}%</span></div><div class="mute sm">${n < 2 ? 'Weak' : n < 4 ? 'Moderate' : 'Strong'} evidence base · ${n} piece${n>1?'s':''} you collected.</div>`;
+  return `<div class="card"><div class="lbl"><span>Lattice assessment</span><span>out of 10 boats like this</span></div>${verdict}
+    ${icons10(p)}
+    <div class="legend">${HK.map(h => `<span style="color:${HC[h]}"><i class="gl g${h}"></i>${HN[h]} ${Math.round(p[h]*100)}%</span>`).join('')}</div></div>`;
+}
+function likely(x){ return x >= .9 ? 'Almost certainly' : x >= .75 ? 'Very likely' : x >= .55 ? 'Likely' : x >= .4 ? 'Maybe' : 'Unclear:'; }
+function icons10(p){
+  const raw = HK.map(h => p[h]*10), c = raw.map(Math.floor);
+  let left = 10 - c.reduce((a,b) => a+b, 0);
+  raw.map((r,i) => [r - c[i], i]).sort((a,b) => b[0]-a[0]).forEach(([,i]) => { if (left > 0){ c[i]++; left--; } });
+  return `<div class="ten" role="img" aria-label="${HK.map((h,i) => c[i]+' of 10 '+HN[h]).join(', ')}">${HK.map((h,i) => `<i class="gl g${h}" style="--c:${HC[h]}"></i>`.repeat(c[i])).join('')}</div>`;
 }
 function personRow(G, p, i){
   if (p.crowd) return `<div class="pcard" style="cursor:default"><span class="av">+</span><span class="nm">${esc(p.n)}</span><span class="mt"></span><span><span class="flag ${p.st}">${esc(p.tag)}</span></span></div>`;
@@ -1085,11 +1171,11 @@ function renderModal(){
   }
   if (m.type === 'decide'){
     const p = probs(G);
-    h = `<h2>Decide</h2><p class="mute sm">One decision. ${blind(G) ? 'No assessment at this clearance.' : `Lattice says: <b style="color:${HC[best(p)]}">${HN[best(p)]} ${Math.round(p[best(p)]*100)}%</b>`} from ${G.findings.length} pieces of evidence.</p>
+    h = `<h2>Decide</h2><p class="mute sm">One decision. ${blind(G) ? 'No assessment at this clearance.' : `Lattice says: <b style="color:${HC[best(p)]}">${HN[best(p)]} ${Math.round(p[best(p)]*100)}%</b>`} from ${G.findings.length} piece${G.findings.length===1?'':'s'} of evidence.</p>
       ${Object.keys(DEC).map(k => `<button class="btn choice ${m.d===k?'on':''}" data-act="pickD" data-d="${k}"><b>${I(DEC[k].icon)} ${DEC[k].name}</b> <span class="mute">· ${DEC[k].sub}</span><small>${DEC[k].text}</small></button>`).join('')}
       ${m.d === 'board' ? `<div class="lbl" style="margin-top:12px"><span>Legal basis</span></div>${Object.keys(BASIS).map(k => `<button class="btn choice ${m.b===k?'on':''}" data-act="pickB" data-b="${k}"><b>${BASIS[k].name}</b><small>${BASIS[k].sub}</small></button>`).join('')}` : ''}
       ${!G.findings.length ? '<p class="wn sm">You haven’t gathered any evidence yet.</p>' : ''}
-      <div class="row"><button class="btn" data-act="cancel">Not yet</button><button class="btn pri" data-act="decide" ${!m.d || (m.d==='board' && !m.b) ? 'disabled' : ''}>Confirm</button></div>`;
+      <div class="row"><button class="btn" data-act="cancel">Not yet</button><button class="btn pri hold" data-act="decide" ${!m.d || (m.d==='board' && !m.b) ? 'disabled' : ''}><span>${m.d ? 'Hold to confirm: '+DEC[m.d].name : 'Pick an action'}</span></button></div>`;
   }
   if (m.type === 'achs') h = `<h2>${I('check',18)} Badges</h2>${Object.keys(ACH).map(id => `<div class="ach" style="${CR.ach[id]?'':'opacity:.45'}">${CR.ach[id]?I('check',14):I('lock',14)}<span><b>${ACH[id][0]}</b> · ${ACH[id][1]}${CR.ach[id]?` <span class="mute">${CR.ach[id]}</span>`:''}</span></div>`).join('')}<div class="row"><button class="btn" data-act="cancel">Close</button></div>`;
   if (m.type === 'reset') h = `<h2>Start over?</h2><p><b>Reset case</b> deletes this case only. <b>Reset everything</b> also wipes your rank, clearances, archive and badges.</p>
@@ -1184,8 +1270,18 @@ function endHTML(){
 }
 
 // ---------- input & loop ----------
+// Hold-to-confirm for the one irreversible call: pointer must stay down ~700 ms; keyboard Enter/Space confirms directly.
+let holdT = null;
+function holdStop(){ clearTimeout(holdT); holdT = null; document.querySelectorAll('.hold.arming').forEach(b => b.classList.remove('arming')); }
+document.addEventListener('pointerdown', e => {
+  const el = e.target.closest('.hold'); if (!el || el.disabled) return;
+  holdStop(); el.classList.add('arming'); buzz && buzz(10);
+  holdT = setTimeout(() => { holdStop(); act(el.dataset.act, {...el.dataset}); }, 700);
+});
+['pointerup','pointerleave','pointercancel'].forEach(t => document.addEventListener(t, e => { if (holdT && (t !== 'pointerleave' || (e.target.classList && e.target.classList.contains('hold')))) holdStop(); }, true));
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
+  if (el.classList.contains('hold') && e.detail !== 0) return;
   if (el.classList.contains('modalbg') && e.target !== el) return;
   const d = {...el.dataset};
   if (d.act === 'start'){ const inp = $('#seed'); d.seed = inp ? inp.value : ''; }
