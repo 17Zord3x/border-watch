@@ -463,6 +463,117 @@ html.lowfx .ume,html.lowfx .um.on em,html.lowfx .um.on span{animation:none}html.
 .envc.on{color:var(--ink);border-color:rgba(86,180,233,.5)}
 .envb{display:flex;gap:10px;align-items:flex-start;margin:10px 0 4px;padding:10px 12px;border:1px solid var(--line2);border-left:3px solid var(--acc);border-radius:4px;background:rgba(255,255,255,.03)}
 .envb b{display:block;font-size:14px}.envb span{display:block;font-size:13px;color:var(--mute);margin-top:2px}.envb svg{color:var(--acc);margin-top:2px}
+
+/* ================= v14 pixel theme: "Watchkeeper" ================= */
+@font-face{font-family:"Watchkeeper";src:url(data:font/woff;base64,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) format("woff");font-display:block}
+:root{
+ --bg:#0b1220;--panel:#131d2e;--panel2:#1b2840;--panel3:#24344f;--line:#3a5072;--line2:#2a3b57;--edge:#05080f;
+ --ink:#eef3ea;--mute:#b3c1d0;--dim:#8597ad;
+ --acc:#5fd3e6;--acc2:#2a8fa6;--green:#7fd37a;--amber:#ffc46b;--red:#ff6a5a;--violet:#c9a8ff;--focus:#ffe066;
+ --pf:"Watchkeeper",var(--mono);
+ --glass:none;--glow:none;
+ --bev:inset -3px -3px 0 rgba(0,0,0,.38),inset 3px 3px 0 rgba(255,255,255,.10);
+ --drop:4px 4px 0 rgba(0,0,0,.55);
+}
+html,body{background:var(--bg)}
+body{background-image:none}
+*,*::before,*::after{border-radius:0!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;text-shadow:none!important}
+svg.px,svg.i{image-rendering:pixelated;shape-rendering:crispEdges;filter:none!important}
+/* pixel type for chrome; body copy stays a plain readable sans */
+.classbar,.brand span,.clock,.flow span,.chip,.tab,.lbl,.card>.lbl,.btn,.act .nm,.title h1,.hero h1,.box .bh,.seclbl,.kv2 small,.verdict,.grade,
+.cal button,.cal i,.lv,.envc,.flag,.ticker,.legend,.hero .meta,.upl .tier,.ib,.fxb,.daily .dt b,.steps li::before,.prof .rk,.cf div b,.um span,.ume b,.seedrow input,.pcard .mt,.match>b{
+ font-family:var(--pf)!important;font-weight:400!important;letter-spacing:0!important;-webkit-font-smoothing:none;font-smooth:never}
+.lbl,.card>.lbl,.chip,.tab,.btn,.act .nm,.box .bh,.seclbl,.kv2 small,.legend,.hero .meta,.envc,.flag,.lv,.classbar,.ib,.fxb,.daily .dt b,.prof .rk{text-transform:uppercase}
+.lbl,.card>.lbl,.seclbl,.kv2 small,.hero .meta,.legend,.envc,.flag{font-size:16px!important;line-height:1.25}
+.chip,.ticker,.tab,.cal button,.cal i{font-size:16px!important}
+.btn,.act .nm,.box .bh,.lv,.ib,.fxb,.daily .dt b,.prof .rk{font-size:16px!important;line-height:1.25}
+.verdict{font-size:24px!important;line-height:1.2}.verdict .pct{font:inherit!important;font-size:inherit!important}
+.title h1{font-size:40px!important;line-height:1.1;background:none!important;-webkit-background-clip:border-box!important;color:var(--ink)!important;margin:6px 0 12px}
+.title h1 span,.title h1 b{color:var(--acc)}
+.hero h1{font-size:24px!important;line-height:1.2}
+.grade{font-size:48px!important;line-height:1;padding:8px 12px!important;background:var(--edge)!important;box-shadow:var(--bev),0 0 0 2px var(--line)!important}
+.clock{font-size:24px!important;color:var(--acc)!important}
+.classbar{background:#1f6b45!important;color:#d9ffe9!important;font-size:8px!important;letter-spacing:0!important;box-shadow:0 2px 0 var(--edge)}
+/* frames: flat fills, 2px pixel borders, hard drop shadows, no glass */
+.top,.flow{background:var(--panel)!important;border-bottom:2px solid var(--edge)!important;box-shadow:none!important}
+.panel{background:var(--panel)!important;border:2px solid var(--line)!important;box-shadow:0 0 0 2px var(--edge),var(--drop)!important}
+.box,.sheet{background:var(--panel)!important;border:2px solid var(--line)!important;box-shadow:0 0 0 2px var(--edge),6px 6px 0 rgba(0,0,0,.55)!important}
+.card,.act,.pcard,.hero,.daily,.prof,.rec,.idc,.envb{background:var(--panel2)!important;border:2px solid var(--line2)!important;box-shadow:var(--bev)!important}
+.card>.lbl{background:var(--panel3)!important;border-bottom:2px solid var(--edge)!important;color:var(--acc)!important}
+.daily{border-left:6px solid var(--amber)!important}
+.envb{border-left:6px solid var(--acc)!important}
+.card::before,.card::after,.act::before,.hero::before,.box::before,.box::after{width:6px!important;height:6px!important;border-width:0!important;background:var(--acc);opacity:1!important;top:-2px;left:-2px}
+.card::after,.box::after{top:auto;left:auto;bottom:-2px;right:-2px}
+.hint{background:var(--panel3)!important;border-left:6px solid var(--acc)!important;box-shadow:none!important}
+.alert{background:#3a1c22!important;border-left:6px solid var(--red)!important}
+/* buttons: chunky bevel, press = shift down-right */
+.btn,.lv,.ib,.choice,.cal button{border:0!important;box-shadow:var(--bev),0 0 0 2px var(--edge)!important;background:var(--panel3)!important;transition:none!important}
+.btn:hover:not(:disabled),.lv:hover:not(:disabled),.choice:hover{background:#2d4061!important}
+.btn:active:not(:disabled),.act:active:not(:disabled),.lv:active,.choice:active,.cal button:active{transform:translate(2px,2px);box-shadow:inset 3px 3px 0 rgba(0,0,0,.38),0 0 0 2px var(--edge)!important}
+.btn.pri{background:var(--acc)!important;color:#06121a!important;box-shadow:inset -3px -3px 0 var(--acc2),inset 3px 3px 0 #bff4fb,0 0 0 2px var(--edge)!important}
+.btn.pri:hover:not(:disabled){background:#86e2f0!important}
+.lv.on,.ib.on,.choice.on{background:var(--acc2)!important;color:#fff!important}
+.ib{background:transparent!important;box-shadow:none!important}.ib:hover{background:var(--panel3)!important}
+.act:hover:not(:disabled){border-color:var(--acc)!important;background:#22324d!important}
+.act .ic{color:var(--acc)}
+.act.done{border-color:#3f7a4a!important}.act.done .ic{color:var(--green)}
+.act.go{border-color:var(--amber)!important}
+.act .pg{background:var(--amber)!important;box-shadow:none!important}
+.pcard:hover{border-color:var(--acc)!important}
+.av{background:var(--panel3)!important;box-shadow:0 0 0 2px var(--edge)!important;overflow:hidden}
+.av svg,.idc .ph svg{width:100%;height:100%;display:block}
+.choice{font-family:inherit!important;text-transform:none!important;font-size:14px!important;line-height:1.35!important}
+.choice b{font-family:var(--pf)!important;font-weight:400!important;font-size:16px!important;text-transform:uppercase}
+.choice small{font-size:13px}
+.sheet h2,.sheet h3{font-family:var(--pf);font-weight:400;text-transform:uppercase;font-size:24px;letter-spacing:0}
+/* bars: segmented blocks */
+.tri,.bar{height:12px!important;background:var(--edge)!important;border:2px solid var(--edge);position:relative;gap:2px!important}
+.tri b,.bar b{box-shadow:none!important}
+.tri::after,.bar::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0 8px,var(--edge) 8px 10px)}
+.bar b{background:var(--acc)!important}
+.match i{height:10px!important;background:var(--edge)!important}
+/* tabs + flow + chips + ticker */
+.tabs{background:var(--panel)!important;border-top:2px solid var(--edge)!important}
+.tab.on{background:var(--panel3)!important;color:var(--acc)!important;box-shadow:inset 0 4px 0 var(--acc)!important}
+.tab.on svg{filter:none!important}
+.flow span.c{background:var(--panel3)!important;box-shadow:0 0 0 2px var(--acc)!important}
+.flow span.c b{background:var(--acc)!important;color:#06121a!important;box-shadow:none!important}
+.flow span b{font-family:var(--pf)!important;font-weight:400!important;font-size:16px!important;width:20px!important;height:20px!important}
+.chip{background:rgba(11,18,32,.92)!important;border:2px solid var(--edge)!important;box-shadow:inset 0 0 0 2px var(--line2)!important;color:var(--ink)!important;padding:2px 8px!important;line-height:20px}
+.chip.hot{background:#5a1f22!important;color:#ffd0c8!important}
+.ticker{background:rgba(11,18,32,.94)!important;border:2px solid var(--edge)!important;box-shadow:inset 0 0 0 2px var(--line2)!important}
+/* map: pixel art, no scanlines or sweeps */
+.mapcol{background:#0b1a2b!important}
+.mapcol::before,.mapcol::after{display:none!important;animation:none!important}
+svg.map image.pxi{image-rendering:pixelated;image-rendering:crisp-edges}
+svg.map text.pxt{font-family:"Watchkeeper",monospace;paint-order:stroke;stroke:#0b1220;stroke-width:4px;stroke-linejoin:miter;letter-spacing:0}
+svg.graph{shape-rendering:crispEdges;background:var(--edge)!important;border:2px solid var(--line2)!important}
+svg.graph text{font-family:"Watchkeeper",monospace!important;font-size:16px}
+/* title: pixel sea under the panel */
+.title .stage{background:#0f2236 var(--seabg) center/2004px 1860px no-repeat!important;image-rendering:pixelated}
+.title .stage::before,.title .stage::after{display:none!important;animation:none!important}
+.seedrow input{background:var(--edge)!important;box-shadow:inset 0 0 0 2px var(--line)!important;color:var(--acc)!important;font-size:16px!important}
+.envc{background:var(--panel2)!important;border:2px solid var(--line2)!important}
+.envc.on{border-color:var(--acc)!important}
+.cal i{background:var(--panel3)!important}
+.cal .now{box-shadow:0 0 0 2px var(--amber)!important}
+.flag{padding:1px 6px!important}
+.ume::before{width:12px;height:12px;box-shadow:none!important}
+.ume b{background:var(--edge)!important}
+.upw{background:var(--edge)!important;border-left:4px solid var(--line)!important}
+:focus-visible{outline:3px solid var(--focus)!important;outline-offset:2px}
+@media(max-width:760px){
+ .chip{font-size:12px!important;padding:0 6px!important;line-height:18px}
+ .ticker{font-size:12px!important}
+ .tab{font-size:12px!important}
+ .lbl,.card>.lbl,.seclbl,.kv2 small,.legend,.hero .meta,.envc,.flag{font-size:12px!important}
+ .act .nm,.btn,.daily .dt b,.prof .rk{font-size:16px!important}
+ .clock{font-size:16px!important}
+ .verdict{font-size:16px!important}
+ .title h1{font-size:32px!important}
+ .panel{border-bottom:0!important}
+ .panel::before{height:4px!important;background:var(--line)!important}
+}
 </style>
 </head>
 <body>
@@ -519,8 +630,63 @@ const ICONS = {
   reset:'<path d="M2.5 8a5.5 5.5 0 1 0 1.7-4M2 2.5v3.5h3.5"/>',
   info:'<circle cx="8" cy="8" r="6.5"/><path d="M8 7.2V11.5M8 4.8v.01"/>'
 };
-const I = (n, s=16) => `<svg class="i" width="${s}" height="${s}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||''}</svg>`;
-const LOGO = `<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><g fill="none" stroke="#4C90F0" stroke-width="1.6"><path d="M10 2l7 4v8l-7 4-7-4V6z"/><path d="M10 2v16M3 6l14 8M17 6L3 14" stroke-opacity=".45"/></g><circle cx="10" cy="10" r="2.2" fill="#4C90F0"/></svg>`;
+// ---------- pixel art: icons (12x12, one colour = currentColor) ----------
+const PXI = {
+radar:`....####....|..##....##..|.#........#.|.#...##..##.|#...#..##..#|#...#.##...#|#....##....#|#..........#|.#........#.|.#........#.|..##....##..|....####....`,
+track:`............|.........##.|........#..#|........#..#|.........##.|....##..#...|...#..##....|..#.........|..#.........|.#..........|#...........|............`,
+radio:`.........#..|........#...|.......#....|.##########.|#..........#|#.###..##..#|#.#.#.#..#.#|#.###.#..#.#|#......##..#|#..........#|.##########.|............`,
+drone:`............|.###....###.|#...#..#...#|#.#.#..#.#.#|#...#..#...#|.###.##.###.|....####....|.###.##.###.|#...#..#...#|#.#.#..#.#.#|#...#..#...#|.###....###.`,
+id:`............|############|#..........#|#.##..####.#|#.##.......#|#.##..###..#|#####......#|#.....####.#|#..........#|############|............|............`,
+ship:`............|......#.....|......#.....|....####....|...#....#...|..########..|############|.#........#.|..#......#..|...######...|............|............`,
+graph:`.##......##.|#..#....#..#|#..######..#|.##......##.|..#......#..|...#....#...|....#..#....|.....##.....|....#..#....|....#..#....|.....##.....|............`,
+people:`............|..##....##..|.#..#..#..#.|.#..#..#..#.|..##....##..|............|.####..####.|#....##....#|#....##....#|#....##....#|............|............`,
+folder:`............|.####.......|#....#......|#.....#####.|############|#..........#|#..........#|#..........#|#..........#|############|............|............`,
+scales:`.....##.....|############|.#...##...#.|.#...##...#.|#.#..##..#.#|###..##..###|.....##.....|.....##.....|.....##.....|...######...|............|............`,
+search:`............|..####......|.#....#.....|#......#....|#......#....|#......#....|#......#....|.#....##....|..####.##...|.......###..|........###.|.........##.`,
+lock:`............|....####....|...#....#...|...#....#...|..########..|..#......#..|..#..##..#..|..#..##..#..|..#......#..|..########..|............|............`,
+check:`............|............|..........##|.........##.|........##..|.##....##...|..##..##....|...####.....|....##......|............|............|............`,
+alert:`.....##.....|....#..#....|....#..#....|...#.##.#...|...#.##.#...|..#..##..#..|..#..##..#..|.#........#.|.#...##...#.|#....##....#|############|............`,
+clock:`....####....|..##....##..|.#...#....#.|.#...#....#.|#....#.....#|#....###...#|#.......#..#|#..........#|.#........#.|.#........#.|..##....##..|....####....`,
+storm:`............|....###.....|..##...##...|.#.......#..|#.........##|#..........#|.##########.|.....##.....|....##......|...#####....|.....##.....|....##......`,
+building:`............|.#####......|.#...#......|.#.#.#.####.|.#...#.#..#.|.#.#.#.#..#.|.#...#.#..#.|.#.#.#.#..#.|.#...#.#..#.|############|............|............`,
+person:`....####....|...#....#...|...#....#...|...#....#...|....####....|............|..########..|.#........#.|#..........#|#..........#|............|............`,
+phone:`...######...|...#....#...|...#....#...|...#....#...|...#....#...|...#....#...|...#....#...|...#....#...|...#.##.#...|...######...|............|............`,
+doc:`.######.....|.#....##....|.#....#.#...|.#....####..|.#.......#..|.#.#####.#..|.#.......#..|.#.#####.#..|.#.......#..|.#.#####.#..|.#.......#..|.#########..`,
+buoy:`....####....|..##....##..|.#..####..#.|.#.#....#.#.|#.#......#.#|#.#......#.#|#.#......#.#|#.#......#.#|.#.#....#.#.|.#..####..#.|..##....##..|....####....`,
+anchor:`.....##.....|....#..#....|.....##.....|.....##.....|...######...|.....##.....|.....##.....|#....##....#|#....##....#|.#...##...#.|..##.##.##..|....####....`,
+eye:`............|............|....####....|..##....##..|.#...##...#.|#...####...#|#...####...#|.#...##...#.|..##....##..|....####....|............|............`,
+pause:`............|..###..###..|..###..###..|..###..###..|..###..###..|..###..###..|..###..###..|..###..###..|..###..###..|..###..###..|..###..###..|............`,
+play:`............|..#.........|..##........|..###.......|..####......|..#####.....|..######....|..#####.....|..####......|..###.......|..##........|..#.........`,
+help:`....####....|..##....##..|.#...##...#.|#...#..#...#|#......#...#|#.....#....#|#....#.....#|#....#.....#|.#........#.|.#...#....#.|..##....##..|....####....`,
+reset:`............|#..#####....|#.#.....#...|##.......#..|####......#.|..........#.|..........#.|#.........#.|.#.......#..|..#.....#...|...#####....|............`,
+info:`....####....|..##....##..|.#...##...#.|#..........#|#....##....#|#....##....#|#....##....#|#....##....#|.#...##...#.|.#........#.|..##....##..|....####....`,
+sat:`............|............|###......###|###.####.###|############|###.####.###|###......###|.....##.....|....#..#....|...#....#...|............|............`,
+coin:`....####....|..##....##..|.#...##...#.|#...####...#|#..##......#|#...###....#|#.....##...#|#......##..#|#...####...#|.#...##...#.|..##....##..|....####....`,
+target:`.....##.....|....####....|..##.##.##..|.#...##...#.|.#........#.|####.##.####|####.##.####|.#........#.|.#...##...#.|..##.##.##..|....####....|.....##.....`,
+shield:`............|.##########.|.#........#.|.#........#.|.#........#.|.#........#.|.#........#.|..#......#..|..#......#..|...#....#...|....#..#....|.....##.....`,
+image:`............|############|#..........#|#.##.......#|#.##.......#|#......#...#|#.....###..#|#..#.#####.#|#.##########|############|............|............`,
+flame:`.....#......|.....##.....|....###.....|....####.#..|...######...|..###..##.#.|..##....###.|.##......##.|.##..##..##.|.##.####.##.|..###..###..|....####....`,
+cam:`............|............|............|#######.....|#.....#..#..|#.....#.##..|#.....####..|#.....#.##..|#.....#..#..|#######.....|............|............`,
+key:`............|............|.####.......|#....#......|#.##.#######|#.##.#######|#....#..#.#.|.####...#.#.|............|............|............|............`,
+flag:`.#..........|.##########.|.#.#.#.#.##.|.##.#.#.#.#.|.#.#.#.#.##.|.##########.|.#..........|.#..........|.#..........|.#..........|.#..........|###.........`,
+fog:`............|............|############|............|.#########..|............|..##########|............|############|............|...######...|............`,
+wind:`............|.......###..|..........#.|..........#.|#########.#.|.........#..|............|############|............|######..##..|.......#..#.|........##..`,
+sun:`.....##.....|.#...##...#.|..#......#..|....####....|...#....#...|##.#....#.##|##.#....#.##|...#....#...|....####....|..#......#..|.#...##...#.|.....##.....`,
+island:`............|............|............|............|.....##.....|....#..#....|...#....#...|..#......##.|.#.........#|############|.#..#..#..#.|............`,
+drift:`............|............|.##...##....|#..#.#..#.#.|....#....#..|............|.##...##....|#..#.#..#.#.|....#....#..|............|............|............`,
+logo:`.....##.....|....#..#....|...#.##.#...|..#.#..#.#..|.#.#.##.#.#.|#.#.#..#.#.#|#.#.#..#.#.#|.#.#.##.#.#.|..#.#..#.#..|...#.##.#...|....#..#....|.....##.....`
+};
+const PXD = {};
+function pxPath(n){
+  if (PXD[n] !== undefined) return PXD[n];
+  const art = PXI[n]; if (!art) return PXD[n] = '';
+  let d = ''; art.split('|').forEach((row, y) => { let x = 0;
+    while (x < row.length){ if (row[x] === '#'){ const s = x; while (row[x] === '#') x++; d += `M${s} ${y}h${x-s}v1h-${x-s}z`; } else x++; } });
+  return PXD[n] = d;
+}
+// s <= 14 draws 1:1 (12px), anything larger draws at 2x (24px): whole pixels only
+const I = (n, s=16) => { const z = s <= 14 ? 12 : 24; return `<svg class="i px" width="${z}" height="${z}" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="${pxPath(n)}"/></svg>`; };
+const LOGO = `<svg class="px" width="24" height="24" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="#5FD3E6" d="${pxPath('logo')}"/></svg>`;
 const CLASSBAR = `<div class="classbar">Training simulation // all data fictional</div>`;
 
 const SYM = {unknown:'M-8,-8 A8.5,8.5 0 0 1 8,-8 A8.5,8.5 0 0 1 8,8 A8.5,8.5 0 0 1 -8,8 A8.5,8.5 0 0 1 -8,-8Z', hostile:'M0,-15 L15,0 L0,15 L-15,0Z', neutral:'M-12,-12 H12 V12 H-12Z'};
@@ -566,7 +732,7 @@ const ACH = {
   all3:   ['Seen it all', 'Solve a distress, a smuggling and a research case.'],
   nobody: ['Nobody left behind', 'Rescue every person on board.'],
   book:   ['By the book', 'Get an A with records opened only by logged purpose.'],
-  light:  ['Not every dark ship', 'Let an innocent research ship pass.'],
+  light:  ['Not every dark ship', 'Let an innocent boat pass.'],
   notthem:['Not them', 'Reject every wrong face match in a case.'],
   follow: ['Follow the boat', 'Let smugglers lead police to the beach.'],
   daily:  ['Daily watch', 'Finish a daily case.'],
@@ -1238,50 +1404,178 @@ function playHTML(){
    <div class="panel"><div class="body" id="body"></div><nav class="tabs" id="tabs"></nav></div>
   </div>`;
 }
+// ---------- pixel art: sprites + map ----------
+const PXU = 3; // map units per art pixel: everything on the map shares this grid
+const PAL = {k:'#12161d', g:'#5d6877', G:'#8f9aa8', w:'#e9ede6', W:'#c9cfc6', r:'#c4473a', o:'#e98f3a', y:'#efc43f', b:'#3d6ea8', n:'#23344b',
+  c:'#86d6e6', m:'#59606b', a:'#6d7b45', A:'#98a65f', s:'#e2b48a', h:'#3a2a20', f:'#ff9a2e', F:'#ffe066', p:'#d55fa0', e:'#4fbf73'};
+const SPR = {
+ unknown:`........kkk.........|.......kmmmk........|kkkkkkkkkkkkkkkkkkkk|kmmmmmmmmmmmmmmmmmk.|.kmmmmmmmmmmmmmmmk..|..kkkkkkkkkkkkkkk...`,
+ fishing:`...........k............|...........k.......k....|.......kkkkkkk.....k....|.......kwcwcwk.....k....|.......kwwwwwk....kk....|kkkkkkkkkkkkkkkkkkkkkkkk|kbbbbbbbbbbbbbbbbbbbbbk.|kwwwwwwwwwwwwwwwwwwwwk..|.kbbbbbbbbbbbbbbbbbbk...|..kkkkkkkkkkkkkkkkkk....`,
+ crowded:`..s.h.s.h.s.s.h.s.......|.ksksksksksksksksk......|.kokokokokokokokok......|kkkkkkkkkkkkkkkkkkkkkkkk|kbbbbbbbbbbbbbbbbbbbbbk.|kwwwwwwwwwwwwwwwwwwwwk..|.kbbbbbbbbbbbbbbbbbbk...|..kkkkkkkkkkkkkkkkkk....`,
+ burning:`.......m.mm.............|......mmmmmm............|.......mFfm.........k....|......fFFffk........k....|.....fFkkkFfk.......k....|......fkwcwfk......kk....|kkkkkkkkkkkkkkkkkkkkkkkk|kbbbbbbbbbbbbbbbbbbbbbk.|kwwwwwwwwwwwwwwwwwwwwk..|.kbbbbbbbbbbbbbbbbbbk...|..kkkkkkkkkkkkkkkkkk....`,
+ trawler:`..k..............k........|.k.k.............k........|k...k.......kkkkkkk.......|k...k.......kwcwcwk.......|k...k.......kwwwwwk.......|kkkkkkkkkkkkkkkkkkkkkkkkkk|kooooooooooooooooooooooook|kwwwwwwwwwwwwwwwwwwwwwwwk.|.koooooooooooooooooooook..|..kkkkkkkkkkkkkkkkkkkkk...`,
+ factory:`...k......................k.........|..k.k.....................k.........|.k...k..........kkkkkkkkkkkkk.......|k.....k.........kwcwcwcwcwcwk.......|k.....k....kkkkkkwwwwwwwwwwwk.......|k.....k....kgggggggggggggggggk......|kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk|kgggggggggggggggggggggggggggggggggk.|kwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwk..|.knnnnnnnnnnnnnnnnnnnnnnnnnnnnnnk...|..kkkkkkkkkkkkkkkkkkkkkkkkkkkkkk....`,
+ sail:`..........k.............|..........kw............|..........kww...........|.........wkwww..........|........wwkwwww.........|.......wwwkwwwww........|......wwwwkwwwwww.......|.....wwwwwkwwwwwww......|....wwwwwwkwwwwwwww.....|...kkkkkkkkkkkkkkkkk....|........kkkkk...........|kkkkkkkkkcwckkkkkkkkkkkk|kwwwwwwwwwwwwwwwwwwwwwk.|.kwwwwwwwwwwwwwwwwwwwk..|..kbbbbbbbbbbbbbbbbbk...|...kkkkkkkkkkkkkkkkk....`,
+ dismasted:`........................|........................|........................|........................|........................|........................|..............k.........|.............k..........|............k...........|...........k............|........kkkkk...........|kkkkkkkkkcwckkkkkkkkkkkk|kwwwwwwwwwwwwwwwwwwwwwk.|.kwwwwwwwwwwwwwwwwwwwk..|..kbbbbbbbbbbbbbbbbbk...|...kkkkkkkkkkkkkkkkk....`,
+ rib:`........kk........|.......kcck.......|k...kkkkkkkkkkk...|kk.kGGGGGGGGGGGGk.|kkkGGGGGGGGGGGGGGk|.k.kggggggggggggk.|....kkkkkkkkkkkk..`,
+ research:`........................k...............|....................kkkkkkk.............|....k...............kcccccck............|...k.k..............kwwwwwwk............|..k...k.........kkkkkkkkkkkkkkk.........|.k.....k........kwcwcwcwcwcwcwk.........|k.......k...kkkkkkwwwwwwwwwwwwwk........|kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk|kwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwk.|kbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbk..|.kbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbk...|..kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk....`,
+ motor:`...........kkkkk..............|.........kkwwwwwk.............|.......kkwwcccccwk............|......kwwwwwwwwwwwkk..........|....kkwwcccccccccwwwkk........|kkkkkkkkkkkkkkkkkkkkkkkkkkkkkk|kwwwwwwwwwwwwwwwwwwwwwwwwwwwk.|kwwwwwwwwwwwwwwwwwwwwwwwwwwk..|.knnnnnnnnnnnnnnnnnnnnnnnnk...|..kkkkkkkkkkkkkkkkkkkkkkkk....`,
+ party:`..p..y..e..p..y..e..p.........|...........kkkkk..............|.........kkwwwwwk.............|.......kkwwcccccwk............|......kwwwwwwwwwwwkk..........|....kkwwcccccccccwwwkk........|kkkkkkkkkkkkkkkkkkkkkkkkkkkkkk|kwwwwwwwwwwwwwwwwwwwwwwwwwwwk.|kwwwwwwwwwwwwwwwwwwwwwwwwwwk..|.knnnnnnnnnnnnnnnnnnnnnnnnk...|..kkkkkkkkkkkkkkkkkkkkkkkk....`,
+ cargo:`...kkkk...........................|...kwck...........................|..kkkkkk.kkkkkkkkkkkkkkkkkkkkk....|..kwwwwk.kroybrroybrgoybrroybk....|..kwcwck.kbrgoybrgoyrbgoybrgok....|kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk|krrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrk.|.knnnnnnnnnnnnnnnnnnnnnnnnnnnnnk..|..kkkkkkkkkkkkkkkkkkkkkkkkkkkkkk...`,
+ ferry:`..............kkk...............|..............krk...............|......kkkkkkkkkkkkkkkkkkk.......|......kcwcwcwcwcwcwcwcwck.......|...kkkkkkkkkkkkkkkkkkkkkkkkk....|...kcwcwcwcwcwcwcwcwcwcwcwck....|kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk|kwwwwwwwwwwwwwwwwwwwwwwwwwwwwwk.|kbbbbbbbbbbbbbbbbbbbbbbbbbbbbk..|.kwwwwwwwwwwwwwwwwwwwwwwwwwwk...|..kkkkkkkkkkkkkkkkkkkkkkkkkk....`,
+ dinghy:`.....k........|.....kw.......|.....kww......|....wkwww.....|...wwkwwww....|..wwwkwwwww...|kkkkkkkkkkkkkk|.kwwwwwwwwwwk.|..kbbbbbbbbk..|...kkkkkkkk...`,
+ drone:`........kkkk........|kkkkkkkkkGGkkkkkkkkk|kGGGGGGGkwwkGGGGGGGk|kkkkkkkkkGGkkkkkkkkk|...k....kggk....k...|...k.....kk.....k...|..kk............kk..`,
+ heli:`kkkkkkkkkkkkkkkkkkkkkkk.|...........k............|k..........k............|kk.......kkkkkkk........|kakkkkkkkaaaaaacck......|.kaaaaaaaaaaaaaaacck....|..kkkkkkkaaaaaaaaaak....|..........kkkkkkkkk.....|..........k......k......|.........kkkkkkkkkkk....`,
+ lifeboat:`........kkkk........|.......kcwcwk.......|......kooooook......|kkkkkkkkkkkkkkkkkkkk|kooooooooooooooooook|kwwwwwwwwwwwwwwwwwk.|.knnnnnnnnnnnnnnnk..|..kkkkkkkkkkkkkkk...`,
+ cutter:`..............k...............|..............k...............|.............kGk..............|...........kkkkkkk............|..k........kGcGcGk............|..kk..kkk..kGGGGGkkkk...kk....|kkkkkkkGkkkkGGGGGGGGkkkkGk....|kGGGGGGGGGGGGGGGGGGGGGGGGGGGGk|kgggggggggggggggggggggggggggk.|.kggggggggggggggggggggggggk...|..kkkkkkkkkkkkkkkkkkkkkkkk....`,
+ hangar:`.......kkkkkk.......|.....kkGGGGGGkk.....|...kkGGGGGGGGGGkk...|..kGGGGGGGGGGGGGGk..|.kGGGGGGGGGGGGGGGGk.|kGGGGGkkkkkkkkGGGGGk|kGGGGGknnnnnnkGGGGGk|kGGGGGknnnnnnkGGGGGk|kkkkkkkkkkkkkkkkkkkk`,
+ tower:`kkkkk|kccck|kkkkk|.kGk.|.kGk.|.kGk.|.kGk.|kkkkk`,
+ crane:`kkkkkkkkkkkkk.|kyyyyyyyyyyyyk|kkkkyykkkkk.k.|...kyyk.....k.|...kyyk.....k.|...kyyk....kkk|...kyyk....kGk|...kyyk.......|...kyyk.......|..kkkkkk......|kkkkkkkkkkkkkk`,
+ shed:`kkkkkkkkkkkk|krrrrrrrrrrk|kkkkkkkkkkkk|kGGGGGGGGGGk|kGkkGGGGkkGk|kGknGGGGknGk|kkkkkkkkkkkk`,
+ light:`.kk.|krrk|kwwk|.kk.|.rk.|.wk.|.rk.|kkkk`
+};
+const SPRC = {};
+function sprite(n){
+  if (SPRC[n]) return SPRC[n];
+  const rows = SPR[n].split('|'), w = Math.max(...rows.map(r => r.length)), h = rows.length;
+  let url = '';
+  try { const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+    rows.forEach((r, y) => { for (let i=0;i<r.length;i++){ const col = PAL[r[i]]; if (col){ x.fillStyle = col; x.fillRect(i, y, 1, 1); } } });
+    url = c.toDataURL(); } catch(e){}
+  return SPRC[n] = {url, w, h};
+}
+// one <image> on the shared pixel grid, anchored at its waterline centre; flip = facing left
+function sprImg(n, id, flip){
+  const s = sprite(n), W = s.w*PXU, H = s.h*PXU;
+  return `<image ${id ? `id="${id}" ` : ''}href="${s.url}" x="${-Math.round(s.w/2)*PXU}" y="${-H+2*PXU}" width="${W}" height="${H}" preserveAspectRatio="none" class="pxi"${flip ? ' transform="scale(-1,1)"' : ''}/>`;
+}
+function vesselSprite(G){
+  const C = G.sc.C, t = (C.vessel.type || '').toLowerCase(), st = G.sc.story || '';
+  if (st === 'D1') return 'crowded';
+  if (st === 'D2') return 'burning';
+  if (st === 'D3') return 'dismasted';
+  if (st === 'L3') return 'party';
+  if (t.startsWith('rigid')) return 'rib';
+  if (t.startsWith('research')) return 'research';
+  if (t.startsWith('motor')) return 'motor';
+  if (t.startsWith('sailing')) return 'sail';
+  if (t.startsWith('trawler')) return parseInt(t.split('·')[1]) > 25 ? 'factory' : 'trawler';
+  return 'fishing';
+}
+const TRAFFIC_SPR = {'NORDVIK':'cargo', 'ASTER BAY':'cargo', 'KELP':'fishing', 'SAILING CLUB':'dinghy', 'FERRY':'ferry'};
+const UNIT_SPR = {drone:'drone', heli:'heli', lifeboat:'lifeboat', cutter:'cutter'};
+const snap = v => Math.round(v / PXU) * PXU;
+
+// coast: x of the shore at height y (from the land polygon)
+const COAST = [[792,0],[800,40],[788,80],[772,108],[748,126],[742,140],[760,152],[784,172],[795,215],[790,260],[806,300],[800,350],[812,400],[802,428],[790,446],[805,470],[798,520],[782,560],[790,620]];
+function coastX(y){ for (let i=1;i<COAST.length;i++){ const a = COAST[i-1], b = COAST[i]; if (y <= b[1]) return a[0] + (b[0]-a[0]) * (y-a[1]) / ((b[1]-a[1]) || 1); } return 790; }
+const ROCKS = [[430,180,14,9],[470,220,10,7],[515,195,18,10],[560,240,12,8],[600,205,9,6],[450,280,16,9],[505,300,11,7],[548,325,15,9],[610,300,10,7],[655,270,13,8],[480,370,12,8],[530,400,17,9],[590,380,10,7],[640,350,14,9],[700,320,11,7],[690,230,9,6]];
+// sea / land palettes per condition: [deep, mid, light, crest] and [grass dark, grass, grass light, sand]
+const MAPPAL = {
+  storm:   {sea:['#0c1a2b','#10233a','#163049','#5a7590'], land:['#1a2a22','#22352b','#2c4234','#5d5a48'], fl:null},
+  fog:     {sea:['#3b4d5c','#44586a','#506678','#9fb0bd'], land:['#3d4f40','#465a49','#526752','#8f8a72'], fl:null},
+  gale:    {sea:['#1d5687','#226598','#2a74aa','#d8ecf5'], land:['#4f7a32','#5c8a3a','#6d9c45','#c9b27a'], fl:'#e8d27a'},
+  calm:    {sea:['#2a6fb3','#3280c4','#3d8fd1','#9fd0ef'], land:['#5f8f34','#6b9c3a','#7aab45','#d9c48a'], fl:'#f2d58a'},
+  skerries:{sea:['#0d1c2c','#11253a','#172f47','#4d6b86'], land:['#1a2a22','#22352b','#2c4234','#5d5a48'], fl:null},
+  harbour: {sea:['#2a3157','#323a66','#3c4576','#b49ac8'], land:['#3e4a3a','#475644','#526450','#9a8070'], fl:'#e6a06a'}
+};
+const BGC = {}, BGY0 = -150, BGY1 = 780;
+function hashN(x, y, s){ let h = (x*374761393 + y*668265263 + s*1442695041) | 0; h = (h ^ (h >>> 13)) * 1274126177 | 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
+function vnoise(x, y, sc, s){ const X = Math.floor(x/sc), Y = Math.floor(y/sc), fx = x/sc - X, fy = y/sc - Y, u = fx*fx*(3-2*fx), v = fy*fy*(3-2*fy);
+  const a = hashN(X,Y,s), b = hashN(X+1,Y,s), c = hashN(X,Y+1,s), d = hashN(X+1,Y+1,s); return a + (b-a)*u + (c-a)*v + (a-b-c+d)*u*v; }
+function mapBG(ek){
+  if (BGC[ek] !== undefined) return BGC[ek];
+  const P = MAPPAL[ek] || MAPPAL.storm, W = Math.ceil(1000/PXU), H = Math.ceil((BGY1-BGY0)/PXU);
+  try {
+    const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d'), img = x.createImageData(W, H), d = img.data;
+    const hex = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+    const S = P.sea.map(hex), L = P.land.map(hex), FL = P.fl && hex(P.fl);
+    const put = (i, col) => { d[i] = col[0]; d[i+1] = col[1]; d[i+2] = col[2]; d[i+3] = 255; };
+    const rockAt = (ux, uy, grow) => ROCKS.some(r => ((ux-r[0])/(r[2]+grow))**2 + ((uy-r[1])/(r[3]+grow))**2 <= 1);
+    for (let py=0; py<H; py++) for (let px=0; px<W; px++){
+      const ux = px*PXU + 1.5, uy = py*PXU + 1.5 + BGY0, i = (py*W + px)*4, cx = coastX(uy), dist = ux - cx;
+      if (dist >= 0){ // land
+        if (dist < 7){ put(i, L[3]); continue; }
+        const n = vnoise(px, py, 9, 7) * .7 + vnoise(px, py, 3, 8) * .3, t = hashN(px, py, 9);
+        let col = n < .38 ? L[0] : n < .62 ? L[1] : L[2];
+        if (t > .93) col = n < .5 ? L[2] : L[0];
+        if (FL && t > .995) col = FL;
+        put(i, col); continue; }
+      if (ek === 'skerries' && rockAt(ux, uy, 0)){ const t = hashN(px, py, 3); put(i, t > .7 ? [120,128,136] : t > .3 ? [86,92,100] : [58,62,70]); continue; }
+      const n = vnoise(px + (ek === 'gale' ? py*.6 : 0), py, 11, 1) * .65 + vnoise(px, py, 4, 2) * .35;
+      let col = n < .42 ? S[0] : n < .6 ? S[1] : S[2];
+      const crest = hashN(px, py, 5), crestP = {gale:.94, storm:.975, calm:.992, harbour:.99}[ek] || .985;
+      if (n > .58 && crest > crestP) col = S[3];
+      if (dist > -8) col = S[2];                      // shallow band along the shore
+      if (dist > -3.5 && hashN(px, py, 6) > .45) col = S[3]; // surf
+      if (ek === 'skerries' && rockAt(ux, uy, 6)) col = hashN(px, py, 4) > .6 ? S[3] : S[2];
+      put(i, col); }
+    x.putImageData(img, 0, 0);
+    if (ek === 'fog'){ // pixel fog banks
+      for (const e of [[300,200,260,70],[520,330,300,80],[260,430,240,60],[640,150,220,60],[430,520,280,60]])
+        for (let py=0; py<H; py++) for (let px=0; px<W; px++){ const q = ((px*PXU-e[0])/e[2])**2 + ((py*PXU+BGY0-e[1])/e[3])**2;
+          if (q < 1 && vnoise(px, py, 4, 11) * .75 + .3 > q){ x.fillStyle = 'rgba(214,224,232,.18)'; x.fillRect(px, py, 1, 1); } } }
+    return BGC[ek] = c.toDataURL();
+  } catch(e){ return BGC[ek] = ''; }
+}
+function brackets(w, h){ // pixel corner brackets around a sprite box (units), 3-unit strokes
+  const x0 = -snap(w/2) - 6, x1 = snap(w/2) + 6, y0 = -h - 3, y1 = 9, L = 12, T = 3;
+  const c = (x, y, dx, dy) => `M${x} ${y}h${dx*L}v${dy*T}h${-dx*(L-T)}v${dy*(L-T)}h${-dx*T}z`;
+  return c(x0, y0, 1, 1) + c(x1, y0, -1, 1) + c(x0, y1, 1, -1) + c(x1, y1, -1, -1);
+}
+function pxLabel(x, y, t, col, anchor, size){
+  return `<text x="${x}" y="${y}" text-anchor="${anchor || 'middle'}" font-size="${size || 24}" fill="${col}" class="pxt">${t}</text>`;
+}
 function mapSVG(){
   let grid = '';
-  for (let x=200; x<1000; x+=100) grid += `<line x1="${x}" y1="60" x2="${x}" y2="560"/>`;
-  for (let y=100; y<560; y+=100) grid += `<line x1="100" y1="${y}" x2="1000" y2="${y}"/>`;
+  for (let x=201; x<1000; x+=99) grid += `<line x1="${x}" y1="60" x2="${x}" y2="560"/>`;
+  for (let y=99; y<560; y+=99) grid += `<line x1="100" y1="${y}" x2="1000" y2="${y}"/>`;
   let units = '';
-  for (const k in UNITS){ const U = UNITS[k];
-    units += `<line id="ul-${k}" stroke="#3DD6F5" stroke-width="1.5" stroke-dasharray="5 5" stroke-opacity=".8" visibility="hidden"/>
-    <g id="ug-${k}">${U.air ? `<path d="M-17,9 L-17,-2 A17,13 0 0 1 17,-2 L17,9 Z" fill="#7FE7FF" stroke="#04131A" stroke-width="2"/>` : `<rect x="-17" y="-11" width="34" height="22" fill="#7FE7FF" stroke="#111418" stroke-width="2"/>`}<text text-anchor="middle" y="${U.air?6:5}" font-size="11" font-weight="800" fill="#10161D">${U.lbl}</text></g>`; }
-  const E = GS && GS.sc ? envOf(GS) : ENVS.storm, ek = GS && GS.sc ? GS.sc.E : 'storm';
-  const traffic = trafficList(GS).map((s,i) => `<g id="tf${i}"><rect x="-7" y="-7" width="14" height="14" fill="#AAE5C2" stroke="#111418" stroke-width="1.5"/><path d="M${s.v>0?'9,0 L16,0':'-9,0 L-16,0'}" stroke="#72CA9B" stroke-width="1.5"/><text y="-12" text-anchor="middle" font-size="10.5" letter-spacing="1" fill="#72CA9B">${s.n}</text></g>`).join('');
-  return `<svg class="map" viewBox="100 60 900 470" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Sea map">
-  <defs><linearGradient id="stg" x1="0" x2="1"><stop offset="0" stop-color="#4c5c75" stop-opacity=".6"/><stop offset=".9" stop-color="#71839f" stop-opacity=".55"/><stop offset="1" stop-color="#c3cfe2" stop-opacity=".8"/></linearGradient>
-  <pattern id="rain" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(18)"><line x1="2" y1="0" x2="2" y2="8" stroke="#d5e0f0" stroke-opacity=".3"/></pattern></defs>
-  <rect x="0" y="0" width="1000" height="620" fill="${{gale:'#16222E', calm:'#14212C', harbour:'#141A25'}[ek] || '#10161D'}"/>
-  <g stroke="#19212A">${grid}</g>
-  <path d="M806,300 C650,322 450,334 0,350" fill="none" stroke="#9881F3" stroke-opacity=".55" stroke-width="2" stroke-dasharray="2 8"/>
-  <text x="118" y="374" font-size="12" letter-spacing="1.5" fill="#9881F3" fill-opacity=".85">UNDERSEA CABLE</text>
+  for (const k in UNITS){
+    units += `<line id="ul-${k}" stroke="#5FD3E6" stroke-width="3" stroke-dasharray="6 6" stroke-opacity=".85" visibility="hidden"/>
+    <g id="ug-${k}">${sprImg(UNIT_SPR[k], '', false)}</g>`; }
+  const ek = GS && GS.sc ? GS.sc.E : 'storm', night = ek === 'storm' || ek === 'skerries';
+  const traffic = trafficList(GS).map((s,i) => `<g id="tf${i}">${sprImg(TRAFFIC_SPR[s.n] || 'fishing', '', s.v < 0)}${pxLabel(0, -36, s.n, night ? '#9fb3c4' : '#eef3ea', 'middle', 16)}</g>`).join('');
+  const lab = night ? '#9fb3c4' : '#f4f1e4';
+  return `<svg class="map" viewBox="100 60 900 470" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Sea map" shape-rendering="crispEdges">
+  <defs><pattern id="stg" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#2c3a4f" fill-opacity=".55"/><rect width="3" height="3" fill="#8b9bb4" fill-opacity=".3"/><rect x="3" y="3" width="3" height="3" fill="#8b9bb4" fill-opacity=".3"/></pattern>
+  <pattern id="rain" width="24" height="24" patternUnits="userSpaceOnUse"><rect x="3" y="0" width="3" height="9" fill="#d5e0f0" fill-opacity=".45"/><rect x="15" y="12" width="3" height="9" fill="#d5e0f0" fill-opacity=".45"/></pattern></defs>
+  <rect x="0" y="0" width="1000" height="620" fill="${MAPPAL[ek] ? MAPPAL[ek].sea[1] : '#10233a'}"/>
+  <image href="${mapBG(ek)}" x="0" y="${BGY0}" width="${Math.ceil(1000/PXU)*PXU}" height="${Math.ceil((BGY1-BGY0)/PXU)*PXU}" preserveAspectRatio="none" class="pxi"/>
+  <g stroke="#ffffff" stroke-opacity=".07" stroke-width="3" stroke-dasharray="3 9">${grid}</g>
+  <path d="M806,300 C650,322 450,334 0,350" fill="none" stroke="#c9a8ff" stroke-opacity=".7" stroke-width="3" stroke-dasharray="3 9"/>
+  ${pxLabel(118, 380, 'UNDERSEA CABLE', '#d9c4ff', 'start', 16)}
   ${envLayer(ek)}
   ${traffic}
-  <rect id="stR" x="0" y="0" width="0" height="620" fill="url(#stg)"/><rect id="stR2" x="0" y="0" width="0" height="620" fill="url(#rain)"/>
-  <text id="stL" x="110" y="520" font-size="13" font-weight="700" letter-spacing="2" fill="#DCE0E5">STORM FRONT ▶</text>
-  <line x1="${BORDER_X}" y1="60" x2="${BORDER_X}" y2="560" stroke="#EC9A3C" stroke-opacity=".7" stroke-dasharray="10 8" stroke-width="2"/>
-  <text x="${BORDER_X-8}" y="84" text-anchor="end" font-size="13" font-weight="700" letter-spacing="2" fill="#EC9A3C">TERRITORIAL LINE</text>
-  <path d="M792,0 L800,40 L788,80 L772,108 L748,126 L742,140 L760,152 L784,172 L795,215 L790,260 L806,300 L800,350 L812,400 L802,428 L790,446 L805,470 L798,520 L782,560 L790,620 L1000,620 L1000,0 Z" fill="#1E2329" stroke="#404854" stroke-width="1.5"/>
-  <text x="900" y="515" text-anchor="middle" font-size="20" font-weight="800" fill="#404854" letter-spacing="6">VARNHOLM</text>
-  <text x="${COVE.x-14}" y="${COVE.y-12}" text-anchor="end" font-size="12" letter-spacing="1.5" fill="#8F99A8">GULL COVE</text>
-  <rect x="${COVE.x-6}" y="${COVE.y-6}" width="12" height="12" fill="none" stroke="#E76A6E" stroke-width="1.5"/>
-  <text x="${BASES.air.x}" y="${BASES.air.y+36}" text-anchor="middle" font-size="12" letter-spacing="1.5" fill="#8F99A8">AIRBASE</text>
-  <text x="${BASES.port.x+8}" y="${BASES.port.y+38}" text-anchor="middle" font-size="12" letter-spacing="1.5" fill="#8F99A8">PORT</text>
-  <polyline id="hist" fill="none" stroke="#72CA9B" stroke-opacity=".7" stroke-width="2" stroke-dasharray="2 5" visibility="hidden"/>
-  <polyline id="trail" fill="none" stroke="#FBB360" stroke-opacity=".55" stroke-width="2" stroke-dasharray="4 5"/>
+  <rect id="stR" x="0" y="${BGY0}" width="0" height="${BGY1-BGY0}" fill="url(#stg)"/><rect id="stR2" x="0" y="${BGY0}" width="0" height="${BGY1-BGY0}" fill="url(#rain)"/>
+  <text id="stL" x="110" y="520" font-size="24" fill="#eef3ea" class="pxt">STORM FRONT &gt;</text>
+  <line x1="${BORDER_X}" y1="60" x2="${BORDER_X}" y2="560" stroke="#ffb24a" stroke-dasharray="12 9" stroke-width="3"/>
+  ${pxLabel(BORDER_X-9, 90, 'TERRITORIAL LINE', '#ffc46b', 'end')}
+  ${pxLabel(900, 518, 'VARNHOLM', night ? '#5e7a62' : '#e9f2d8', 'middle', 32)}
+  <g transform="translate(${COVE.x+24},${COVE.y+6})">${sprImg('light')}</g>
+  ${pxLabel(COVE.x-15, COVE.y-12, 'GULL COVE', lab, 'end', 16)}
+  <path d="M${COVE.x-9},${COVE.y-9}h18v18h-18z M${COVE.x-6},${COVE.y-6}v12h12v-12z" fill="#ff6a5a" fill-rule="evenodd"/>
+  <g transform="translate(${BASES.air.x+3},${BASES.air.y+42})">${sprImg('hangar')}</g><g transform="translate(${BASES.air.x+54},${BASES.air.y+39})">${sprImg('tower')}</g>
+  ${pxLabel(BASES.air.x, BASES.air.y+66, 'AIRBASE', lab, 'middle', 16)}
+  <g transform="translate(${BASES.port.x+42},${BASES.port.y+30})">${sprImg('crane')}</g><g transform="translate(${BASES.port.x+81},${BASES.port.y+30})">${sprImg('shed')}</g>
+  ${pxLabel(BASES.port.x+57, BASES.port.y+54, 'PORT', lab, 'middle', 16)}
+  <polyline id="hist" fill="none" stroke="#8ff0b4" stroke-opacity=".85" stroke-width="3" stroke-dasharray="3 6" visibility="hidden"/>
+  <polyline id="trail" fill="none" stroke="#ffc46b" stroke-opacity=".75" stroke-width="3" stroke-dasharray="6 6"/>
   <g id="cg">
-   <circle r="22" fill="none" stroke="#FBB360" stroke-width="1.5"><animate attributeName="r" values="12;34;12" dur="2.2s" repeatCount="indefinite"/><animate attributeName="stroke-opacity" values=".8;0;.8" dur="2.2s" repeatCount="indefinite"/></circle>
-   <path id="cshape" d="${SYM.unknown}" fill="#F0B726" stroke="#111418" stroke-width="2"/><text id="ctag" y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#111418">?</text>
-   <text id="clabel" y="-36" text-anchor="middle" font-size="13" font-weight="700" letter-spacing="1" fill="#FBD065">K-7</text>
+   <rect x="-36" y="-36" width="72" height="54" fill="none" stroke="#ffc46b" stroke-width="3"><animate attributeName="stroke-opacity" values=".9;0;.9" dur="1.6s" calcMode="discrete" keyTimes="0;.5;1" repeatCount="indefinite"/></rect>
+   <g id="cspr">${sprImg('unknown')}</g>
+   <path id="cshape" d="${brackets(60, 18)}" fill="#F0B726"/>
+   <rect id="ctagb" x="-12" y="-63" width="24" height="27" fill="#F0B726"/><text id="ctag" y="-42" text-anchor="middle" font-size="24" fill="#12161d" class="pxt">?</text>
+   <text id="clabel" x="18" y="-42" font-size="16" fill="#ffd77a" class="pxt">K-7</text>
   </g>
   ${units}</svg>`;
 }
 function envLayer(ek){
-  if (ek === 'fog') return `<g pointer-events="none"><rect x="0" y="0" width="1000" height="620" fill="#c9d4df" fill-opacity=".10"/>${[[300,200,260,70],[520,330,300,80],[260,430,240,60],[640,150,220,60],[430,520,280,60]].map(e => `<ellipse cx="${e[0]}" cy="${e[1]}" rx="${e[2]}" ry="${e[3]}" fill="#dfe7ef" fill-opacity=".09"/>`).join('')}<text x="118" y="548" font-size="13" font-weight="700" letter-spacing="2" fill="#DCE0E5" fill-opacity=".8">FOG BANK · VISIBILITY 200 M</text></g>`;
-  if (ek === 'gale') return `<g pointer-events="none" stroke="#dfe7ef" stroke-opacity=".13" stroke-width="1.5">${[...Array(26)].map((_,i) => { const x = 120 + (i*137)%640, y = 90 + (i*71)%450; return `<path d="M${x},${y} q18,-6 36,0 t36,0"/>`; }).join('')}</g><text x="118" y="548" font-size="13" font-weight="700" letter-spacing="2" fill="#DCE0E5">GALE · 70 KM/H ▶</text>`;
-  if (ek === 'skerries') return `<g fill="#1E2329" stroke="#404854" stroke-width="1.2">${[[430,180,14,9],[470,220,10,7],[515,195,18,10],[560,240,12,8],[600,205,9,6],[450,280,16,9],[505,300,11,7],[548,325,15,9],[610,300,10,7],[655,270,13,8],[480,370,12,8],[530,400,17,9],[590,380,10,7],[640,350,14,9],[700,320,11,7],[690,230,9,6]].map(e => `<ellipse cx="${e[0]}" cy="${e[1]}" rx="${e[2]}" ry="${e[3]}"/>`).join('')}</g><text x="560" y="455" text-anchor="middle" font-size="12" letter-spacing="3" fill="#8F99A8">SKERRIES</text>`;
-  if (ek === 'harbour') return `<g pointer-events="none"><path d="M790,425 L700,380 L700,470 Z" fill="#3DD6F5" fill-opacity=".07"/><circle cx="790" cy="425" r="4" fill="#3DD6F5"/><text x="700" y="372" font-size="11" letter-spacing="1.5" fill="#3DD6F5" fill-opacity=".85">PORT CAMERAS</text></g>`;
-  if (ek === 'calm') return `<text x="118" y="548" font-size="13" font-weight="700" letter-spacing="2" fill="#DCE0E5" fill-opacity=".8">CALM · CLEAR · GOOD VISIBILITY</text>`;
+  if (ek === 'fog') return pxLabel(118, 548, 'FOG BANK · VISIBILITY 200 M', '#eef3ea', 'start', 16);
+  if (ek === 'gale') return pxLabel(118, 548, 'GALE · 70 KM/H >', '#eef3ea', 'start', 16);
+  if (ek === 'skerries') return pxLabel(560, 462, 'SKERRIES', '#b7c6d3', 'middle', 16);
+  if (ek === 'harbour') return `<g pointer-events="none"><path d="M790,425 L700,380 L700,470 Z" fill="#7fe7ff" fill-opacity=".12"/><rect x="784" y="419" width="12" height="12" fill="#7fe7ff"/>${pxLabel(700, 372, 'PORT CAMERAS', '#9feeff', 'start', 16)}</g>`;
+  if (ek === 'calm') return pxLabel(118, 548, 'CALM · CLEAR · GOOD VISIBILITY', '#ffffff', 'start', 16);
   return '';
 }
 function frame(){
@@ -1293,7 +1587,7 @@ function frame(){
   const fx = clamp(stormX(G, G.t), 0, 1000);
   $('#stR').setAttribute('width', fx); $('#stR2').setAttribute('width', fx);
   $('#stL').setAttribute('x', Math.max(110, fx - 100)); $('#stL').setAttribute('visibility', fx > 150 ? 'visible' : 'hidden');
-  trafficList(G).forEach((s,i) => { const p = trafficPos(s, G.t); $('#tf'+i).setAttribute('transform', `translate(${p.x.toFixed(1)},${p.y})`); });
+  trafficList(G).forEach((s,i) => { const p = trafficPos(s, G.t); $('#tf'+i).setAttribute('transform', `translate(${snap(p.x)},${snap(p.y)})`); });
   $('#trail').setAttribute('points', G.trail.map(p => p.join(',')).join(' ') + ` ${c.x.toFixed(1)},${c.y.toFixed(1)}`);
   // track history after replay
   const h = $('#hist');
@@ -1301,17 +1595,22 @@ function frame(){
     const s = G.sc, M = s.C.mo, pts = M === 'drift' ? `${s.sx-210},${s.sy-40} ${s.sx-120},${s.sy-20}` : M === 'survey' || M === 'anchor' || M === 'fish' ? `${s.sx-60},${s.sy+40} ${s.sx-20},${s.sy+10}` : `${s.sx-60},${s.sy+30} ${s.sx-25},${s.sy+12}`;
     h.setAttribute('points', pts + ` ${G.trail[0].join(',')}`); h.setAttribute('visibility', 'visible');
   } else h.setAttribute('visibility', 'hidden');
-  $('#cg').setAttribute('transform', `translate(${c.x.toFixed(1)},${c.y.toFixed(1)})`);
+  $('#cg').setAttribute('transform', `translate(${snap(c.x)},${snap(c.y)})`);
   const Ev = envOf(G); $('#cg').setAttribute('opacity', Ev.clutter && Math.floor(G.t/3) % 4 === 0 ? .25 : G.sc.E === 'fog' ? .75 : 1);
   setTxt('#clabel', 'K-7' + (vesselKnown(G) ? ' · ' + C.vessel.name : ''));
   const pp = probs(G), bb = best(pp), sure = !blind(G) && G.findings.length && pp[bb] >= 0.75;
   const sym = !sure ? 'unknown' : bb === 'S' ? 'hostile' : 'neutral';
   let col = sym === 'unknown' ? '#F0B726' : sym === 'hostile' ? '#FF8080' : '#AAE5C2';
   if (G.sunk && !G.res) col = '#FF8080';
-  const sh = $('#cshape'); if (sh.getAttribute('d') !== SYM[sym]) sh.setAttribute('d', SYM[sym]); sh.setAttribute('fill', col);
+  const sn = vesselKnown(G) ? vesselSprite(G) : 'unknown', cs = $('#cspr');
+  if (cs._n !== sn){ cs._n = sn; cs.innerHTML = sprImg(sn); const sp = sprite(sn), W = sp.w*PXU, top = -sp.h*PXU;
+    $('#cshape').setAttribute('d', brackets(W, sp.h*PXU)); $('#ctagb').setAttribute('x', -snap(W/2)-6); $('#ctagb').setAttribute('y', top-33);
+    $('#ctag').setAttribute('x', -snap(W/2)+6); $('#ctag').setAttribute('y', top-12); $('#clabel').setAttribute('x', -snap(W/2)+24); $('#clabel').setAttribute('y', top-12);
+    const pr = $('#cg rect'); pr.setAttribute('x', -snap(W/2)-12); pr.setAttribute('width', snap(W/2)*2+24); pr.setAttribute('y', top-9); pr.setAttribute('height', -top+27); }
+  $('#cshape').setAttribute('fill', col); $('#ctagb').setAttribute('fill', col);
   setTxt('#ctag', sym === 'unknown' ? '?' : sym === 'hostile' ? 'H' : 'N');
   for (const k in UNITS){ const u = G.units[k], l = $('#ul-'+k);
-    $('#ug-'+k).setAttribute('transform', `translate(${u.x.toFixed(1)},${u.y.toFixed(1)})`);
+    $('#ug-'+k).setAttribute('transform', `translate(${snap(u.x)},${snap(u.y)})`);
     if (u.st === 'out'){ l.setAttribute('x1', u.x); l.setAttribute('y1', u.y); l.setAttribute('x2', c.x); l.setAttribute('y2', c.y); l.setAttribute('visibility', 'visible'); }
     else l.setAttribute('visibility', 'hidden');
   }
@@ -1427,21 +1726,39 @@ function graphSVG(G){
   let lines = '', nodes = '';
   for (const n of shown){
     const a = xy(n.id);
-    if (n.parent && pos[n.parent]){ const b = xy(n.parent); lines += `<line x1="${b.x}" y1="${b.y}" x2="${a.x}" y2="${a.y}" stroke="#404854" stroke-width="1.5"/>`; }
+    if (n.parent && pos[n.parent]){ const b = xy(n.parent); lines += `<line x1="${b.x}" y1="${b.y}" x2="${a.x}" y2="${a.y}" stroke="#3a5072" stroke-width="3" stroke-dasharray="4 3"/>`; }
     const more = C.graph.some(x => x.parent === n.id && !G.graph.includes(x.id));
-    const ring = n.flag === 'bad' ? '#E76A6E' : n.flag === 'warn' ? '#EC9A3C' : n.flag === 'ok' ? '#32A467' : '#4C90F0';
-    nodes += `<g data-act="node" data-id="${n.id}" style="cursor:pointer"><circle cx="${a.x}" cy="${a.y}" r="20" fill="#252A31" stroke="${ring}" stroke-width="2"/>
-      <svg pointer-events="none" x="${a.x-9}" y="${a.y-9}" width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#F6F7F9" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${ICONS[ICON[n.kind]]}</svg>
-      <text x="${a.x}" y="${a.y+38}" text-anchor="middle" font-size="11" fill="#ABB3BF">${esc(n.label.length > 16 ? n.label.slice(0,15)+'…' : n.label)}</text>
-      ${more ? `<rect x="${a.x+9}" y="${a.y-25}" width="16" height="16" rx="3" fill="#3DD6F5"/><text x="${a.x+17}" y="${a.y-13}" text-anchor="middle" font-size="13" font-weight="800" fill="#04131A">+</text>` : ''}</g>`;
+    const ring = n.flag === 'bad' ? '#ff6a5a' : n.flag === 'warn' ? '#ffc46b' : n.flag === 'ok' ? '#7fd37a' : '#5fd3e6';
+    nodes += `<g data-act="node" data-id="${n.id}" style="cursor:pointer"><rect x="${a.x-20}" y="${a.y-20}" width="40" height="40" fill="${ring}"/><rect x="${a.x-17}" y="${a.y-17}" width="34" height="34" fill="#1b2840"/><rect x="${a.x-17}" y="${a.y+14}" width="34" height="3" fill="#05080f" fill-opacity=".5"/>
+      <svg pointer-events="none" x="${a.x-12}" y="${a.y-12}" width="24" height="24" viewBox="0 0 12 12"><path fill="#eef3ea" d="${pxPath(ICON[n.kind])}"/></svg>
+      <text x="${a.x}" y="${a.y+38}" text-anchor="middle" font-size="16" fill="#b3c1d0">${esc(n.label.length > 16 ? n.label.slice(0,15)+'…' : n.label)}</text>
+      ${more ? `<rect x="${a.x+10}" y="${a.y-26}" width="18" height="18" fill="#05080f"/><rect x="${a.x+11}" y="${a.y-25}" width="16" height="16" fill="#5fd3e6"/><text x="${a.x+19}" y="${a.y-11}" text-anchor="middle" font-size="16" fill="#06121a">+</text>` : ''}</g>`;
   }
   return `<svg class="graph" viewBox="0 0 370 190">${lines}${nodes}</svg>`;
 }
-function photo(p){
-  const h = hash(p.n), hue = h % 360, sk = ['#c9a27e','#a77b56','#e0bf9a','#8a5f3e'][h % 4], hair = ['#2a1d14','#4a3322','#191919','#6b5236'][(h>>3) % 4];
-  return `<svg viewBox="0 0 84 104"><rect width="84" height="104" fill="hsl(${hue},18%,30%)"/><ellipse cx="42" cy="108" rx="34" ry="30" fill="hsl(${(hue+140)%360},20%,35%)"/>
-   <ellipse cx="42" cy="48" rx="17" ry="21" fill="${sk}"/><path d="M25,44 Q26,22 42,23 Q58,22 59,44 Q56,32 42,31 Q28,32 25,44Z" fill="${hair}"/>
-   <circle cx="35" cy="48" r="1.8" fill="#222"/><circle cx="49" cy="48" r="1.8" fill="#222"/><path d="M37,60 Q42,63 47,60" stroke="#6b3d2a" stroke-width="1.6" fill="none"/></svg>`;
+function photo(p){ // 14x18 pixel portrait, seeded by name
+  const h = hash(p.n), r = mulberry(h);
+  const bg = ['#3d4f6b','#4a5d48','#6b4f5d','#5d5a43','#3f5f63'][h % 5], shirt = ['#2f6aa3','#a34a3a','#3f7f4a','#6d5a8f','#8a8f96'][(h>>4) % 5];
+  const sk = ['#e2b48a','#c58f62','#f0cfa8','#8f5f3e','#a8744d'][h % 5], skd = '#00000033';
+  const hair = ['#2a1d14','#5a3a22','#141414','#7a5a36','#b9b2a5','#c9a050'][(h>>3) % 6];
+  const style = (h >> 7) % 4, beard = (h >> 9) % 5 === 0, glasses = (h >> 11) % 4 === 0;
+  const R = []; const px = (x, y, c, w=1, hh=1) => R.push(`<rect x="${x}" y="${y}" width="${w}" height="${hh}" fill="${c}"/>`);
+  px(0, 0, bg, 14, 18);
+  for (let y=0; y<18; y+=2) for (let x=(y/2)%2; x<14; x+=2) if (r() > .7) px(x, y, '#ffffff10');
+  px(2, 14, shirt, 10, 4); px(1, 16, shirt, 12, 2); px(6, 14, sk, 2, 1);           // shoulders + neck
+  px(5, 12, sk, 4, 2);                                                                // neck
+  px(4, 4, sk, 6, 8); px(3, 6, sk, 1, 4); px(10, 6, sk, 1, 4); px(5, 12, sk, 4, 1);   // face
+  px(4, 11, skd, 1, 1); px(9, 11, skd, 1, 1);
+  if (style === 0){ px(4, 3, hair, 6, 2); px(3, 4, hair, 1, 3); px(10, 4, hair, 1, 3); }
+  else if (style === 1){ px(4, 2, hair, 6, 3); px(3, 3, hair, 1, 5); px(10, 3, hair, 1, 5); px(2, 6, hair, 1, 6); px(11, 6, hair, 1, 6); }
+  else if (style === 2){ px(4, 3, hair, 6, 1); px(4, 4, hair, 2, 1); }
+  else { px(3, 2, hair, 8, 2); px(3, 4, hair, 1, 2); px(10, 4, hair, 1, 2); px(4, 4, hair, 6, 1); }
+  px(5, 7, '#1b1b1b'); px(8, 7, '#1b1b1b');                                          // eyes
+  if (glasses){ px(4, 6, '#1b1b1b', 3, 1); px(7, 6, '#1b1b1b', 3, 1); px(4, 7, '#1b1b1b'); px(9, 7, '#1b1b1b'); }
+  px(7, 8, skd, 1, 2);                                                                // nose
+  px(6, 10, '#7a3d2c', 2, 1);                                                         // mouth
+  if (beard){ px(4, 10, hair, 1, 2); px(9, 10, hair, 1, 2); px(5, 11, hair, 4, 1); }
+  return `<svg viewBox="0 0 14 18" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid slice">${R.join('')}</svg>`;
 }
 function idCardHTML(G, i){
   const C = G.sc.C, p = C.people[i], st = G.ids[i];
@@ -1518,7 +1835,7 @@ function renderModal(){
 const OUT = {
   saved:{g:true, h:'Everyone was rescued'}, partial:{g:false, h:'Only some people were rescued'}, lost:{g:false, h:'The boat sank. Nobody was saved'},
   intercepted:{g:true, h:'Smugglers caught at sea'}, followed:{g:true, h:'Smugglers arrested on the beach'}, landed:{g:false, h:'The smugglers got away'},
-  clear:{g:true, h:'The research ship left safely'}, incident:{g:false, h:'You boarded an innocent research ship'}
+  clear:{g:true, h:'The boat went on its way safely'}, incident:{g:false, h:'You boarded an innocent boat'}
 };
 function judgement(G, d){ const p = probs(G); return HK.reduce((a,T) => a + p[T]*PAY[d][T], 0); }
 function missedClue(G){
@@ -1688,6 +2005,7 @@ GS = load() || {v:6, phase:'title', seed:'NIGHT-01'};
 if (GS.phase === 'play' && GS.lvl == null) GS.lvl = 1;
 render();
 if (location.hash === '#selftest') console.log('selftest', JSON.stringify(LatticeTests.run()));
+try { document.documentElement.style.setProperty('--seabg', `url("${mapBG('storm')}")`); } catch(e){}
 </script>
 </body>
 </html>
