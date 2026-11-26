@@ -620,6 +620,34 @@ svg.graph text{font-family:"Watchkeeper",monospace!important;font-size:16px}
 @media (prefers-reduced-motion:reduce){.clock.run{animation:none}}
 html.lowfx .clock.run{animation:none}
 @media(max-width:760px){.clock small{font-size:9px!important}}
+
+/* v20 accounts */
+#auth{position:fixed;inset:0;z-index:60;background:var(--bg);overflow:hidden}
+#auth[hidden]{display:none}
+body.authon{overflow:hidden}
+#auth .title{height:100vh;height:100dvh;min-height:0}
+#auth .stage{padding:8px}
+#auth .box{max-height:100%;display:flex;flex-direction:column}
+#auth .bb{overflow-y:auto;min-height:0}
+.af{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.af label{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--mute)}
+.af input{min-height:48px;background:var(--edge,#05080f);border:0;box-shadow:inset 0 0 0 2px var(--line);border-radius:4px;padding:10px 12px;color:var(--ink);font:600 16px var(--mono,monospace)}
+.af input:focus{outline:3px solid var(--focus);outline-offset:1px}
+.aerr{min-height:1.3em;margin:0!important;color:var(--amber)!important;font-size:14px}
+.atabs{display:flex;gap:4px;margin-top:6px}
+.atabs button{flex:1;min-height:44px;background:transparent;border:0;border-bottom:3px solid var(--line2);color:var(--mute);font:inherit;font-family:var(--pf,inherit);text-transform:uppercase;cursor:pointer}
+.atabs button.on{border-color:var(--acc);color:var(--acc)}
+.aor{display:flex;align-items:center;gap:10px;margin:12px 0;color:var(--dim);font-size:13px}.aor::before,.aor::after{content:"";flex:1;height:2px;background:var(--line2)}
+.alink{display:block;margin:10px auto 0;min-height:44px;background:none;border:0;color:var(--acc);text-decoration:underline;font:inherit;cursor:pointer}
+.acct{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:14px;color:var(--mute)}
+.acct span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.acct .btn{flex:none;min-height:44px;padding:8px 12px;font-size:14px}
+.astats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 12px}
+.astats div{background:var(--panel2);box-shadow:inset 0 0 0 2px var(--line2);padding:10px;display:flex;flex-direction:column}
+.astats b{font-size:28px;color:var(--acc);line-height:1}.astats small{color:var(--dim);font-size:12px;text-transform:uppercase;margin-top:4px}
+.alog{list-style:none;margin:6px 0;padding:0;max-height:38vh;overflow-y:auto}
+.alog li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line2);font-size:14px}
+.alog time{color:var(--dim);white-space:nowrap}
 </style>
 <script data-goatcounter="https://zord3x.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </head>
@@ -643,7 +671,8 @@ const UNITS = {
   lifeboat:{base:'port', off:-18, speed:10,   col:'#f2994a', lbl:'LB', name:'Lifeboat'},
   cutter:  {base:'port', off:18,  speed:10.5, col:'#c9d3de', lbl:'PC', name:'Patrol cutter'}
 };
-const TASKS = {track:3, drift:3, hail:4, registry:3, face:3, expand:2, unlock:1, cams:3};
+const TASKS = {track:4, drift:4, hail:3, registry:5, face:4, expand:4, unlock:3, cams:4};
+const HOLD_FUEL = 12; // minutes a helicopter can hold on scene before it must go home
 const TASKNAME = {track:'Track replay', drift:'Drift check', cams:'Port cameras', hail:'Radio call', registry:'Registry check', face:'Face match', expand:'Search around', unlock:'Records access'};
 const FLOW = [['detect','Alert'],['track','Correlate'],['vessel','Vessel ID'],['people','People ID'],['records','Vet records'],['decide','Decide']];
 
@@ -764,7 +793,7 @@ const LEVELS = [null,
   {rule:'+ The storm front moves 15% faster.'},
   {rule:'+ Every analyst task takes 2 minutes longer.'},
   {rule:'+ No Lattice assessment: you weigh the evidence yourself.'},
-  {rule:'+ Only 45 minutes of watch time.'}];
+  {rule:'+ Only 18 minutes of watch time.'}];
 // payoff of each decision against each truth, 0–100 (from the design report's matrix)
 const PAY = { rescue:{D:100,S:30,L:50}, board:{D:55,S:100,L:35}, shadow:{D:25,S:60,L:70}, pass:{D:0,S:5,L:100} };
 const letter = s => s >= 85 ? 'A' : s >= 70 ? 'B' : s >= 50 ? 'C' : s >= 30 ? 'D' : 'F';
@@ -784,7 +813,7 @@ const ACH = {
   follow: ['Follow the boat', 'Let smugglers lead police to the beach.'],
   daily:  ['Daily watch', 'Finish a daily case.'],
   lvl5:   ['Clearance 5', 'Unlock the top clearance.'],
-  outs:   ['Case archive', 'See all 8 possible outcomes.'],
+  outs:   ['Case archive', 'See all 9 possible outcomes.'],
   weather:['All weathers', 'Finish a case in all six conditions.'],
   files:  ['Full case file', 'See all nine situations.'],
   needle: ['Needle in a haystack', 'Call the unlikely answer right and get an A.'],
@@ -1158,7 +1187,7 @@ function freshState(seed, lvl=1, daily=null){
   const G = { v:6, seed, phase:'play', t:0, speed:1, paused:true, truth, sc, units:{}, busy:null, done:{},
     findings:[], ticker:[], audit:[], graph:['v'], ids:{}, unlocked:false, override:false,
     decision:null, basis:null, closed:false, saved:0, res:null, stopT:null, sunk:false, trail:[],
-    tab:'look', seen:{}, modal:{type:'alert'}, lvl, daily };
+    tab:'look', seen:{}, modal:{type:'alert'}, lvl, daily, prepos:{}, spent:{}, alerted:null, mayAsk:false, may:null };
   for (const k in UNITS){ const b = BASES[UNITS[k].base]; G.units[k] = {st:'base', x:b.x+UNITS[k].off, y:b.y}; }
   let t = 0; if (Env.storm) while (t < 200 && stormX(G,t) < cpos(G,t).x) t += 0.1; else t = 200;
   sc.hitT = +t.toFixed(1);
@@ -1166,6 +1195,8 @@ function freshState(seed, lvl=1, daily=null){
   if (lvl >= 2 && !Env.storm) sc.sinkT = Math.round(sc.sinkT * 0.87);
   const v = St.mo === 'run' ? 6.5 : St.mo === 'decoy' ? 4 : 0;
   sc.landT = v ? +((Math.hypot(COVE.x-sc.sx, COVE.y-sc.sy)-6)/v).toFixed(1) : 999;
+  { const mr = mulberry(hash(seed + '#MAY')), real = mr() < 0.6, honest = mr() < 0.8, boat = ['yacht ASTRID','sailing boat MÅKE','a kayak group','motorboat LINNEA'][Math.floor(mr()*4)];
+    sc.may = {t:+(6 + mr()*6).toFixed(1), real, boat, looksReal: real ? honest : !honest}; }
   G.trail.push([Math.round(sc.sx), Math.round(sc.sy)]);
   G.ticker.push({t:0, m:'ALERT: radar contact K-7 has no AIS match. '+Env.name+'.'});
   G.audit.push({t:0, m:'Case '+CASE_NO+' opened from radar alert · '+Env.name.toLowerCase()});
@@ -1213,9 +1244,11 @@ function trackResult(G){
 }
 function taskMin(id){ return TASKS[id] + ((GS && GS.lvl >= 3) ? 2 : 0); }
 // turn-based time: the world only moves while an order is being carried out
-function budget(G){ return G.lvl >= 5 ? 45 : 60; }
+function budget(G){ return G.lvl >= 5 ? 18 : 24; }
 function timeLeft(G){ return Math.max(0, budget(G) - G.t); }
-function acting(G){ return G.closed || !!G.res || !!G.busy || Object.values(G.units).some(u => u.st === 'out'); }
+function acting(G){ return G.closed || !!G.res || !!G.busy || Object.values(G.units).some(u => u.st === 'out' || (u.st === 'hold' && !u.held)); }
+const spent = (G, k) => !!(G.spent && G.spent[k]);
+const tooDear = (G, id) => !G.closed && taskMin(id) > timeLeft(G) + 1e-6;
 const blind = G => G.lvl >= 4 && !G.closed;
 function vesselKnown(G){ return !!(G.done.track || G.done.drone); }
 
@@ -1228,7 +1261,7 @@ function finishTask(b){
   if (b.id === 'track'){ G.done.track = true; const r = trackResult(G); addFinding('track', r[0], r[1], r[2], 'Radar + AIS history'); G.badge = 'vessel'; }
   if (b.id === 'drift'){ G.done.drift = true; addFinding('drift', C.drift[0], C.drift[1], C.drift[2], 'Drift model · wind + current'); }
   if (b.id === 'cams'){ G.done.cams = true; addFinding('cams', C.cams[0], C.cams[1], C.cams[2], 'Port cameras'); }
-  if (b.id === 'hail'){ G.done.hail = true; const r = hailResult(G); addFinding('hail', r[0], r[1], r[2], 'VHF channel 16'); }
+  if (b.id === 'hail'){ G.done.hail = true; const r = hailResult(G); addFinding('hail', r[0], r[1], r[2], 'VHF channel 16'); if (G.truth === 'S' && !G.alerted) G.alerted = 'radio'; }
   if (b.id === 'registry'){ G.done.registry = true; addFinding('registry', C.registry[0], C.registry[1], C.registry[2], 'Ship registry'); }
   if (b.id === 'expand'){
     G.graph.push(...C.graph.filter(n => n.parent === b.arg && !G.graph.includes(n.id)).map(n => n.id));
@@ -1248,6 +1281,7 @@ function step(dt){
   const last = G.trail[G.trail.length-1];
   if (Math.hypot(c.x-last[0], c.y-last[1]) > 6){ G.trail.push([Math.round(c.x), Math.round(c.y)]); if (G.trail.length > 120) G.trail.shift(); }
   if (G.busy && t >= G.busy.end - 1e-6){ const b = G.busy; G.busy = null; finishTask(b); }
+  if (s.may && !G.mayAsk && !G.closed && !G.res && t >= s.may.t){ G.mayAsk = true; G.modal = {type:'mayday'}; tick('MAYDAY relay: '+s.may.boat+' needs help.'); tone(660,.12,'square',.08); tone(660,.12,'square',.08,.2); buzz(60); }
   for (const k in UNITS) moveUnit(k, dt, c);
   if (!G.res){
     if (G.truth === 'D'){
@@ -1272,7 +1306,16 @@ function step(dt){
 function resolve(kind){ GS.res = {kind, t:GS.t}; dirty = true; }
 function moveUnit(k, dt, c){
   const G = GS, u = G.units[k], U = UNITS[k];
-  if (U.air && ['out','on','hoist'].includes(u.st) && stormX(G, G.t) >= u.x - 8){ u.st = 'ret'; tick(U.name+': storm too strong, turning back.'); }
+  if (U.air && ['out','on','hoist','hold'].includes(u.st) && stormX(G, G.t) >= u.x - 8){ u.st = 'ret'; u.held = 0; tick(U.name+': storm too strong, turning back.'); }
+  if (u.st === 'hold'){
+    const hx = c.x + (U.air ? 30 : 55), hy = c.y + (U.air ? -42 : k === 'cutter' ? 34 : -34);
+    if (mv(u, hx, hy, U.speed*dt*(!U.air && envOf(G).slow ? envOf(G).slow : 1)) && !u.held){
+      u.held = G.t || 0.01; dirty = true; tick(U.name+' on station near K-7.');
+      if (k === 'heli' && G.truth === 'S' && !G.alerted) G.alerted = 'heli'; }
+    if (U.air && u.held && G.t - u.held >= HOLD_FUEL){ u.st = 'ret'; u.held = 0; G.spent[k] = true; tick('Helicopter: fuel low, returning to base. It can’t fly again this watch.'); }
+    return; }
+  if (u.st === 'away'){ if (mv(u, 830, -70, U.speed*dt)) u.st = 'gone'; return; }
+  if (u.st === 'gone') return;
   if (u.st === 'out'){
     if (mv(u, c.x, c.y + (U.air ? -14 : 12), U.speed*dt*(!U.air && envOf(G).slow ? envOf(G).slow : 1))){ u.st = 'on'; arrive(k); }
   } else if (['on','hoist','done','shadow'].includes(u.st)){
@@ -1306,7 +1349,7 @@ function arrive(k){
   if (G.res){ u.st = 'ret'; return; }
   if (G.decision === 'shadow'){ u.st = 'shadow'; tick('Cutter is shadowing K-7 at a distance.'); return; }
   u.st = 'done'; G.stopT = G.t;
-  if (T === 'S'){ resolve('intercepted'); tick(s.C.boardTxt); }
+  if (T === 'S'){ if (G.alerted){ resolve('dumped'); tick('Cutter boarded K-7. They knew we were coming and dumped the cargo: almost nothing to find.'); } else { resolve('intercepted'); tick(s.C.boardTxt); } }
   else { resolve('incident'); tick(s.C.boardTxt); }
 }
 
@@ -1339,14 +1382,14 @@ const H = {
   fx(){ CR.lowfx = !CR.lowfx; saveCareer(); applyFx(); },
   copy(d){ const t = shareText(d.day); try { navigator.clipboard.writeText(t).then(() => { const b = $('#copyb'); if (b) b.textContent = 'Copied'; }, () => {}); } catch(e){} GS.shareOpen = d.day; },
   doResetAll(){ clearSave(); try { localStorage.removeItem(CAREER); } catch(e){} CR = blankCareer(); GS = {v:6, phase:'title', seed:randomSeed()}; },
-  close(){ const m = GS.modal; GS.modal = null; if (m && (m.type === 'alert' || m.first)) GS.paused = false; },
+  close(){ const m = GS.modal; if (m && (m.type === 'mayday' || m.forced)) return; GS.modal = null; if (m && (m.type === 'alert' || m.first)) GS.paused = false; },
   help(){ GS.modal = {type:'help'}; },
   achs(){ GS.modal = {type:'achs'}; },
   pause(){ if (GS.lvl >= 5 && GS.paused === false) return; GS.paused = !GS.paused; },
   speed(){ GS.speed = GS.speed === 1 ? 2 : 1; GS.paused = false; },
   tab(d){ GS.tab = d.t; if (GS.badge === d.t) GS.badge = null; },
   task(d){
-    const G = GS, id = d.id; if (G.closed || G.busy) return;
+    const G = GS, id = d.id; if (G.closed || G.busy || tooDear(G, id)) return;
     if (id === 'track' && G.done.track) return;
     if (id === 'hail' && G.done.hail) return;
     if (id === 'drift' && G.done.drift) return;
@@ -1361,11 +1404,17 @@ const H = {
   },
   drone(){ const G = GS; if (envOf(G).drone === 'grounded'){ tick('Drone grounded: the wind is too strong to launch.'); return; } if (G.closed || G.units.drone.st !== 'base' || G.done.drone) return; G.units.drone.st = 'out'; G.done.droneSent = true; tick('Drone launched.'); audit('Tasked drone to K-7'); },
   node(d){ GS.modal = {type:'node', id:d.id}; },
+  deploy(d){ const G = GS, k = d.id, u = G.units[k]; if (G.closed || !['heli','cutter','lifeboat'].includes(k) || !u || u.st !== 'base' || spent(G, k)) return;
+    u.st = 'hold'; u.held = 0; G.prepos = G.prepos || {}; G.prepos[k] = true; tick(UNITS[k].name+' ordered out to hold near K-7.'); audit('ORDER: '+UNITS[k].name.toLowerCase()+' to hold near K-7'); buzz(20); },
+  mayday(d){ const G = GS; if (G.may || !G.modal || G.modal.type !== 'mayday') return; G.spent = G.spent || {};
+    if (d.v === 'send' && G.units.lifeboat.st === 'base'){ G.units.lifeboat.st = 'away'; G.may = 'sent'; G.spent.lifeboat = true; tick('Lifeboat sent to the mayday. It is gone for this watch.'); audit('ORDER: lifeboat to MAYDAY relay ('+G.sc.may.boat+')'); }
+    else { G.may = 'stay'; tick('Mayday passed to the next station, 40 minutes away.'); audit('MAYDAY relay ('+G.sc.may.boat+') logged, no unit sent'); }
+    G.modal = null; },
   ids(d){ GS.modal = {type:'idcards', i:+(d.i||0)}; },
   idnav(d){ const n = GS.sc.C.people.length; GS.modal = {type:'idcards', i:clamp(+d.i, 0, n-1)}; },
   confirm(d){ const i = +d.i, v = d.v; if (GS.closed) return; GS.ids[i] = v; audit((v==='yes'?'Confirmed':'Rejected')+' match: '+GS.sc.C.people[i].n); applyRecords(); },
   unlockAsk(d){ GS.modal = {type:'unlock', i:d.i}; },
-  unlockLogged(d){ const G = GS; if (G.busy){ return; } G.modal = null; G.busy = {id:'unlock', arg:d.i, start:G.t, end:+(G.t+taskMin('unlock')).toFixed(2), label:'Records access'}; audit('Records access requested · purpose: case '+CASE_NO+' (border incident K-7)'); },
+  unlockLogged(d){ const G = GS; if (G.busy || tooDear(G, 'unlock')){ return; } G.modal = null; G.busy = {id:'unlock', arg:d.i, start:G.t, end:+(G.t+taskMin('unlock')).toFixed(2), label:'Records access'}; audit('Records access requested · purpose: case '+CASE_NO+' (border incident K-7)'); },
   unlockOverride(d){ const G = GS; G.override = true; G.unlocked = true; audit('ADMIN OVERRIDE · records opened with no purpose stated'); tick('Records opened with an override. It will show in the audit.'); applyRecords(); G.modal = {type:'idcards', i:+(d.i||0)}; },
   ask(){ if (GS.closed) return; GS.modal = {type:'decide', d:null, b:null}; },
   pickD(d){ GS.modal.d = d.d; GS.modal.b = null; },
@@ -1375,13 +1424,18 @@ const H = {
     G.modal = null; G.decision = d; G.basis = m.b; G.basisOK = d === 'board' ? basisValid(G, m.b) : null;
     G.decidedAt = G.t; G.closed = true; G.paused = false; G.busy = null; G.tab = 'case'; G.judge = judgement(G, d); tone(110,.35,'sine',.2); buzz(30); gcEvent('case-decided');
     audit('DECISION: '+DEC[d].name + (m.b ? ' · basis: '+BASIS[m.b].name : ''));
-    if (d === 'rescue'){ for (const k of ['heli','lifeboat']) if (G.units[k].st === 'base') G.units[k].st = 'out'; tick('Helicopter and lifeboat launched.'); }
-    if (d === 'board' || d === 'shadow'){ G.units.cutter.st = 'out'; tick('Patrol cutter launched.'); }
+    const go = k => { const u = G.units[k]; if (u.st === 'hold' || (u.st === 'base' && !spent(G, k))){ u.st = 'out'; u.held = 0; return true; } return false; };
+    const recall = k => { const u = G.units[k]; if (u.st === 'hold'){ u.st = 'ret'; u.held = 0; } };
+    const want = d === 'rescue' ? ['heli','lifeboat'] : d === 'pass' ? [] : ['cutter'];
+    ['heli','lifeboat','cutter'].filter(k => !want.includes(k)).forEach(recall);
+    const sent = want.filter(go);
     if (d === 'pass') tick('You chose to watch and wait.');
+    else tick(sent.length ? sent.map(k => UNITS[k].name).join(' and ') + (sent.length > 1 ? ' are' : ' is') + ' on the way.' : 'No units left to send.');
+    const lost = want.filter(k => !sent.includes(k)); if (lost.length) tick(lost.map(k => UNITS[k].name).join(' and ') + ' not available: already committed.');
   },
   reset(){ GS.modal = {type:'reset'}; },
   doReset(){ clearSave(); GS = {v:6, phase:'title', seed:randomSeed()}; },
-  cancel(){ if (GS.modal && GS.modal.forced) return; GS.modal = null; },
+  cancel(){ if (GS.modal && (GS.modal.forced || GS.modal.type === 'mayday')) return; GS.modal = null; },
   replay(){ if (GS.daily) return; GS = freshState(GS.seed, GS.lvl); },
   newRun(){ GS = {v:6, phase:'title', seed:randomSeed()}; }
 };
@@ -1430,6 +1484,10 @@ function casesHTML(){
 }
 let moreOpen = typeof matchMedia === 'function' ? !matchMedia('(max-width:760px)').matches : true;
 function gcEvent(p){ try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({path:p, title:p, event:true}); } catch(e){} }
+function acctHTML(){
+  const A = window.BWAuth; if (!A || !A.user) return '';
+  return `<div class="acct">${I('person',14)}<span>${esc(A.user.name)}</span>${A.admin ? '<button class="btn" data-auth="stats">Players</button>' : ''}<button class="btn" data-auth="out">Sign out</button></div>`;
+}
 function goBar(){
   const dr = CR.daily[today()];
   return `<div class="go">${dr ? `<button class="btn pri big" data-act="rnd">${I('play',18)} Play a new case</button>` : `<button class="btn pri big" data-act="daily">${I('play',18)} Play today’s brief</button>`}</div>`;
@@ -1437,7 +1495,7 @@ function goBar(){
 document.addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('more')) moreOpen = e.target.open; }, true);
 function titleHTML(){
   return `<div class="title">${CLASSBAR}<div class="stage"><div class="box"><div class="bh">${LOGO}LATTICE<span class="mute" style="font-weight:400;letter-spacing:0;margin-left:auto">Case ${CASE_NO}</span></div><div class="bb">
-  <h1>Border Watch</h1>
+  ${acctHTML()}<h1>Border Watch</h1>
   <p>A dark boat is heading for our coast. Work it like an intelligence analyst: <b>collect</b>, <b>corroborate</b>, <b>vet</b> restricted data lawfully, then <b>decide</b> before the clock runs out.</p>
   ${dailyHTML()}
   <details class="more" ${moreOpen ? 'open' : ''}><summary>${I('person',14)} Career, cases &amp; seed</summary>
@@ -1448,7 +1506,7 @@ function titleHTML(){
   <div class="seedrow" style="display:block"><label for="seed">Scenario seed · same seed, same case</label><div style="display:flex;gap:6px;margin-top:6px"><input id="seed" value="${esc(GS.seed || 'NIGHT-01')}" maxlength="24"><button class="btn pri" data-act="start" style="flex:none">Open case</button></div></div>
   <p class="mute" style="font-size:12.5px">The seed decides what really happened. Everything is fictional. Works offline.</p>
   </details>
-  <p class="mute xs" style="margin-top:10px">Anonymous visit counts via GoatCounter: no cookies, no personal data.</p>
+  <p class="mute xs" style="margin-top:10px">Anonymous visit counts via GoatCounter: no cookies. Accounts run on Google Firebase.</p>
   ${storageOK ? '' : '<p class="no" style="font-size:13px">Storage is off: progress won’t be saved.</p>'}
   </div>${goBar()}</div></div></div>`;
 }
@@ -1889,7 +1947,11 @@ function flowState(G){
 function nextHint(G){
   if (G.closed) return 'Decision made. Watch the outcome on the map.';
   if (G.busy) return 'Analyst busy: '+G.busy.label+'…';
-  const E = envOf(G), fo = facesOK(G);
+  const E = envOf(G), fo = facesOK(G), L = Math.ceil(timeLeft(G) - 1e-6);
+  if (G.lvl >= 2) return `<b>${L} min of watch left.</b> You can’t run every check and orders are final. Spend minutes on what tells the three stories apart.`;
+  if (L <= 4) return `<b>${L} min left:</b> make your call. Open the Decide tab.`;
+  if (E.drone !== 'grounded' && !G.done.droneSent) return '<b>Launch first, think while it flies:</b> the drone needs about 15 minutes to get there, and your analyst can work in the meantime.' + (fo ? '' : ` <span class="mute">(${E.drone === 'fog' ? 'fog' : 'dark'}: heat only, no faces)</span>`);
+  if (G.findings.length >= 2) return `<b>${L} min left.</b> You can’t afford every check. Pick the one that best separates <i>in distress</i>, <i>criminal</i> and <i>legitimate</i>, or decide now. Careful: a radio call tells smugglers you’re watching.`;
   if (!G.done.track) return '<b>Correlate:</b> replay the contact’s track to see which ship it might be.' + (E.clutter ? ' The skerries make it fuzzy.' : '') + ' <span class="mute">(Look tab)</span>';
   if (E.drone !== 'grounded' && !G.done.droneSent) return '<b>Get eyes on it:</b> send the drone now; it takes a while to fly out.' + (fo ? '' : ` <span class="mute">(${E.drone === 'fog' ? 'fog' : 'dark'}: heat only, no faces)</span>`);
   if (!G.done.drift) return '<b>How does it move?</b> A drift check shows whether it has power, or is just drifting. <span class="mute">(Look tab)</span>';
@@ -1915,17 +1977,26 @@ function renderPanel(){
   $('#tabs').innerHTML = TABS.map(t => `<button class="tab ${G.tab===t[0]?'on':''} ${t[0]==='decide'?'dec':''}" data-act="${t[0]==='decide'?'ask':'tab'}" data-t="${t[0]}" ${t[0]==='decide'&&G.closed?'disabled':''}><span class="ti">${I(t[1],18)}</span>${t[2]}${G.badge===t[0]&&G.tab!==t[0]?'<span class="bd"></span>':''}</button>`).join('');
   let h = `<div class="hint">${I('info')}<span>${nextHint(G)}</span></div>`;
   const pbar = id => G.busy && G.busy.id === id ? '<i class="pg" id="pg"></i>' : '';
-  const actBtn = (act, id, ic, nm, ds, dis, done, extra='') => `<button class="act ${done?'done':''} ${G.busy&&G.busy.id===id?'go':''} ${extra}" data-act="${act}" data-id="${id}" ${dis?'disabled':''}><span class="ic">${I(ic,18)}</span><span class="nm">${nm}</span><span class="ds">${ds}</span>${pbar(id)}</button>`;
+  const actBtn = (act, id, ic, nm, ds, dis, done, extra='') => { if (act === 'task' && !done && tooDear(G, id)){ dis = true; ds = 'Not enough watch time · '+taskMin(id)+' min'; } return `<button class="act ${done?'done':''} ${G.busy&&G.busy.id===id?'go':''} ${extra}" data-act="${act}" data-id="${id}" ${dis?'disabled':''}><span class="ic">${I(ic,18)}</span><span class="nm">${nm}</span><span class="ds">${ds}</span>${pbar(id)}</button>`; };
   const lock = G.closed || !!G.busy;
   if (G.tab === 'look'){
     const ds = G.units.drone.st, E = envOf(G), fo = facesOK(G), gr = E.drone === 'grounded';
     h += `<div class="acts">
       ${actBtn('task','track','track','Replay track', E.clutter ? 'Radar + AIS · fuzzy in the skerries · '+taskMin('track')+' min' : 'Match radar with AIS history · '+taskMin('track')+' min', lock || G.done.track, G.done.track)}
       ${actBtn('task','drift','drift','Drift check','Power, or drifting with wind and current? · '+taskMin('drift')+' min', lock || G.done.drift, G.done.drift)}
-      ${actBtn('task','hail','radio','Call on ch. 16','Hail the vessel by radio · '+taskMin('hail')+' min', lock || G.done.hail, G.done.hail)}
+      ${actBtn('task','hail','radio','Call on ch. 16','Hail by radio · they’ll know they’re watched · '+taskMin('hail')+' min', lock || G.done.hail, G.done.hail)}
       ${actBtn('drone','drone','drone','Send drone', gr ? 'Grounded: wind too strong' : ds==='out' ? 'On its way…' : G.done.drone ? (fo ? 'Video live' : 'Heat image only') : (fo ? 'Live video' : 'Thermal only, no faces') + ' · long flight', G.closed || gr || ds!=='base' || G.done.drone, G.done.drone, ds==='out'?'go':'')}
       ${E.cams ? actBtn('task','cams','cam','Port cameras','Harbour-mouth footage · '+taskMin('cams')+' min', lock || G.done.cams, G.done.cams) : ''}
       ${actBtn('tab','people','id','Face match', !fo ? 'No faces in these conditions' : G.done.drone ? 'Open People tab' : 'Needs the drone first', !fo || !G.done.drone, G.done.face)}
+    </div>`;
+    const ord = (k, ic, nm, ds) => { const u = G.units[k], st = u.st, sp = spent(G, k);
+      const lab = st === 'hold' ? (u.held ? 'On station' + (k === 'heli' ? ' · fuel for '+Math.max(0, Math.ceil(HOLD_FUEL - (G.t - u.held)))+' min' : '') : 'On its way…')
+        : (st === 'away' || st === 'gone') ? 'Sent to the mayday' : sp ? 'Out of fuel · back at base' : st !== 'base' ? 'Returning' : ds;
+      return actBtn('deploy', k, ic, nm, lab, G.closed || st !== 'base' || sp, st === 'hold' && u.held, st === 'hold' && !u.held ? 'go' : ''); };
+    h += `<div class="lbl" style="margin:12px 0 6px"><span>Orders · final once given</span><span>${Math.ceil(timeLeft(G) - 1e-6)} min left</span></div><div class="acts">
+      ${ord('heli','drone','Helicopter: hold nearby','Ready to winch at once · '+HOLD_FUEL+' min of fuel · loud')}
+      ${ord('lifeboat','buoy','Lifeboat: stand by','Slow to get there; first on scene if people need help')}
+      ${ord('cutter','anchor','Cutter: shadow distance','Out of sight; can board or follow at once')}
     </div>`;
     h += latticeCard(G);
   }
@@ -2039,12 +2110,12 @@ function renderModal(){
   if (m.type === 'alert' || m.type === 'help') h = `${m.type==='alert' ? `<div class="alert"><b>${I('alert',14)} ALERT · ${hhmm(G.t)} · RADAR</b><div>Radar contact <strong>K-7</strong> has no matching AIS signal. ${((BORDER_X - G.sc.sx)/10).toFixed(0)} km from the border.</div></div>` : '<h2>How to work the case</h2>'}
     <div class="envb">${I(envOf(G).ic,18)}<div><b>${esc(envOf(G).name)}</b><span>${esc(envOf(G).brief)}</span></div></div>
     <ol class="steps">
-     <li><span><b>Correlate</b> the blip with AIS history, and <b>check its drift</b>: does it have power?</span></li>
-     <li><span><b>Ask</b> on the radio, but compare what they say with how they move.</span></li>
-     <li><span><b>Identify the vessel</b>: registry check, then search around its owner.</span></li>
-     <li><span><b>Identify people</b> when the drone can see faces, then <b>vet</b> records with a stated purpose.</span></li>
-     <li><span><b>Decide</b>: rescue, board, shadow or let it pass.</span></li></ol>
-    <p class="mute sm">Weather and light decide which tools work. Time only moves when you act. You have a ${budget(G)}-minute watch: every check and every drone flight spends minutes from it. When it runs out you must decide.</p>
+     <li><span><b>You can’t check everything.</b> You have a ${budget(G)}-minute watch and the checks cost more than that. Pick the ones that tell the stories apart.</span></li>
+     <li><span><b>Launch long jobs first.</b> The drone and your units keep moving while your analyst works.</span></li>
+     <li><span><b>Actions have side effects.</b> A radio call tells smugglers they’re being watched; a helicopter overhead is hard to miss.</span></li>
+     <li><span><b>Orders are final.</b> A unit you send can’t be called back to base for another job this watch.</span></li>
+     <li><span><b>Decide:</b> rescue, board, shadow or let it pass. Minutes left over earn points; a boat in trouble won’t wait.</span></li></ol>
+    <p class="mute sm">Weather and light decide which tools work. Time only moves when you act. When the watch runs out you must decide.</p>
     <div class="row"><button class="btn pri" data-act="close">${m.type==='alert' ? 'Open the case' : 'Back'}</button></div>`;
   if (m.type === 'idcards'){
     const ppl = C.people.map((p,i) => i).filter(i => !C.people[i].crowd), k = Math.max(0, ppl.indexOf(m.i)), i = ppl[k] ?? ppl[0];
@@ -2066,7 +2137,7 @@ function renderModal(){
       ${n.kind === 'vessel' ? `<div class="kv"><span>Type</span><span>${esc(v.type)}</span><span>Flag</span><span>${esc(v.flag)}</span><span>Owner</span><span>${esc(v.owner)}</span></div>` : `<p>${esc(n.text)}</p>`}
       ${n.flag ? `<p><span class="flag ${n.flag}">${n.flag==='bad'?'red flag':n.flag==='warn'?'worth a look':'supports a story'}</span></p>` : ''}
       ${n.kind === 'person' ? '<p class="mute sm">Being linked to something is not evidence of wrongdoing.</p>' : ''}
-      <div class="row"><button class="btn" data-act="cancel">Close</button>${hidden.length ? `<button class="btn pri" data-act="task" data-id="expand" data-arg="${n.id}" ${G.busy||G.closed?'disabled':''}>Search around (${hidden.length}) · 1 min</button>` : ''}</div>`;
+      <div class="row"><button class="btn" data-act="cancel">Close</button>${hidden.length ? `<button class="btn pri" data-act="task" data-id="expand" data-arg="${n.id}" ${G.busy||G.closed||tooDear(G,'expand')?'disabled':''}>${tooDear(G,'expand') ? 'Not enough watch time' : `Search around (${hidden.length}) · ${taskMin('expand')} min`}</button>` : ''}</div>`;
   }
   if (m.type === 'decide'){
     const p = probs(G);
@@ -2076,6 +2147,12 @@ function renderModal(){
       ${!G.findings.length ? '<p class="wn sm">You haven’t gathered any evidence yet.</p>' : ''}
       <div class="row">${m.forced ? '' : '<button class="btn" data-act="cancel">Not yet</button>'}<button class="btn pri hold" data-act="decide" ${!m.d || (m.d==='board' && !m.b) ? 'disabled' : ''}><span>${m.d ? 'Hold to confirm: '+DEC[m.d].name : 'Pick an action'}</span></button></div>`;
   }
+  if (m.type === 'mayday'){ const M = G.sc.may, free = G.units.lifeboat.st === 'base' && !spent(G, 'lifeboat');
+    h = `<div class="alert"><b>${I('alert',14)} MAYDAY RELAY · ${hhmm(G.t)}</b><div>Coast radio relays a call: ${esc(M.boat)} reports a person in the water, 14 km north of the harbour.</div></div>
+    <p class="sm" style="margin:10px 0">${M.looksReal ? 'The call came by DSC with a GPS position, and coast radio can hear the crew shouting in the background.' : 'Voice only, no position data, and the caller hung up when asked for the boat’s name.'}</p>
+    <p class="mute sm">Only the lifeboat can reach it in time. If you send it, it is gone for the rest of this watch: if K-7 needs rescue, you will have only the helicopter.</p>
+    <button class="btn choice" data-act="mayday" data-v="send" ${free ? '' : 'disabled'}><b>${I('buoy')} Send the lifeboat</b><small>${free ? 'Committed until the end of the watch' : 'The lifeboat is already committed to K-7'}</small></button>
+    <button class="btn choice" data-act="mayday" data-v="stay"><b>${I('eye')} Log it, stay on K-7</b><small>Passed to the next station, 40 minutes away.</small></button>`; }
   if (m.type === 'achs') h = `<h2>${I('check',18)} Badges</h2>${Object.keys(ACH).map(id => `<div class="ach" style="${CR.ach[id]?'':'opacity:.45'}">${CR.ach[id]?I('check',14):I('lock',14)}<span><b>${ACH[id][0]}</b> · ${ACH[id][1]}${CR.ach[id]?` <span class="mute">${CR.ach[id]}</span>`:''}</span></div>`).join('')}<div class="row"><button class="btn" data-act="cancel">Close</button></div>`;
   if (m.type === 'reset') h = `<h2>Start over?</h2><p><b>Reset case</b> deletes this case only. <b>Reset everything</b> also wipes your rank, clearances, archive and badges.</p>
     <div class="row"><button class="btn" data-act="cancel">Cancel</button><button class="btn red" data-act="doReset">Reset case</button></div><div class="row" style="margin-top:6px"><button class="btn red" data-act="doResetAll">Reset everything</button></div>`;
@@ -2085,7 +2162,7 @@ function renderModal(){
 // ---------- debrief ----------
 const OUT = {
   saved:{g:true, h:'Everyone was rescued'}, partial:{g:false, h:'Only some people were rescued'}, lost:{g:false, h:'The boat sank. Nobody was saved'},
-  intercepted:{g:true, h:'Smugglers caught at sea'}, followed:{g:true, h:'Smugglers arrested on the beach'}, landed:{g:false, h:'The smugglers got away'},
+  intercepted:{g:true, h:'Smugglers caught at sea'}, dumped:{g:false, h:'Boarded, but the cargo went over the side'}, followed:{g:true, h:'Smugglers arrested on the beach'}, landed:{g:false, h:'The smugglers got away'},
   clear:{g:true, h:'The boat went on its way safely'}, incident:{g:false, h:'You boarded an innocent boat'}
 };
 function judgement(G, d){ const p = probs(G); return HK.reduce((a,T) => a + p[T]*PAY[d][T], 0); }
@@ -2101,15 +2178,21 @@ function missedClue(G){
   return cand.filter(c => c.r > 1.5).sort((a,b) => b.r - a.r)[0] || null;
 }
 function score(G){
-  const L = []; let s = {saved:45, partial:20, lost:0, intercepted:45, followed:35, landed:0, clear:45, incident:5}[G.res.kind];
+  const L = []; let s = {saved:45, partial:20, lost:0, intercepted:45, dumped:22, followed:35, landed:0, clear:45, incident:5}[G.res.kind];
   L.push(['Outcome', s]);
   const J = G.decision ? (G.judge ?? judgement(G, G.decision)) : 0, callPts = Math.round(J * 0.2);
   s += callPts; L.push([J >= 70 ? 'Sound call for the evidence you had' : J >= 45 ? 'Shaky call for the evidence you had' : 'The evidence didn’t support this call', callPts]);
   let idp = 0; G.sc.C.people.forEach((p,i) => { if (p.crowd || !G.ids[i]) return; idp += ((G.ids[i]==='yes') === p.same) ? 5 : -8; });
   s += idp; L.push(['Identity matches resolved', idp]);
   if (facesOK(G)){ const acc = G.override ? -10 : G.unlocked ? 10 : 0; s += acc; L.push([G.override ? 'Records opened by override' : G.unlocked ? 'Records opened with a logged purpose' : 'Records never opened', acc]); }
-  else { const n = G.findings.length, d = n >= 5 ? 20 : n >= 4 ? 10 : 0; s += d; L.push(['No faces to match: built the picture from other sources', d]); }
+  else { const n = G.findings.length, d = n >= 4 ? 15 : n >= 3 ? 8 : 0; s += d; L.push(['No faces to match: built the picture from other sources', d]); }
   const ev = G.findings.length >= 3 ? 10 : 0; s += ev; L.push([ev ? 'Gathered evidence before acting' : 'Acted on little evidence', ev]);
+  const left = G.decidedAt != null ? Math.max(0, budget(G) - G.decidedAt) : 0, tb = Math.round(left / budget(G) * 10);
+  if (tb > 0){ s += tb; L.push(['Decided with '+Math.floor(left)+' min of watch left', tb]); }
+  if (G.mayAsk && G.may){ const M = G.sc.may, v = G.may === 'sent' ? (M.real ? 8 : -3) : (M.real ? -12 : 5); s += v;
+    L.push([G.may === 'sent' ? (M.real ? 'Mayday answered: the lifeboat pulled someone out' : 'Lifeboat sent to a false alarm') : (M.real ? 'Mayday ignored: it was real' : 'Mayday was a hoax: right to stay on K-7'), v]); }
+  if (G.truth === 'S' && G.alerted){ s -= 5; L.push([(G.alerted === 'radio' ? 'Your radio call' : 'The helicopter overhead')+' warned the smugglers', -5]); }
+  if (G.truth === 'L') Object.keys(G.prepos || {}).forEach(k => { s -= 4; L.push([UNITS[k].name+' tied up by a boat that needed nothing', -4]); });
   if (G.decision === 'board'){ const b = G.basisOK ? 5 : -15; s += b; L.push([G.basisOK ? 'Boarding had a valid legal basis' : 'Boarding had no valid legal basis', b]); }
   const needle = !!G.decision && againstOdds(envOf(G).prior, G.truth, PAY[G.decision][G.truth]);
   if (needle){ s += 8; L.push(['Against the odds: the less likely answer, called right', 8]); }
@@ -2215,6 +2298,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => {
   if (!GS) return;
+  if (e.target.closest && e.target.closest('#auth')) return;
   if (e.target.tagName === 'INPUT'){ if (e.key === 'Enter' && GS.phase === 'title') act('start', {seed:e.target.value}); return; }
   if (GS.phase !== 'play') return;
 
@@ -2228,7 +2312,8 @@ setInterval(() => {
   if (!GS.paused && !GS.modal && acting(GS)){
     const n = GS.closed ? 15 : GS.speed * 2;
     AN.prev = {}; for (const k in GS.units) AN.prev[k] = {x:GS.units[k].x, y:GS.units[k].y}; AN.last = performance.now(); AN.rate = n*0.1;
-    for (let i=0; i<n && GS.phase === 'play'; i++) step(0.1);
+    for (let i=0; i<n && GS.phase === 'play' && !GS.modal; i++) step(0.1);
+    if (GS.modal) renderModal();
     if (GS.phase === 'end'){ save(); render(); return; }
   } else { AN.rate = 0; AN.prev = {}; for (const k in GS.units) AN.prev[k] = {x:GS.units[k].x, y:GS.units[k].y};
     if (!GS.paused && !GS.modal && !GS.closed && !GS.res && timeLeft(GS) < 0.05){ GS.modal = {type:'decide', d:null, b:null, forced:true}; tick('Watch time is up. Decide now.'); renderModal(); } }
@@ -2259,6 +2344,132 @@ if (GS.phase === 'play' && GS.lvl == null) GS.lvl = 1;
 render();
 if (location.hash === '#selftest') console.log('selftest', JSON.stringify(LatticeTests.run()));
 try { document.documentElement.style.setProperty('--seabg', `url("${mapBG('storm')}")`); } catch(e){}
+</script>
+<div id="auth" hidden></div>
+<script type="module">
+// ---------- accounts (Firebase Auth + Firestore) ----------
+// Paste the config from Firebase console > Project settings > Your apps > Web app.
+// While it is null, accounts are off and the game plays without signing in.
+const FIREBASE_CONFIG = null;
+const ONLINE_MIN = 2, BEAT_MS = 60000;
+const box = document.getElementById('auth');
+const A = window.BWAuth = {user:null, admin:false, ready:false};
+const h = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rerender = () => { try { if (GS && GS.phase === 'title') render(); } catch(e){} };
+
+let F, auth, db, mode = 'signin', busy = false, pendingName = '', beat = null, statsTimer = null;
+async function boot(){
+  show('loading');
+  const V = '10.12.2', B = 'https://www.gstatic.com/firebasejs/' + V + '/';
+  const [app, au, fs] = await Promise.all([import(B+'firebase-app.js'), import(B+'firebase-auth.js'), import(B+'firebase-firestore.js')]);
+  F = {...au, ...fs};
+  const fa = app.initializeApp(FIREBASE_CONFIG); auth = au.getAuth(fa); db = fs.getFirestore(fa);
+  au.onAuthStateChanged(auth, async u => {
+    A.ready = true;
+    if (!u){ A.user = null; A.admin = false; stopBeat(); show(mode); rerender(); return; }
+    try { await enter(u); } catch(e){ console.warn('account sync', e); }
+    hide(); rerender();
+  });
+}
+const nameOf = u => ((u.displayName || pendingName || (u.email || 'Analyst').split('@')[0]).trim() || 'Analyst').slice(0, 24);
+async function enter(u){
+  const name = nameOf(u), ref = F.doc(db, 'users', u.uid), snap = await F.getDoc(ref);
+  A.user = {uid:u.uid, name};
+  if (!snap.exists()) await F.setDoc(ref, {name, createdAt:F.serverTimestamp(), lastLogin:F.serverTimestamp(), lastSeen:F.serverTimestamp(), logins:0});
+  // one login per browser session (a reload is not a new login)
+  let fresh = true; try { const k = 'bw-login-' + u.uid; fresh = !sessionStorage.getItem(k); sessionStorage.setItem(k, '1'); } catch(e){}
+  if (fresh){
+    await F.updateDoc(ref, {name, lastLogin:F.serverTimestamp(), lastSeen:F.serverTimestamp(), logins:F.increment(1)});
+    await F.addDoc(F.collection(db, 'logins'), {uid:u.uid, name, at:F.serverTimestamp()});
+  }
+  try { A.admin = (await F.getDoc(F.doc(db, 'admins', u.uid))).exists(); } catch(e){ A.admin = false; }
+  startBeat();
+}
+function startBeat(){
+  stopBeat();
+  const ping = () => { if (A.user && !document.hidden) F.updateDoc(F.doc(db, 'users', A.user.uid), {lastSeen:F.serverTimestamp()}).catch(() => {}); };
+  ping(); beat = setInterval(ping, BEAT_MS); document.addEventListener('visibilitychange', ping);
+}
+function stopBeat(){ if (beat) clearInterval(beat); beat = null; }
+
+// ---------- screens ----------
+const LOGO_HTML = () => { try { return LOGO; } catch(e){ return ''; } };
+function frameHTML(inner){
+  return `<div class="title"><div class="stage"><div class="box" role="dialog" aria-modal="true" aria-labelledby="auth-h"><div class="bh">${LOGO_HTML()}LATTICE<span class="mute" style="font-weight:400;letter-spacing:0;margin-left:auto">Analyst access</span></div><div class="bb">${inner}</div></div></div></div>`;
+}
+function show(m, err){
+  if (m !== 'loading') mode = m;
+  box.hidden = false; document.body.classList.add('authon');
+  if (m === 'loading'){ box.innerHTML = frameHTML(`<h1 id="auth-h">Border Watch</h1><p class="mute">Connecting…</p>`); return; }
+  if (m === 'stats'){ box.innerHTML = frameHTML(`<h1 id="auth-h">Players</h1><div id="auth-stats"><p class="mute">Loading…</p></div>
+    <div class="row" style="margin-top:12px"><button class="btn" data-auth="refresh">Refresh</button><button class="btn pri" data-auth="close">Back to game</button></div>`); loadStats(); return; }
+  const up = m === 'signup', reset = m === 'reset';
+  box.innerHTML = frameHTML(`<h1 id="auth-h">${reset ? 'Reset password' : up ? 'Create account' : 'Sign in'}</h1>
+    ${reset ? '' : `<div class="atabs" role="tablist"><button role="tab" class="${up?'':'on'}" aria-selected="${!up}" data-auth="signin">Sign in</button><button role="tab" class="${up?'on':''}" aria-selected="${up}" data-auth="signup">New account</button></div>`}
+    <form class="af" novalidate>
+      ${up ? `<label>Analyst name<input name="name" autocomplete="nickname" maxlength="24" required></label>` : ''}
+      <label>Email<input name="email" type="email" autocomplete="email" inputmode="email" required></label>
+      ${reset ? '' : `<label>Password<input name="pw" type="password" autocomplete="${up?'new-password':'current-password'}" minlength="6" required></label>`}
+      <p class="aerr" role="alert">${h(err || '')}</p>
+      <button class="btn pri big" type="submit">${reset ? 'Send reset link' : up ? 'Create account' : 'Sign in'}</button>
+    </form>
+    ${reset ? `<button class="alink" data-auth="signin">Back to sign in</button>` : `<div class="aor"><span>or</span></div><button class="btn big" data-auth="google">Continue with Google</button>
+    ${up ? '' : `<button class="alink" data-auth="reset">Forgot password?</button>`}`}
+    <p class="mute xs" style="margin-top:10px">Your account stores your analyst name, email and when you sign in. Nothing else.</p>`);
+  const f = box.querySelector('input'); if (f && !matchMedia('(pointer:coarse)').matches) f.focus();
+}
+function hide(){ box.hidden = true; box.innerHTML = ''; document.body.classList.remove('authon'); if (statsTimer) clearInterval(statsTimer); statsTimer = null; }
+const MSG = {'auth/invalid-credential':'Wrong email or password.', 'auth/wrong-password':'Wrong email or password.', 'auth/user-not-found':'Wrong email or password.',
+  'auth/email-already-in-use':'That email already has an account. Sign in instead.', 'auth/invalid-email':'That email address doesn’t look right.',
+  'auth/weak-password':'Use at least 6 characters for the password.', 'auth/too-many-requests':'Too many tries. Wait a minute and try again.',
+  'auth/popup-closed-by-user':'Google sign-in was closed.', 'auth/popup-blocked':'Your browser blocked the Google window. Allow pop-ups and try again.',
+  'auth/network-request-failed':'No connection. Check your internet and try again.', 'auth/unauthorized-domain':'Google sign-in isn’t enabled for this site yet.'};
+const say = e => MSG[e && e.code] || 'Something went wrong. Try again.';
+function err(t){ const p = box.querySelector('.aerr'); if (p) p.textContent = t; }
+async function run(fn){
+  if (busy) return; busy = true; const b = box.querySelectorAll('button'); b.forEach(x => x.disabled = true);
+  try { await fn(); } catch(e){ err(say(e)); } finally { busy = false; b.forEach(x => x.disabled = false); }
+}
+box.addEventListener('submit', e => {
+  e.preventDefault(); const fd = new FormData(e.target), email = String(fd.get('email') || '').trim(), pw = String(fd.get('pw') || ''), name = String(fd.get('name') || '').trim().slice(0, 24);
+  if (!email) return err('Enter your email.');
+  if (mode === 'reset') return run(async () => { await F.sendPasswordResetEmail(auth, email); err('If that email has an account, a reset link is on its way.'); });
+  if (pw.length < 6) return err('Use at least 6 characters for the password.');
+  if (mode === 'signup'){ if (!name) return err('Pick an analyst name.');
+    pendingName = name; return run(async () => { const c = await F.createUserWithEmailAndPassword(auth, email, pw); await F.updateProfile(c.user, {displayName:name}); }); }
+  run(() => F.signInWithEmailAndPassword(auth, email, pw));
+});
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-auth]'); if (!el || el.disabled) return; e.preventDefault();
+  const k = el.dataset.auth;
+  if (k === 'signin' || k === 'signup' || k === 'reset') return show(k);
+  if (k === 'google') return run(() => F.signInWithPopup(auth, new F.GoogleAuthProvider()));
+  if (k === 'out'){ stopBeat(); mode = 'signin'; try { if (A.user) sessionStorage.removeItem('bw-login-' + A.user.uid); } catch(e){} return F.signOut(auth); }
+  if (k === 'stats' && A.admin) return show('stats');
+  if (k === 'refresh') return loadStats();
+  if (k === 'close') return hide();
+});
+
+// ---------- admin stats (only readable by accounts listed in /admins) ----------
+async function loadStats(){
+  const el = document.getElementById('auth-stats'); if (!el) return;
+  if (!statsTimer) statsTimer = setInterval(loadStats, 30000);
+  try {
+    const now = Date.now(), day = new Date(); day.setHours(0,0,0,0);
+    const users = F.collection(db, 'users'), logins = F.collection(db, 'logins'), ts = ms => F.Timestamp.fromMillis(ms);
+    const [all, on, today, week, recent] = await Promise.all([
+      F.getCountFromServer(users),
+      F.getCountFromServer(F.query(users, F.where('lastSeen', '>=', ts(now - ONLINE_MIN*60000)))),
+      F.getCountFromServer(F.query(logins, F.where('at', '>=', ts(day.getTime())))),
+      F.getCountFromServer(F.query(logins, F.where('at', '>=', ts(now - 7*864e5)))),
+      F.getDocs(F.query(logins, F.orderBy('at', 'desc'), F.limit(30)))]);
+    const n = q => q.data().count, t = d => { const x = d && d.toDate ? d.toDate() : null; return x ? x.toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '…'; };
+    el.innerHTML = `<div class="astats"><div><b>${n(on)}</b><small>online now</small></div><div><b>${n(all)}</b><small>accounts</small></div><div><b>${n(today)}</b><small>logins today</small></div><div><b>${n(week)}</b><small>last 7 days</small></div></div>
+      <label class="seclbl">Recent logins</label><ol class="alog">${recent.docs.map(d => { const v = d.data(); return `<li><span>${h(v.name)}</span><time>${t(v.at)}</time></li>`; }).join('') || '<li class="mute">No logins yet.</li>'}</ol>
+      <p class="mute xs">Online = active in the last ${ONLINE_MIN} minutes. Updates every 30 s.</p>`;
+  } catch(e){ el.innerHTML = `<p class="no">Couldn’t load stats (${h(e.code || 'error')}).</p>`; }
+}
+if (FIREBASE_CONFIG) boot().catch(e => { console.warn('accounts', e); show('signin', 'Could not reach the account service. Check your connection and reload.'); });
 </script>
 </body>
 </html>
