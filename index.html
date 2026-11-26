@@ -159,6 +159,7 @@ svg.graph text{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;pointer-ev
 .hero.good{border-left-color:var(--green)}.hero.bad{border-left-color:var(--red)}
 .hero h1{font-size:21px;font-weight:600;margin:4px 0 8px}
 .hero .meta{font:600 11px var(--mono);letter-spacing:.08em;color:var(--dim)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0 12px}.opts div{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;border:1px solid var(--line2);border-radius:6px;background:rgba(255,255,255,.03);font-size:14px}.opts span{flex-basis:100%;font-size:12px}
 .hero::after{content:"";display:block;clear:both}.hero h1{margin:6px 0!important}
 .dbx{margin-top:4px!important;padding:4px 12px 8px!important;border:1px solid var(--line2);border-radius:6px;background:rgba(255,255,255,.02)}
 .dbx .morein{display:flex;flex-direction:column;gap:8px;padding-top:4px}
@@ -2112,13 +2113,15 @@ function renderModal(){
   const G = GS, C = G.sc ? G.sc.C : null; let h = '';
   if (m.type === 'alert' || m.type === 'help') h = `${m.type==='alert' ? `<div class="alert"><b>${I('alert',14)} ALERT · ${hhmm(G.t)} · RADAR</b><div>Radar contact <strong>K-7</strong> has no matching AIS signal. ${((BORDER_X - G.sc.sx)/10).toFixed(0)} km from the border.</div></div>` : '<h2>How to work the case</h2>'}
     <div class="envb">${I(envOf(G).ic,18)}<div><b>${esc(envOf(G).name)}</b><span>${esc(envOf(G).brief)}</span></div></div>
-    <ol class="steps">
+    ${m.type==='alert' ? `<p class="sm" style="margin:10px 0 6px">K-7 could be <b style="color:${HC.D}">a boat in distress</b>, <b style="color:${HC.S}">smugglers</b> or <b style="color:${HC.L}">an innocent boat</b>. You have <b>${budget(G)} minutes</b> to make the call.</p>
+    <div class="lbl" style="margin-top:8px"><span>Your options</span></div>
+    <div class="opts">${Object.keys(DEC).map(k => `<div>${I(DEC[k].icon,14)}<b>${DEC[k].name}</b><span class="mute">${DEC[k].sub}</span></div>`).join('')}</div>` : `<ol class="steps">
      <li><span><b>You can’t check everything.</b> You have a ${budget(G)}-minute watch and the checks cost more than that. Pick the ones that tell the stories apart.</span></li>
      <li><span><b>Launch long jobs first.</b> The drone and your units keep moving while your analyst works.</span></li>
      <li><span><b>Actions have side effects.</b> A radio call tells smugglers they’re being watched; a helicopter overhead is hard to miss.</span></li>
      <li><span><b>Orders are final.</b> A unit you send can’t be called back to base for another job this watch.</span></li>
      <li><span><b>Decide:</b> rescue, board, shadow or let it pass. Minutes left over earn points; a boat in trouble won’t wait.</span></li></ol>
-    <p class="mute sm">Weather and light decide which tools work. Time only moves when you act. When the watch runs out you must decide.</p>
+    <p class="mute sm">Weather and light decide which tools work. Time only moves when you act. When the watch runs out you must decide.</p>`}
     <div class="row"><button class="btn pri" data-act="close">${m.type==='alert' ? 'Open the case' : 'Back'}</button></div>`;
   if (m.type === 'idcards'){
     const ppl = C.people.map((p,i) => i).filter(i => !C.people[i].crowd), k = Math.max(0, ppl.indexOf(m.i)), i = ppl[k] ?? ppl[0];
