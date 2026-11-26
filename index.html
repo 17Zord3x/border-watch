@@ -159,6 +159,9 @@ svg.graph text{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;pointer-ev
 .hero.good{border-left-color:var(--green)}.hero.bad{border-left-color:var(--red)}
 .hero h1{font-size:21px;font-weight:600;margin:4px 0 8px}
 .hero .meta{font:600 11px var(--mono);letter-spacing:.08em;color:var(--dim)}
+.hero::after{content:"";display:block;clear:both}.hero h1{margin:6px 0!important}
+.dbx{margin-top:4px!important;padding:4px 12px 8px!important;border:1px solid var(--line2);border-radius:6px;background:rgba(255,255,255,.02)}
+.dbx .morein{display:flex;flex-direction:column;gap:8px;padding-top:4px}
 .grade{font:700 40px var(--mono);float:right;margin-left:10px;line-height:1;padding:6px 10px;border-radius:3px;background:var(--panel2)}
 .sc div{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-top:1px solid var(--line2)}
 .sc div b{font-family:var(--mono)}
@@ -2229,22 +2232,25 @@ function endHTML(){
   const truth = C.truth, lesson = esc(C.lesson), Ev = envOf(G), head = (C.outH && C.outH[G.res.kind]) || o.h;
   const fp = C.people.map((x,i) => ({x,i})).filter(o => !o.x.crowd);
   return `${CLASSBAR}<div class="end">
-   <div class="hero ${o.g?'good':'bad'}"><div class="grade ${o.g?'ok':'no'}">${sc.grade}</div>
-    <div class="meta">CASE ${CASE_NO} · ${esc(Ev.name.toUpperCase())} · ${hhmm(G.res.t)} · SEED ${esc(G.seed)}</div>
-    <h1>${esc(head)}</h1><p>${truth}</p>${G.truth==='D' ? `<p style="margin-top:8px"><b>${Math.floor(G.saved)} of ${s.people}</b> rescued.</p>` : ''}</div>
+   <div class="hero ${o.g?'good':'bad'}"><div class="grade ${o.g?'ok':'no'}">${sc.grade}</div><h1>${esc(head)}</h1></div>
    <div class="card"><div class="lbl"><span>Your decision</span><span>${hhmm(G.decidedAt ?? G.res.t)}</span></div>
     <div class="verdict">${G.decision ? I(DEC[G.decision].icon,18)+' '+DEC[G.decision].name : 'None'}</div>
     ${G.decision === 'board' ? `<p class="sm" style="margin-top:4px">Legal basis: ${esc(BASIS[G.basis].name)} — ${G.basisOK ? '<span class="ok">valid</span>' : '<span class="no">not valid</span>'}</p>` : ''}
     <p class="mute sm" style="margin-top:4px">Lattice said <span style="color:${HC[lb]}">${HN[lb]} (${Math.round(p[lb]*100)}%)</span>. The truth: <span style="color:${HC[G.truth]}">${HN[G.truth]}</span>.</p></div>
-   ${!facesOK(G) ? `<div class="card"><div class="lbl"><span>Situation</span><span>${esc(STORIES[G.sc.story].name)}</span></div><p class="mute sm">No faces could be seen in ${esc(Ev.name.toLowerCase())}. This case had to be solved from movement, radio, registry and links.</p></div>` : `<div class="card"><div class="lbl"><span>Who was really on board</span><span>${esc(STORIES[G.sc.story].name)}</span></div>
+   <div class="card"><div class="lbl"><span>Situation</span><span>${esc(STORIES[G.sc.story].name)}</span></div><p>${truth}</p>${G.truth==='D' ? `<p style="margin-top:6px"><b>${Math.floor(G.saved)} of ${s.people}</b> rescued.</p>` : ''}
+    ${!facesOK(G) ? `<p class="mute sm" style="margin-top:6px">No faces could be seen in ${esc(Ev.name.toLowerCase())}: this case had to be solved from movement, radio, registry and links.</p>` : ''}</div>
+   ${uplinkCard(G, sc)}
+   <details class="more dbx"><summary>${I('folder',14)} Full debrief</summary><div class="morein">
+   <p class="mute sm">Case ${CASE_NO} · ${esc(Ev.name)} · ${hhmm(G.res.t)} · seed ${esc(G.seed)}</p>
+   ${!facesOK(G) ? '' : `<div class="card"><div class="lbl"><span>Who was really on board</span><span>${esc(STORIES[G.sc.story].name)}</span></div>
     ${fp.map(({x,i}) => `<div class="ev" style="border-color:${x.same?'var(--green)':'var(--red)'}"><b>${esc(x.n)} · ${x.m}% match → ${x.same ? 'really them' : 'NOT them'}</b>
       <span>You ${G.ids[i]==='yes'?'confirmed':G.ids[i]==='no'?'rejected':'never resolved'} this match. ${((G.ids[i]==='yes')===x.same && G.ids[i]) ? '<span class="ok">✓</span>' : G.ids[i] ? '<span class="no">✗</span>' : ''} ${x.truthNote ? esc(x.truthNote) : ''}</span></div>`).join('')}</div>`}
    ${debriefExtra(G, sc, p, lb)}
-   ${uplinkCard(G, sc)}
    <div class="card"><div class="lbl"><span>Score</span><span>${sc.s}/100</span></div><div class="sc">${sc.L.map(l => `<div><span>${esc(l[0])}</span><b class="${l[1]>0?'ok':l[1]<0?'no':'mute'}">${l[1]>0?'+':''}${l[1]}</b></div>`).join('')}</div></div>
    <div class="card"><div class="lbl"><span>The lesson</span></div><p>${lesson}</p></div>
    <div class="card"><div class="lbl"><span>Audit log (what oversight sees)</span></div><div class="audit">${G.audit.map(a => `<div class="${/OVERRIDE/.test(a.m)?'no':''}">${hhmm(a.t)} ${esc(a.m)}</div>`).join('')}</div></div>
    ${careerCard(G)}
+   </div></details>
    <div class="endbar"><button class="btn pri big" data-act="newRun">${I('play',18)} New case</button>${G.daily ? `<button class="btn" data-act="copy" data-day="${G.daily}" id="copyb">Share result</button>` : '<button class="btn" data-act="replay">Replay seed</button>'}</div>
    ${G.daily && G.shareOpen ? `<textarea class="share" readonly aria-label="Share text">${esc(shareText(G.daily))}</textarea>` : ''}
    ${sessionCases >= 3 && sessionCases % 3 === 0 ? '<p class="mute sm" style="text-align:center">Good place to stop: your career and archive are saved.</p>' : ''}
