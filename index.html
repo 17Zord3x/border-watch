@@ -2356,7 +2356,14 @@ try { document.documentElement.style.setProperty('--seabg', `url("${mapBG('storm
 // ---------- accounts (Firebase Auth + Firestore) ----------
 // Paste the config from Firebase console > Project settings > Your apps > Web app.
 // While it is null, accounts are off and the game plays without signing in.
-const FIREBASE_CONFIG = null;
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDc1f4MRO3yuJtDzV7fYAuH2BO2O0WAkfQ",
+  authDomain: "border-watch-a8e51.firebaseapp.com",
+  projectId: "border-watch-a8e51",
+  storageBucket: "border-watch-a8e51.firebasestorage.app",
+  messagingSenderId: "148134679248",
+  appId: "1:148134679248:web:8b04c4d8f4f2687f5044d5"
+};
 const ONLINE_MIN = 2, BEAT_MS = 60000;
 const box = document.getElementById('auth');
 const A = window.BWAuth = {user:null, admin:false, ready:false};
