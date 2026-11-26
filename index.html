@@ -526,6 +526,13 @@ svg.px,svg.i{image-rendering:pixelated;shape-rendering:crispEdges;filter:none!im
 .choice b{font-family:var(--pf)!important;font-weight:400!important;font-size:16px!important;text-transform:uppercase}
 .choice small{font-size:13px}
 .sheet h2,.sheet h3{font-family:var(--pf);font-weight:400;text-transform:uppercase;font-size:24px;letter-spacing:0}
+@keyframes twk{0%,64%{opacity:0}65%,84%{opacity:1}85%,100%{opacity:0}}
+svg.map .spk{opacity:0;animation:twk 3s steps(1,end) infinite}
+svg.map .surf{animation-duration:1.5s}
+@keyframes blk{0%,49%{opacity:1}50%,100%{opacity:.15}}
+svg.map .blk{animation:blk 1.2s steps(1,end) infinite}
+html.lowfx svg.map .spk{animation:none;opacity:0}html.lowfx svg.map .blk{animation:none}
+@media (prefers-reduced-motion:reduce){svg.map .spk{animation:none;opacity:0}svg.map .blk{animation:none}}
 /* bars: segmented blocks */
 .tri,.bar{height:12px!important;background:var(--edge)!important;border:2px solid var(--edge);position:relative;gap:2px!important}
 .tri b,.bar b{box-shadow:none!important}
@@ -550,7 +557,7 @@ svg.map text.pxt{font-family:"Watchkeeper",monospace;paint-order:stroke;stroke:#
 svg.graph{shape-rendering:crispEdges;background:var(--edge)!important;border:2px solid var(--line2)!important}
 svg.graph text{font-family:"Watchkeeper",monospace!important;font-size:16px}
 /* title: pixel sea under the panel */
-.title .stage{background:#0f2236 var(--seabg) center/2004px 1860px no-repeat!important;image-rendering:pixelated}
+.title .stage{background:#0f2236 var(--seabg) center/2440px 1860px no-repeat!important;image-rendering:pixelated}
 .title .stage::before,.title .stage::after{display:none!important;animation:none!important}
 .seedrow input{background:var(--edge)!important;box-shadow:inset 0 0 0 2px var(--line)!important;color:var(--acc)!important;font-size:16px!important}
 .envc{background:var(--panel2)!important;border:2px solid var(--line2)!important}
@@ -574,6 +581,45 @@ svg.graph text{font-family:"Watchkeeper",monospace!important;font-size:16px}
  .panel{border-bottom:0!important}
  .panel::before{height:4px!important;background:var(--line)!important}
 }
+
+/* v16 one-screen title + pinned actions */
+.btn.big{min-height:56px;font-size:20px!important;width:100%;display:flex;align-items:center;justify-content:center;gap:10px}
+.go{padding:12px 16px 14px;border-top:2px solid var(--edge);background:var(--panel)}
+.more{margin-top:12px;border-top:2px solid var(--line2);padding-top:8px}
+.more>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px;font-family:var(--pf);text-transform:uppercase;font-size:16px;color:var(--acc);list-style:none}
+.more>summary::-webkit-details-marker{display:none}
+.more>summary::after{content:"+";margin-left:auto;font-size:20px}.more[open]>summary::after{content:"\2212"}
+.endbar{position:sticky;bottom:0;z-index:5;display:flex;gap:8px;padding:10px 0 calc(10px + env(safe-area-inset-bottom));background:var(--bg);box-shadow:0 -10px 14px var(--bg)}
+.endbar .btn{flex:1}.endbar .btn:not(.big){min-height:56px;flex:0 0 38%}
+.title{height:100vh;height:100dvh;min-height:0}
+.title .stage{min-height:0}
+.title .box{display:flex;flex-direction:column;max-height:100%;min-height:0}
+.title .bb{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;min-height:0}
+@media(max-width:760px){
+ .title .stage{padding:8px;align-items:stretch}
+ .title .bb{padding:12px 14px}
+ .title h1{font-size:30px!important;margin:0 0 8px!important}
+ .title .bb>p:first-of-type{font-size:15px;line-height:1.4;margin:0}
+ .daily{margin-top:10px;padding:8px 10px}
+ .go{padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+ .end{padding-bottom:0}
+ .hero h1{font-size:20px!important}
+ .grade{font-size:40px!important}
+}
+@media(max-width:760px) and (max-height:700px){
+ .title h1{font-size:26px!important}
+ .title .bb>p:first-of-type{font-size:14px}
+ .daily .xs{display:none}
+}
+
+/* v18 turn-based watch clock */
+.clock{display:flex;flex-direction:column;align-items:flex-end;line-height:1}
+.clock small{font-size:12px!important;color:var(--dim);text-transform:uppercase;margin-bottom:2px}
+.clock.low{color:var(--amber)!important}.clock.crit{color:var(--red)!important}
+.clock.run{animation:clk 1s steps(2) infinite}@keyframes clk{50%{opacity:.6}}
+@media (prefers-reduced-motion:reduce){.clock.run{animation:none}}
+html.lowfx .clock.run{animation:none}
+@media(max-width:760px){.clock small{font-size:9px!important}}
 </style>
 </head>
 <body>
@@ -596,7 +642,7 @@ const UNITS = {
   lifeboat:{base:'port', off:-18, speed:10,   col:'#f2994a', lbl:'LB', name:'Lifeboat'},
   cutter:  {base:'port', off:18,  speed:10.5, col:'#c9d3de', lbl:'PC', name:'Patrol cutter'}
 };
-const TASKS = {track:2, drift:2, hail:3, registry:2, face:2, expand:1, unlock:1, cams:2};
+const TASKS = {track:3, drift:3, hail:4, registry:3, face:3, expand:2, unlock:1, cams:3};
 const TASKNAME = {track:'Track replay', drift:'Drift check', cams:'Port cameras', hail:'Radio call', registry:'Registry check', face:'Face match', expand:'Search around', unlock:'Records access'};
 const FLOW = [['detect','Alert'],['track','Correlate'],['vessel','Vessel ID'],['people','People ID'],['records','Vet records'],['decide','Decide']];
 
@@ -715,9 +761,9 @@ function saveCareer(){ try { localStorage.setItem(CAREER, JSON.stringify(CR)); }
 const LEVELS = [null,
   {rule:'Standard watch. Lattice shows its assessment.'},
   {rule:'+ The storm front moves 15% faster.'},
-  {rule:'+ Every analyst task takes 1 minute longer.'},
+  {rule:'+ Every analyst task takes 2 minutes longer.'},
   {rule:'+ No Lattice assessment: you weigh the evidence yourself.'},
-  {rule:'+ No pause button. The clock never stops.'}];
+  {rule:'+ Only 45 minutes of watch time.'}];
 // payoff of each decision against each truth, 0–100 (from the design report's matrix)
 const PAY = { rescue:{D:100,S:30,L:50}, board:{D:55,S:100,L:35}, shadow:{D:25,S:60,L:70}, pass:{D:0,S:5,L:100} };
 const letter = s => s >= 85 ? 'A' : s >= 70 ? 'B' : s >= 50 ? 'C' : s >= 30 ? 'D' : 'F';
@@ -1164,7 +1210,11 @@ function trackResult(G){
   const t = G.sc.C.track;
   return envOf(G).clutter ? [t[0], t[1]+' Radar shadows in the skerries make this match uncertain.', t[2].map(x => +Math.sqrt(x).toFixed(2))] : t;
 }
-function taskMin(id){ return TASKS[id] + ((GS && GS.lvl >= 3) ? 1 : 0); }
+function taskMin(id){ return TASKS[id] + ((GS && GS.lvl >= 3) ? 2 : 0); }
+// turn-based time: the world only moves while an order is being carried out
+function budget(G){ return G.lvl >= 5 ? 45 : 60; }
+function timeLeft(G){ return Math.max(0, budget(G) - G.t); }
+function acting(G){ return G.closed || !!G.res || !!G.busy || Object.values(G.units).some(u => u.st === 'out'); }
 const blind = G => G.lvl >= 4 && !G.closed;
 function vesselKnown(G){ return !!(G.done.track || G.done.drone); }
 
@@ -1330,7 +1380,7 @@ const H = {
   },
   reset(){ GS.modal = {type:'reset'}; },
   doReset(){ clearSave(); GS = {v:6, phase:'title', seed:randomSeed()}; },
-  cancel(){ GS.modal = null; },
+  cancel(){ if (GS.modal && GS.modal.forced) return; GS.modal = null; },
   replay(){ if (GS.daily) return; GS = freshState(GS.seed, GS.lvl); },
   newRun(){ GS = {v:6, phase:'title', seed:randomSeed()}; }
 };
@@ -1346,7 +1396,7 @@ function act(name, data){
 function applyFx(){ document.documentElement.classList.toggle('lowfx', !!CR.lowfx); }
 function render(){
   const app = $('#app'); applyFx();
-  if (GS.phase === 'title'){ app.innerHTML = titleHTML(); app.classList.remove('fx'); }
+  if (GS.phase === 'title'){ const bb = app.querySelector('.title .bb'), st = bb ? bb.scrollTop : 0; app.innerHTML = titleHTML(); app.classList.remove('fx'); const nb = app.querySelector('.title .bb'); if (nb && st) nb.scrollTop = st; }
   else if (GS.phase === 'end'){ const fresh = !GS.recorded; recordCase(GS); app.innerHTML = endHTML(); app.classList.toggle('fx', fresh); window.scrollTo(0,0);
     if (fresh){ const g = score(GS).grade; [523,659,784,1047].slice(0, {A:4,B:3,C:2,D:1,F:1}[g]).forEach((f,i) => tone(g==='F'?147:f, .18, 'triangle', .1, .35+i*.09)); if (!OUT[GS.res.kind].g) buzz(80); } }
   else { app.innerHTML = playHTML(); dirty = true; frame(); }
@@ -1357,7 +1407,7 @@ function dailyHTML(){
   const cal = [...Array(7)].map((_,i) => { const d = new Date(); d.setDate(d.getDate()-6+i); const k = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); const r = CR.daily[k], cls = r ? ('AB'.includes(r.g)?'g':r.g==='F'?'b':'') : '';
     return k === day ? `<i class="${cls} now" title="Today">${r ? r.g : '·'}</i>` : `<button class="${cls}" data-act="daily" data-day="${k}" aria-label="Replay brief #${dailyNo(k)} (${dailyEnv(k)}) as practice">${r ? r.g : '·'}</button>`; }).join('');
   return `<div class="daily">${I('clock',18)}<div class="dt"><b>Daily brief #${dailyNo(day)} · ${dailyEnv(day)}</b><span class="mute sm">${dr ? `Done today: grade ${dr.g}${dr.tier ? ' · ' + dr.tier : ''}. Next brief in <span class="cd">${untilTomorrow()}</span>` : 'Same case for everyone today · one attempt · clearance 2'}</span>
-    <span class="sm streak">${streak() ? `Streak <b>${streak()}</b> day${streak() === 1 ? '' : 's'}` : 'No streak yet'}${CR.bestStreak ? ` · best ${CR.bestStreak}` : ''}</span><div class="cal">${cal}</div><span class="mute xs">Tap an earlier day to replay it as practice.</span></div>${dr ? `<button class="btn" data-act="copy" data-day="${day}" id="copyb" style="flex:none">Share</button>` : `<button class="btn pri" data-act="daily" style="flex:none">Play</button>`}</div>
+    <span class="sm streak">${streak() ? `Streak <b>${streak()}</b> day${streak() === 1 ? '' : 's'}` : 'No streak yet'}${CR.bestStreak ? ` · best ${CR.bestStreak}` : ''}</span><div class="cal">${cal}</div><span class="mute xs">Tap an earlier day to replay it as practice.</span></div>${dr ? `<button class="btn" data-act="copy" data-day="${day}" id="copyb" style="flex:none">Share</button>` : ''}</div>
   ${GS.shareOpen && dr ? `<textarea class="share" readonly aria-label="Share text">${esc(shareText(day))}</textarea>` : ''}`;
 }
 function profileHTML(){
@@ -1377,24 +1427,31 @@ function casesHTML(){
   <label class="seclbl">Situations · ${Object.keys(sS).length}/${STORY_KEYS.length} seen</label><div class="envs">${STORY_KEYS.map(k => `<span class="envc ${sS[k]?'on':''}">${sS[k] ? esc(STORIES[k].name) : '? ? ?'}</span>`).join('')}</div>
   <div class="row" style="margin-top:10px"><button class="btn" data-act="rnd" style="flex:1">New random case</button></div>`;
 }
+let moreOpen = typeof matchMedia === 'function' ? !matchMedia('(max-width:760px)').matches : true;
+function goBar(){
+  const dr = CR.daily[today()];
+  return `<div class="go">${dr ? `<button class="btn pri big" data-act="rnd">${I('play',18)} Play a new case</button>` : `<button class="btn pri big" data-act="daily">${I('play',18)} Play today’s brief</button>`}</div>`;
+}
+document.addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('more')) moreOpen = e.target.open; }, true);
 function titleHTML(){
   return `<div class="title">${CLASSBAR}<div class="stage"><div class="box"><div class="bh">${LOGO}LATTICE<span class="mute" style="font-weight:400;letter-spacing:0;margin-left:auto">Case ${CASE_NO}</span></div><div class="bb">
   <h1>Border Watch</h1>
   <p>A dark boat is heading for our coast. Work it like an intelligence analyst: <b>collect</b>, <b>corroborate</b>, <b>vet</b> restricted data lawfully, then <b>decide</b> before the clock runs out.</p>
-  <p class="mute sm">Every seed sets the weather, the boat and what really happened. The weather decides which tools work: fog hides faces, a gale grounds the drone, the skerries confuse the radar.</p>
   ${dailyHTML()}
+  <details class="more" ${moreOpen ? 'open' : ''}><summary>${I('person',14)} Career, cases &amp; seed</summary>
+  <p class="mute sm" style="margin-top:10px">Every seed sets the weather, the boat and what really happened. The weather decides which tools work: fog hides faces, a gale grounds the drone, the skerries confuse the radar.</p>
   <ul class="how"><li>One daily brief, the same case for everyone. One attempt.</li><li>Your score lifts an uplink toward orbit: 100 points reaches 35,786 km.</li><li>The obvious answer is often right. Calling the unlikely one right, on evidence, scores extra.</li></ul>
   ${casesHTML()}
   ${profileHTML()}
   <div class="seedrow" style="display:block"><label for="seed">Scenario seed · same seed, same case</label><div style="display:flex;gap:6px;margin-top:6px"><input id="seed" value="${esc(GS.seed || 'NIGHT-01')}" maxlength="24"><button class="btn pri" data-act="start" style="flex:none">Open case</button></div></div>
   <p class="mute" style="font-size:12.5px">The seed decides what really happened. Everything is fictional. Works offline.</p>
+  </details>
   ${storageOK ? '' : '<p class="no" style="font-size:13px">Storage is off: progress won’t be saved.</p>'}
-  </div></div></div></div>`;
+  </div>${goBar()}</div></div></div>`;
 }
 function playHTML(){
   return `<div class="hdr">${CLASSBAR}<div class="top"><div class="brand">${LOGO}<span>LATTICE</span><span class="crumb">${GS.daily ? 'Daily #'+dailyNo(GS.daily) : GS.arch ? 'Archive #'+dailyNo(GS.arch) : 'Cases'}<i>/</i>${CASE_NO}<i>/</i>Clearance ${GS.lvl||1}</span></div>
-   <div class="clock" id="clock"></div>
-   <button class="ib" id="bp" data-act="pause" aria-label="Pause" ${GS.lvl>=5?'disabled style="opacity:.35"':''}></button>
+   <div class="clock" id="clock" role="timer"></div>
    <button class="ib" id="bs" data-act="speed" aria-label="Speed"></button>
    <button class="ib" data-act="help" aria-label="How to play">${I('help')}</button>
    <button class="ib" data-act="reset" aria-label="Reset">${I('reset')}</button></div>
@@ -1466,9 +1523,6 @@ const TRAFFIC_SPR = {'NORDVIK':'cargo', 'ASTER BAY':'cargo', 'KELP':'fishing', '
 const UNIT_SPR = {drone:'drone', heli:'heli', lifeboat:'lifeboat', cutter:'cutter'};
 const snap = v => Math.round(v / PXU) * PXU;
 
-// coast: x of the shore at height y (from the land polygon)
-const COAST = [[792,0],[800,40],[788,80],[772,108],[748,126],[742,140],[760,152],[784,172],[795,215],[790,260],[806,300],[800,350],[812,400],[802,428],[790,446],[805,470],[798,520],[782,560],[790,620]];
-function coastX(y){ for (let i=1;i<COAST.length;i++){ const a = COAST[i-1], b = COAST[i]; if (y <= b[1]) return a[0] + (b[0]-a[0]) * (y-a[1]) / ((b[1]-a[1]) || 1); } return 790; }
 const ROCKS = [[430,180,14,9],[470,220,10,7],[515,195,18,10],[560,240,12,8],[600,205,9,6],[450,280,16,9],[505,300,11,7],[548,325,15,9],[610,300,10,7],[655,270,13,8],[480,370,12,8],[530,400,17,9],[590,380,10,7],[640,350,14,9],[700,320,11,7],[690,230,9,6]];
 // sea / land palettes per condition: [deep, mid, light, crest] and [grass dark, grass, grass light, sand]
 const MAPPAL = {
@@ -1479,123 +1533,317 @@ const MAPPAL = {
   skerries:{sea:['#0d1c2c','#11253a','#172f47','#4d6b86'], land:['#1a2a22','#22352b','#2c4234','#5d5a48'], fl:null},
   harbour: {sea:['#2a3157','#323a66','#3c4576','#b49ac8'], land:['#3e4a3a','#475644','#526450','#9a8070'], fl:'#e6a06a'}
 };
-const BGC = {}, BGY0 = -150, BGY1 = 780;
 function hashN(x, y, s){ let h = (x*374761393 + y*668265263 + s*1442695041) | 0; h = (h ^ (h >>> 13)) * 1274126177 | 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
 function vnoise(x, y, sc, s){ const X = Math.floor(x/sc), Y = Math.floor(y/sc), fx = x/sc - X, fy = y/sc - Y, u = fx*fx*(3-2*fx), v = fy*fy*(3-2*fy);
   const a = hashN(X,Y,s), b = hashN(X+1,Y,s), c = hashN(X,Y+1,s), d = hashN(X+1,Y+1,s); return a + (b-a)*u + (c-a)*v + (a-b-c+d)*u*v; }
+// ---------- pixel animation: sprite frames, smooth motion, weather ----------
+(function addFrames(){
+  const R = n => SPR[n].split('|'), put = (n, rows) => { SPR[n] = rows.join('|'); };
+  const sub = (row, i, s) => row.slice(0, i) + s + row.slice(i + s.length);
+  const h = R('heli');
+  put('heli#1', [sub('.'.repeat(24), 4, 'k'.repeat(15)), h[1], sub(h[2], 0, '.k'), h[3]].concat(h.slice(4)));
+  put('heli#2', [sub('.'.repeat(24), 8, 'k'.repeat(7)), h[1], h[2], sub(h[3], 0, '.k')].concat(h.slice(4)));
+  const d = R('drone'); put('drone#1', [d[0], d[1], sub(sub(d[2], 1, 'r'), 18, 'e')].concat(d.slice(3)));
+  const b = R('burning'), sw = r => r.replace(/[fF]/g, c => c === 'f' ? 'F' : 'f');
+  put('burning#1', b.map(sw)); put('burning#2', [b[1], b[0]].concat(b.slice(2)).map(sw));
+  const p = R('party'); put('party#1', [p[0].replace(/[pye]/g, c => ({p:'y', y:'e', e:'p'})[c])].concat(p.slice(1)));
+  const l = R('light'); put('light#1', [l[0], 'kFFk'].concat(l.slice(2)));
+  SPR.gull = 'w...w|.w.w.|..w..'; SPR['gull#1'] = '.....|wwwww|..w..';
+})();
+const SPRF = {heli:3, drone:2, burning:3, party:2, light:2, gull:2};
+const lowMo = () => document.documentElement.classList.contains('lowfx') || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const AN = {last:0, rate:0, prev:{}, face:{}, fr:0};
+const isNight = ek => ek === 'storm' || ek === 'skerries' || ek === 'fog' || ek === 'harbour';
+function envDefs(ek){
+  const c = (MAPPAL[ek] || MAPPAL.storm).sea[3];
+  return `${seaClip()}
+  <pattern id="wav" width="96" height="48" patternUnits="userSpaceOnUse"><rect x="0" y="0" width="9" height="3" fill="${c}" fill-opacity=".45"/><rect x="48" y="24" width="6" height="3" fill="${c}" fill-opacity=".4"/><rect x="27" y="36" width="12" height="3" fill="${c}" fill-opacity=".35"/><rect x="72" y="12" width="6" height="3" fill="${c}" fill-opacity=".4"/></pattern>
+  <pattern id="wnd" width="150" height="57" patternUnits="userSpaceOnUse"><rect x="0" y="0" width="24" height="3" fill="#ffffff" fill-opacity=".35"/><rect x="75" y="30" width="15" height="3" fill="#ffffff" fill-opacity=".3"/></pattern>`;
+}
+let FOGC = '';
+function fogBG(){
+  if (FOGC) return FOGC;
+  const W = Math.ceil(1060/PXU), H = Math.ceil((BGY1-BGY0)/PXU);
+  try { const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+    for (const e of [[330,200,260,70],[550,330,300,80],[290,430,240,60],[670,150,220,60],[460,520,280,60],[200,90,200,50]])
+      for (let py=0; py<H; py++) for (let px=0; px<W; px++){ const q = ((px*PXU-e[0])/e[2])**2 + ((py*PXU+BGY0-e[1])/e[3])**2;
+        if (q < 1 && vnoise(px, py, 4, 11) * .75 + .3 > q){ x.fillStyle = q < .45 ? 'rgba(222,230,236,.30)' : 'rgba(214,224,232,.18)'; x.fillRect(px, py, 1, 1); } }
+    FOGC = c.toDataURL(); } catch(e){}
+  return FOGC;
+}
+function wakeHTML(halfW, len, ph){
+  let s = '';
+  for (let i=0; i<len; i++){ const spread = Math.floor(i/2)*PXU, x = -halfW - (i+1)*PXU;
+    for (const sy of spread ? [-spread, spread] : [0]){ if (hashN(i, sy + ph, 31) < .3) continue;
+      s += `<rect x="${x}" y="${sy}" width="3" height="3" fill="#eef3ea" fill-opacity="${(0.9 - i/len*0.7).toFixed(2)}"/>`; } }
+  if (len) s += `<rect x="${halfW-3}" y="0" width="3" height="3" fill="#eef3ea" fill-opacity="${ph % 2 ? .9 : .5}"/>`;
+  return s;
+}
+function frameName(n, k){ return SPRF[n] ? (k % SPRF[n] ? n + '#' + (k % SPRF[n]) : n) : n; }
+function animMap(now){
+  const G = GS, svg = document.querySelector('svg.map'); if (!svg) return;
+  const ek = G.sc.E, fr = Math.floor(now / 140), slow = Math.floor(now / 420);
+  const vt = G.t + clamp((now - AN.last) / 100, 0, 1) * AN.rate;
+  const roughSea = ek === 'gale' || ek === 'storm', bobP = roughSea ? 330 : 600;
+  const bob = (ph) => (Math.floor(now / bobP + ph) % 4 < 2 ? 0 : (roughSea ? 6 : 3));
+  // the contact: face its heading, bob, leave a wake while under way
+  const c = cpos(G, vt), c2 = cpos(G, vt + 1), cv = V(c.x, c.y), cv2 = V(c2.x, c2.y), dx = cv2.x - cv.x, sp = Math.hypot(c2.x - c.x, c2.y - c.y);
+  if (Math.abs(dx) > 0.05) AN.face.k7 = dx < 0;
+  const flip = AN.face.k7 ? -1 : 1, cs = $('#cspr'), sn = cs && cs._n || 'unknown', S = sprite(sn), half = Math.round(S.w/2)*PXU;
+  $('#cg').setAttribute('transform', `translate(${snap(cv.x)},${snap(cv.y)})`);
+  const sunk = G.sunk && !G.res;
+  $('#cbody').setAttribute('transform', `translate(0,${sunk ? 6 : bob(0)}) scale(${flip},1)`);
+  setHTML('#cwake', sunk ? '' : wakeHTML(half, sp > 0.15 ? Math.round(clamp(2 + sp * 1.1, 2, 10)) : 0, fr));
+  const im = cs && cs.firstElementChild; if (im && SPRF[sn]){ const f = frameName(sn, fr >> 1); if (im._f !== f){ im._f = f; im.setAttribute('href', sprite(f).url); } }
+  let fx = '';
+  if (sn === 'burning' && !G.res) for (let i=0; i<10; i++){ const q = ((now/1000)*0.4 + i/10) % 1, z = q < .3 ? 3 : q < .7 ? 6 : 9;
+    fx += `<rect x="${snap(flip*(-9 + q*21 + Math.sin(i*2.1 + now/700)*6))}" y="${snap(-S.h*PXU - 3 - q*54)}" width="${z}" height="${z}" fill="${q < .15 ? '#ff9a2e' : '#2e3238'}" fill-opacity="${(0.95 - q*0.75).toFixed(2)}"/>`; }
+  setHTML('#cfx', fx);
+  // traffic
+  trafficList(G).forEach((s, i) => { const p = trafficPos(s, vt), g = $('#tf'+i); if (!g) return;
+    g.setAttribute('transform', VT(p.x, p.y));
+    const ub = g.firstElementChild; ub.setAttribute('transform', `translate(0,${bob(i+1)}) scale(${tflip(s) ? -1 : 1},1)`);
+    const sp2 = sprite(TRAFFIC_SPR[s.n] || 'fishing'); setHTML('#tw'+i, wakeHTML(Math.round(sp2.w/2)*PXU, Math.round(Math.abs(s.v)), fr + i)); });
+  // our units: smooth, face the way they go, drone circles the target, rotors spin
+  for (const k in UNITS){ const u = G.units[k], U = UNITS[k], pv = AN.prev[k] || u, g = $('#ug-'+k); if (!g) continue;
+    const f = clamp((now - AN.last) / 100, 0, 1), jump = Math.hypot(u.x - pv.x, u.y - pv.y) > 40, mx = jump ? 0 : u.x - pv.x, my = jump ? 0 : u.y - pv.y;
+    const w = V(u.x + mx*f, u.y + my*f); let x = w.x, y = w.y;
+    const flying = U.air && u.st !== 'base', attached = ['on','hoist','done','shadow'].includes(u.st);
+    const vdx = V(u.x, u.y).x - V(pv.x, pv.y).x;
+    if (!jump && Math.abs(vdx) > 0.02) AN.face[k] = vdx < 0; else if (AN.face[k] === undefined) AN.face[k] = V(100, 0).x < V(0, 0).x;
+    if (k === 'drone' && attached){ const a = now/1000*1.1; x = cv.x + Math.cos(a)*42; y = cv.y - 66 + Math.sin(a)*12; }
+    if (k === 'heli' && attached){ x = cv.x + 24; y = cv.y - 24; }
+    g.setAttribute('transform', `translate(${snap(x)},${snap(y)})`);
+    const ln = $('#ul-'+k); if (ln && u.st === 'out'){ ln.setAttribute('x1', x); ln.setAttribute('y1', y); ln.setAttribute('x2', cv.x); ln.setAttribute('y2', cv.y); }
+    const ub = g.firstElementChild, moving = Math.hypot(mx, my) > 0.01;
+    const fl = k === 'drone' ? 1 : (AN.face[k] ? -1 : 1);
+    ub.setAttribute('transform', `translate(0,${flying ? (Math.floor(now/250) % 2) * -3 : U.air ? 0 : bob(k.length)}) scale(${fl},1)`);
+    if (!U.air){ const sp3 = sprite(UNIT_SPR[k]); setHTML('#uw-'+k, moving && u.st !== 'base' ? wakeHTML(Math.round(sp3.w/2)*PXU, 7, fr + k.length) : ''); }
+    const img = ub.querySelector('image'); if (img && SPRF[UNIT_SPR[k]]){ const nm = flying ? frameName(UNIT_SPR[k], k === 'heli' ? fr : fr >> 1) : UNIT_SPR[k]; if (img._f !== nm){ img._f = nm; img.setAttribute('href', sprite(nm).url); } } }
+  // weather
+  const wv = {gale:9, storm:6, calm:1.5, harbour:2, fog:1, skerries:3}[ek] || 2;
+  const wr = $('#wavr'); if (wr) $('#wav').setAttribute('patternTransform', `translate(${snap(now/1000*wv)},${snap(Math.sin(now/2600)*3)})`);
+  if ($('#wndr')) $('#wnd').setAttribute('patternTransform', `translate(${snap(now/1000*60)},0)`);
+  const rain = $('#rain'); if (rain && ek === 'storm') rain.setAttribute('patternTransform', `translate(${snap(now/1000*-24)},${snap(now/1000*150)})`);
+  const fogl = $('#fogl'); if (fogl) fogl.setAttribute('x', -30 + snap(Math.sin(now/9000)*24));
+  for (let i=0; i<3; i++){ const gl = $('#gull'+i); if (!gl) continue;
+    const gx = 120 + ((i*233 + now/1000*(14 + i*5)) % 640), gy = 110 + i*120 + Math.sin(now/1300 + i)*12;
+    gl.setAttribute('transform', `translate(${snap(gx)},${snap(gy)})`); const gi = gl.firstElementChild, gf = frameName('gull', Math.floor(now/260 + i));
+    if (gi._f !== gf){ gi._f = gf; gi.setAttribute('href', sprite(gf).url); } }
+  const lamp = $('#lamp image'); if (lamp){ const lf = isNight(ek) ? frameName('light', Math.floor(now/700)) : 'light'; if (lamp._f !== lf){ lamp._f = lf; lamp.setAttribute('href', sprite(lf).url); } }
+  const cone = $('#camcone'); if (cone) { const cc = V(790, 425); cone.setAttribute('transform', `rotate(${(Math.round(Math.sin(now/1800)*7)*2)} ${cc.x} ${cc.y})`); }
+  const fl = $('#flash'); if (fl){ let o = 0;
+    if (ek === 'storm' && stormX(G, G.t) > 150){ const T = now % 9000; o = T < 70 ? .35 : T > 160 && T < 220 ? .2 : 0; }
+    fl.setAttribute('fill-opacity', o); }
+}
+function animLoop(now){
+  requestAnimationFrame(animLoop);
+  if (!GS || GS.phase !== 'play' || lowMo()) return;
+  if (now - AN.fr < 33) return; AN.fr = now;   // ~30 fps is plenty for pixel art
+  try { animMap(now); } catch(e){}
+}
+if (typeof requestAnimationFrame === 'function') requestAnimationFrame(animLoop);
+
+// ---------- map layout: every seed gets its own coast, side and angle ----------
+// The game runs in fixed "model" coordinates (coast to the east). Only the drawing changes:
+// V() maps model -> view (mirror, rotate, scale about the view centre); sprites and text stay upright.
+const COAST = [[792,0],[800,40],[788,80],[772,108],[748,126],[742,140],[760,152],[784,172],[795,215],[790,260],[806,300],[800,350],[812,400],[802,428],[790,446],[805,470],[798,520],[782,560],[790,620]];
+const VC = {x:550, y:295};
+let ML = null;
+const MLC = {};
+function mapLayout(seed){
+  if (MLC[seed]) return MLC[seed];
+  const r = mulberry(hash(String(seed) + '#coast'));
+  const L = {mir: r() < .5, fy: r() < .5, th: (r()*2 - 1) * 14 * Math.PI/180,
+    base: 790 + (r()*2-1)*12, A1: 8 + r()*20, l1: 55 + r()*70, p1: r()*6.28, A2: 3 + r()*9, l2: 18 + r()*22, p2: r()*6.28,
+    H: (r() < .5 ? -1 : 1) * (18 + r()*34), hy: [40, 290, 560][Math.floor(r()*3)] + (r()*2-1)*30, hw: 26 + r()*40};
+  L.c = Math.cos(L.th); L.sn = Math.sin(L.th);
+  const ac = Math.abs(L.c), as = Math.abs(L.sn);
+  L.s = Math.min(1, Math.min(900/(900*ac + 470*as), 470/(900*as + 470*ac)) * 1.12);
+  L.id = hash(String(seed) + '#coast') % 1e9;
+  return MLC[seed] = L;
+}
+function coastX(y){
+  const L = ML;
+  if (!L){ for (let i=1;i<COAST.length;i++){ const a = COAST[i-1], b = COAST[i]; if (y <= b[1]) return a[0] + (b[0]-a[0]) * (y-a[1]) / ((b[1]-a[1]) || 1); } return 790; }
+  const g = y => L.base + L.A1*Math.sin(y/L.l1 + L.p1) + L.A2*Math.sin(y/L.l2 + L.p2) + L.H*Math.exp(-(((y - L.hy)/L.hw)**2));
+  const pin = (y0, x0, w) => (x0 - g(y0)) * Math.exp(-(((y - y0)/w)**2));
+  return Math.min(840, g(y) + pin(COVE.y, COVE.x - 8, 34) + pin(BASES.port.y, BASES.port.x - 8, 40) + pin(BASES.air.y, Math.min(g(BASES.air.y), 830), 40));
+}
+function V(x, y){
+  const L = ML; if (!L) return {x, y};
+  const u = (x - VC.x) * (L.mir ? -1 : 1), v = (y - VC.y) * (L.fy ? -1 : 1);
+  return {x: VC.x + L.s*(u*L.c - v*L.sn), y: VC.y + L.s*(u*L.sn + v*L.c)};
+}
+function Vi(X, Y){
+  const L = ML; if (!L) return {x:X, y:Y};
+  const a = (X - VC.x)/L.s, b = (Y - VC.y)/L.s, u = a*L.c + b*L.sn, v = -a*L.sn + b*L.c;
+  return {x: VC.x + u*(L.mir ? -1 : 1), y: VC.y + v*(L.fy ? -1 : 1)};
+}
+const VP = (x, y) => { const p = V(x, y); return `${p.x.toFixed(1)},${p.y.toFixed(1)}`; };
+const VT = (x, y) => { const p = V(x, y); return `translate(${snap(p.x)},${snap(p.y)})`; };
+const VA = a => ML && ML.mir ? ({start:'end', end:'start'}[a] || a) : a;   // keep text on the same side of its anchor point
+function vpts(str){ return str.trim().split(/\s+/).map(q => { const [x, y] = q.split(',').map(Number); return VP(x, y); }).join(' '); }
+
+// ---------- sea + land, drawn in view space ----------
+const BGC = {}, BGX0 = -60, BGX1 = 1160, BGY0 = -150, BGY1 = 780;
 function mapBG(ek){
-  if (BGC[ek] !== undefined) return BGC[ek];
-  const P = MAPPAL[ek] || MAPPAL.storm, W = Math.ceil(1000/PXU), H = Math.ceil((BGY1-BGY0)/PXU);
+  const key = ek + '|' + (ML ? ML.id : 0);
+  if (BGC[key] !== undefined) return BGC[key];
+  const P = MAPPAL[ek] || MAPPAL.storm, W = Math.ceil((BGX1-BGX0)/PXU), H = Math.ceil((BGY1-BGY0)/PXU);
   try {
     const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d'), img = x.createImageData(W, H), d = img.data;
     const hex = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
     const S = P.sea.map(hex), L = P.land.map(hex), FL = P.fl && hex(P.fl);
     const put = (i, col) => { d[i] = col[0]; d[i+1] = col[1]; d[i+2] = col[2]; d[i+3] = 255; };
     const rockAt = (ux, uy, grow) => ROCKS.some(r => ((ux-r[0])/(r[2]+grow))**2 + ((uy-r[1])/(r[3]+grow))**2 <= 1);
+    const k = ML ? 1/ML.s : 1;
     for (let py=0; py<H; py++) for (let px=0; px<W; px++){
-      const ux = px*PXU + 1.5, uy = py*PXU + 1.5 + BGY0, i = (py*W + px)*4, cx = coastX(uy), dist = ux - cx;
-      if (dist >= 0){ // land
+      const m = Vi(BGX0 + px*PXU + 1.5, BGY0 + py*PXU + 1.5), i = (py*W + px)*4, dist = (m.x - coastX(m.y)) / k;
+      if (dist >= 0){
         if (dist < 7){ put(i, L[3]); continue; }
         const n = vnoise(px, py, 9, 7) * .7 + vnoise(px, py, 3, 8) * .3, t = hashN(px, py, 9);
         let col = n < .38 ? L[0] : n < .62 ? L[1] : L[2];
         if (t > .93) col = n < .5 ? L[2] : L[0];
         if (FL && t > .995) col = FL;
         put(i, col); continue; }
-      if (ek === 'skerries' && rockAt(ux, uy, 0)){ const t = hashN(px, py, 3); put(i, t > .7 ? [120,128,136] : t > .3 ? [86,92,100] : [58,62,70]); continue; }
+      if (ek === 'skerries' && rockAt(m.x, m.y, 0)){ const t = hashN(px, py, 3); put(i, t > .7 ? [120,128,136] : t > .3 ? [86,92,100] : [58,62,70]); continue; }
       const n = vnoise(px + (ek === 'gale' ? py*.6 : 0), py, 11, 1) * .65 + vnoise(px, py, 4, 2) * .35;
       let col = n < .42 ? S[0] : n < .6 ? S[1] : S[2];
       const crest = hashN(px, py, 5), crestP = {gale:.94, storm:.975, calm:.992, harbour:.99}[ek] || .985;
       if (n > .58 && crest > crestP) col = S[3];
-      if (dist > -8) col = S[2];                      // shallow band along the shore
-      if (dist > -3.5 && hashN(px, py, 6) > .45) col = S[3]; // surf
-      if (ek === 'skerries' && rockAt(ux, uy, 6)) col = hashN(px, py, 4) > .6 ? S[3] : S[2];
+      if (dist > -8) col = S[2];
+      if (dist > -3.5 && hashN(px, py, 6) > .45) col = S[3];
+      if (ek === 'skerries' && rockAt(m.x, m.y, 6)) col = hashN(px, py, 4) > .6 ? S[3] : S[2];
       put(i, col); }
     x.putImageData(img, 0, 0);
-    if (ek === 'fog'){ // pixel fog banks
-      for (const e of [[300,200,260,70],[520,330,300,80],[260,430,240,60],[640,150,220,60],[430,520,280,60]])
-        for (let py=0; py<H; py++) for (let px=0; px<W; px++){ const q = ((px*PXU-e[0])/e[2])**2 + ((py*PXU+BGY0-e[1])/e[3])**2;
-          if (q < 1 && vnoise(px, py, 4, 11) * .75 + .3 > q){ x.fillStyle = 'rgba(214,224,232,.18)'; x.fillRect(px, py, 1, 1); } } }
-    return BGC[ek] = c.toDataURL();
-  } catch(e){ return BGC[ek] = ''; }
+    return BGC[key] = c.toDataURL();
+  } catch(e){ return BGC[key] = ''; }
 }
-function brackets(w, h){ // pixel corner brackets around a sprite box (units), 3-unit strokes
-  const x0 = -snap(w/2) - 6, x1 = snap(w/2) + 6, y0 = -h - 3, y1 = 9, L = 12, T = 3;
-  const c = (x, y, dx, dy) => `M${x} ${y}h${dx*L}v${dy*T}h${-dx*(L-T)}v${dy*(L-T)}h${-dx*T}z`;
-  return c(x0, y0, 1, 1) + c(x1, y0, -1, 1) + c(x0, y1, 1, -1) + c(x1, y1, -1, -1);
+function seaClip(){
+  const pts = [];
+  for (let y=-500; y<=1100; y+=10) pts.push(VP(coastX(y), y));
+  return `<clipPath id="seaclip"><path d="M${VP(-900,-500)} L${pts.join(' L')} L${VP(-900,1100)} Z"/></clipPath>`;
 }
-function pxLabel(x, y, t, col, anchor, size){
-  return `<text x="${x}" y="${y}" text-anchor="${anchor || 'middle'}" font-size="${size || 24}" fill="${col}" class="pxt">${t}</text>`;
+function envFX(ek){
+  const P = MAPPAL[ek] || MAPPAL.storm, crest = P.sea[3];
+  const n = {calm:46, gale:90, storm:40, fog:14, skerries:36, harbour:44}[ek] || 30;
+  const R = (p, w, fill, cls, extra) => `<rect class="${cls}" x="${snap(p.x)}" y="${snap(p.y)}" width="${w}" height="3" fill="${fill}" style="${extra}"/>`;
+  let s = '';
+  for (let i=0; i<n; i++){ const y = 70 + hashN(i, 1, 21)*460, x = 110 + hashN(i, 2, 21)*(coastX(y)-140);
+    s += R(V(x, y), hashN(i, 3, 21) > .6 ? 6 : 3, crest, 'spk', `animation-duration:${(1.8 + hashN(i,4,21)*2.6).toFixed(2)}s;animation-delay:-${(hashN(i,5,21)*4).toFixed(2)}s`); }
+  for (let y=-200; y<800; y+=12) s += R(V(coastX(y) - 6 - (hashN(y, 7, 21) > .5 ? 3 : 0), y), 3, '#ffffff', 'spk surf', `animation-delay:-${(hashN(y+300,8,21)*2).toFixed(2)}s`);
+  if (ek === 'skerries') ROCKS.forEach((r, i) => { for (let k=0; k<5; k++){ const a = k*1.26 + i;
+    s += R(V(r[0] + Math.cos(a)*(r[2]+4), r[1] + Math.sin(a)*(r[3]+3)), 3, '#dfe9ef', 'spk surf', `animation-delay:-${(hashN(i,k,22)*2).toFixed(2)}s`); } });
+  if (ek === 'harbour') for (let i=0; i<5; i++) s += `<rect class="blk" x="${snap(V(BASES.port.x + 24 + i*15, BASES.port.y + 33).x)}" y="${snap(V(BASES.port.x + 24 + i*15, BASES.port.y + 33).y)}" width="3" height="3" fill="#ffd36b" style="animation-delay:-${(i*.37).toFixed(2)}s"/>`;
+  return s;
+}
+function envLive(ek){
+  let s = `<g clip-path="url(#seaclip)"><rect id="wavr" x="${BGX0}" y="${BGY0}" width="${BGX1-BGX0}" height="${BGY1-BGY0}" fill="url(#wav)"/>`;
+  if (ek === 'gale') s += `<rect id="wndr" x="${BGX0}" y="${BGY0}" width="${BGX1-BGX0}" height="${BGY1-BGY0}" fill="url(#wnd)"/>`;
+  s += `<g>${envFX(ek)}</g></g>`;
+  if (ek === 'fog') s += `<image id="fogl" href="${fogBG()}" x="-30" y="${BGY0}" width="${Math.ceil(1060/PXU)*PXU}" height="${Math.ceil((BGY1-BGY0)/PXU)*PXU}" preserveAspectRatio="none" class="pxi"/>`;
+  if (ek === 'calm' || ek === 'gale' || ek === 'harbour') s += [0,1,2].map(i => `<g id="gull${i}">${sprImg('gull', '', false)}</g>`).join('');
+  return s;
+}
+// a point on the model line x = mx whose view y is close to vy (to pin labels to a rotated line)
+const tflip = s => (s.v < 0) !== !!(ML && ML.mir);
+function lineLabelAt(mx, vy){
+  let best = null;
+  for (let y=-400; y<=1000; y+=5){ const p = V(mx, y); if (p.x < 130 || p.x > 960) continue; const e = Math.abs(p.y - vy); if (!best || e < best.e) best = {e, y}; }
+  return best ? best.y : 90;
+}
+function stormPoly(fx){ return [[-900,-700],[fx,-700],[fx,1300],[-900,1300]].map(p => VP(p[0], p[1])).join(' '); }
+function cablePts(){
+  const B = (t, a, b, c, d) => (1-t)**3*a + 3*(1-t)**2*t*b + 3*(1-t)*t*t*c + t**3*d, out = [];
+  for (let i=0; i<=24; i++){ const t = i/24; out.push(VP(B(t,806,650,450,-300), B(t,300,322,334,360))); }
+  return out.join(' ');
 }
 function mapSVG(){
+  ML = GS && GS.sc ? mapLayout(GS.seed) : null;
   let grid = '';
   for (let x=201; x<1000; x+=99) grid += `<line x1="${x}" y1="60" x2="${x}" y2="560"/>`;
   for (let y=99; y<560; y+=99) grid += `<line x1="100" y1="${y}" x2="1000" y2="${y}"/>`;
   let units = '';
   for (const k in UNITS){
     units += `<line id="ul-${k}" stroke="#5FD3E6" stroke-width="3" stroke-dasharray="6 6" stroke-opacity=".85" visibility="hidden"/>
-    <g id="ug-${k}">${sprImg(UNIT_SPR[k], '', false)}</g>`; }
+    <g id="ug-${k}"><g><g id="uw-${k}"></g>${sprImg(UNIT_SPR[k], '', false)}</g></g>`; }
   const ek = GS && GS.sc ? GS.sc.E : 'storm', night = ek === 'storm' || ek === 'skerries';
-  const traffic = trafficList(GS).map((s,i) => `<g id="tf${i}">${sprImg(TRAFFIC_SPR[s.n] || 'fishing', '', s.v < 0)}${pxLabel(0, -36, s.n, night ? '#9fb3c4' : '#eef3ea', 'middle', 16)}</g>`).join('');
-  const lab = night ? '#9fb3c4' : '#f4f1e4';
+  const traffic = trafficList(GS).map((s,i) => `<g id="tf${i}"><g transform="scale(${s.v < 0 ? -1 : 1},1)"><g id="tw${i}"></g>${sprImg(TRAFFIC_SPR[s.n] || 'fishing', '', false)}</g>${pxText(0, -36, s.n, night ? '#9fb3c4' : '#eef3ea', 'middle', 16)}</g>`).join('');
+  const lab = night ? '#9fb3c4' : '#f4f1e4', bl = lineLabelAt(BORDER_X - 9, 92);
+  const cv = V(COVE.x, COVE.y);
   return `<svg class="map" viewBox="100 60 900 470" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Sea map" shape-rendering="crispEdges">
   <defs><pattern id="stg" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#2c3a4f" fill-opacity=".55"/><rect width="3" height="3" fill="#8b9bb4" fill-opacity=".3"/><rect x="3" y="3" width="3" height="3" fill="#8b9bb4" fill-opacity=".3"/></pattern>
-  <pattern id="rain" width="24" height="24" patternUnits="userSpaceOnUse"><rect x="3" y="0" width="3" height="9" fill="#d5e0f0" fill-opacity=".45"/><rect x="15" y="12" width="3" height="9" fill="#d5e0f0" fill-opacity=".45"/></pattern></defs>
-  <rect x="0" y="0" width="1000" height="620" fill="${MAPPAL[ek] ? MAPPAL[ek].sea[1] : '#10233a'}"/>
-  <image href="${mapBG(ek)}" x="0" y="${BGY0}" width="${Math.ceil(1000/PXU)*PXU}" height="${Math.ceil((BGY1-BGY0)/PXU)*PXU}" preserveAspectRatio="none" class="pxi"/>
+  ${envDefs(ek)}<pattern id="rain" width="24" height="24" patternUnits="userSpaceOnUse"><rect x="3" y="0" width="3" height="9" fill="#d5e0f0" fill-opacity=".45"/><rect x="15" y="12" width="3" height="9" fill="#d5e0f0" fill-opacity=".45"/></pattern></defs>
+  <rect x="${BGX0}" y="${BGY0}" width="${BGX1-BGX0}" height="${BGY1-BGY0}" fill="${MAPPAL[ek] ? MAPPAL[ek].sea[1] : '#10233a'}"/>
+  <image href="${mapBG(ek)}" x="${BGX0}" y="${BGY0}" width="${Math.ceil((BGX1-BGX0)/PXU)*PXU}" height="${Math.ceil((BGY1-BGY0)/PXU)*PXU}" preserveAspectRatio="none" class="pxi"/>
+  ${envLive(ek)}
   <g stroke="#ffffff" stroke-opacity=".07" stroke-width="3" stroke-dasharray="3 9">${grid}</g>
-  <path d="M806,300 C650,322 450,334 0,350" fill="none" stroke="#c9a8ff" stroke-opacity=".7" stroke-width="3" stroke-dasharray="3 9"/>
-  ${pxLabel(118, 380, 'UNDERSEA CABLE', '#d9c4ff', 'start', 16)}
+  <polyline points="${cablePts()}" fill="none" stroke="#c9a8ff" stroke-opacity=".7" stroke-width="3" stroke-dasharray="3 9"/>
+  ${pxLabel(170, 368, 'UNDERSEA CABLE', '#d9c4ff', 'start', 16)}
   ${envLayer(ek)}
   ${traffic}
-  <rect id="stR" x="0" y="${BGY0}" width="0" height="${BGY1-BGY0}" fill="url(#stg)"/><rect id="stR2" x="0" y="${BGY0}" width="0" height="${BGY1-BGY0}" fill="url(#rain)"/>
-  <text id="stL" x="110" y="520" font-size="24" fill="#eef3ea" class="pxt">STORM FRONT &gt;</text>
-  <line x1="${BORDER_X}" y1="60" x2="${BORDER_X}" y2="560" stroke="#ffb24a" stroke-dasharray="12 9" stroke-width="3"/>
-  ${pxLabel(BORDER_X-9, 90, 'TERRITORIAL LINE', '#ffc46b', 'end')}
-  ${pxLabel(900, 518, 'VARNHOLM', night ? '#5e7a62' : '#e9f2d8', 'middle', 32)}
-  <g transform="translate(${COVE.x+24},${COVE.y+6})">${sprImg('light')}</g>
+  <polygon id="stR" points="${stormPoly(-900)}" fill="url(#stg)"/><polygon id="stR2" points="${stormPoly(-900)}" fill="url(#rain)"/>
+  <text id="stL" x="110" y="520" font-size="24" fill="#eef3ea" class="pxt" visibility="hidden">STORM FRONT</text>
+  <line x1="${V(BORDER_X,-700).x}" y1="${V(BORDER_X,-700).y}" x2="${V(BORDER_X,1300).x}" y2="${V(BORDER_X,1300).y}" stroke="#ffb24a" stroke-dasharray="12 9" stroke-width="3"/>
+  ${pxLabel(BORDER_X-9, bl, 'TERRITORIAL LINE', '#ffc46b', 'end')}
+  ${pxLabel(coastX(310) + 100, 318, 'VARNHOLM', night ? '#5e7a62' : '#e9f2d8', 'middle', 32)}
+  <g id="lamp" transform="${VT(COVE.x+24, COVE.y+6)}">${sprImg('light')}</g>
   ${pxLabel(COVE.x-15, COVE.y-12, 'GULL COVE', lab, 'end', 16)}
-  <path d="M${COVE.x-9},${COVE.y-9}h18v18h-18z M${COVE.x-6},${COVE.y-6}v12h12v-12z" fill="#ff6a5a" fill-rule="evenodd"/>
-  <g transform="translate(${BASES.air.x+3},${BASES.air.y+42})">${sprImg('hangar')}</g><g transform="translate(${BASES.air.x+54},${BASES.air.y+39})">${sprImg('tower')}</g>
+  <path d="M${snap(cv.x)-9},${snap(cv.y)-9}h18v18h-18z M${snap(cv.x)-6},${snap(cv.y)-6}v12h12v-12z" fill="#ff6a5a" fill-rule="evenodd"/>
+  <g transform="${VT(BASES.air.x+3, BASES.air.y+42)}">${sprImg('hangar')}</g><g transform="${VT(BASES.air.x+54, BASES.air.y+39)}">${sprImg('tower')}</g>
   ${pxLabel(BASES.air.x, BASES.air.y+66, 'AIRBASE', lab, 'middle', 16)}
-  <g transform="translate(${BASES.port.x+42},${BASES.port.y+30})">${sprImg('crane')}</g><g transform="translate(${BASES.port.x+81},${BASES.port.y+30})">${sprImg('shed')}</g>
+  <g transform="${VT(BASES.port.x+42, BASES.port.y+30)}">${sprImg('crane')}</g><g transform="${VT(BASES.port.x+81, BASES.port.y+30)}">${sprImg('shed')}</g>
   ${pxLabel(BASES.port.x+57, BASES.port.y+54, 'PORT', lab, 'middle', 16)}
   <polyline id="hist" fill="none" stroke="#8ff0b4" stroke-opacity=".85" stroke-width="3" stroke-dasharray="3 6" visibility="hidden"/>
   <polyline id="trail" fill="none" stroke="#ffc46b" stroke-opacity=".75" stroke-width="3" stroke-dasharray="6 6"/>
   <g id="cg">
    <rect x="-36" y="-36" width="72" height="54" fill="none" stroke="#ffc46b" stroke-width="3"><animate attributeName="stroke-opacity" values=".9;0;.9" dur="1.6s" calcMode="discrete" keyTimes="0;.5;1" repeatCount="indefinite"/></rect>
-   <g id="cspr">${sprImg('unknown')}</g>
+   <g id="cbody"><g id="cwake"></g><g id="cspr">${sprImg('unknown')}</g></g><g id="cfx"></g>
    <path id="cshape" d="${brackets(60, 18)}" fill="#F0B726"/>
    <rect id="ctagb" x="-12" y="-63" width="24" height="27" fill="#F0B726"/><text id="ctag" y="-42" text-anchor="middle" font-size="24" fill="#12161d" class="pxt">?</text>
    <text id="clabel" x="18" y="-42" font-size="16" fill="#ffd77a" class="pxt">K-7</text>
   </g>
-  ${units}</svg>`;
+  ${units}<rect id="flash" x="${BGX0}" y="${BGY0}" width="${BGX1-BGX0}" height="${BGY1-BGY0}" fill="#ffffff" fill-opacity="0" pointer-events="none"/></svg>`;
 }
+// text at a model point (moves with the coast) vs. text at a fixed spot on screen
+function pxText(x, y, t, col, anchor, size){ return `<text x="${x}" y="${y}" text-anchor="${anchor || 'middle'}" font-size="${size || 24}" fill="${col}" class="pxt">${t}</text>`; }
+function pxLabel(x, y, t, col, anchor, size){ const p = V(x, y); return pxText(snap(p.x), snap(p.y), t, col, VA(anchor || 'middle'), size); }
 function envLayer(ek){
-  if (ek === 'fog') return pxLabel(118, 548, 'FOG BANK · VISIBILITY 200 M', '#eef3ea', 'start', 16);
-  if (ek === 'gale') return pxLabel(118, 548, 'GALE · 70 KM/H >', '#eef3ea', 'start', 16);
+  const corner = ML && ML.mir ? [982, 'end'] : [118, 'start'];
+  if (ek === 'fog') return pxText(corner[0], 548, 'FOG BANK · VISIBILITY 200 M', '#eef3ea', corner[1], 16);
+  if (ek === 'gale') return pxText(corner[0], 548, 'GALE · 70 KM/H', '#eef3ea', corner[1], 16);
   if (ek === 'skerries') return pxLabel(560, 462, 'SKERRIES', '#b7c6d3', 'middle', 16);
-  if (ek === 'harbour') return `<g pointer-events="none"><path d="M790,425 L700,380 L700,470 Z" fill="#7fe7ff" fill-opacity=".12"/><rect x="784" y="419" width="12" height="12" fill="#7fe7ff"/>${pxLabel(700, 372, 'PORT CAMERAS', '#9feeff', 'start', 16)}</g>`;
-  if (ek === 'calm') return pxLabel(118, 548, 'CALM · CLEAR · GOOD VISIBILITY', '#ffffff', 'start', 16);
+  if (ek === 'harbour'){ const cam = V(790, 425);
+    return `<g pointer-events="none"><path id="camcone" d="M${VP(790,425)} L${VP(700,380)} L${VP(700,470)} Z" fill="#7fe7ff" fill-opacity=".12"/><rect x="${snap(cam.x)-6}" y="${snap(cam.y)-6}" width="12" height="12" fill="#7fe7ff"/>${pxLabel(700, 372, 'PORT CAMERAS', '#9feeff', 'start', 16)}</g>`; }
+  if (ek === 'calm') return pxText(corner[0], 548, 'CALM · CLEAR · GOOD VISIBILITY', '#ffffff', corner[1], 16);
   return '';
+}
+
+function brackets(w, h){ // pixel corner brackets around a sprite box (units), 3-unit strokes
+  const x0 = -snap(w/2) - 6, x1 = snap(w/2) + 6, y0 = -h - 3, y1 = 9, L = 12, T = 3;
+  const c = (x, y, dx, dy) => `M${x} ${y}h${dx*L}v${dy*T}h${-dx*(L-T)}v${dy*(L-T)}h${-dx*T}z`;
+  return c(x0, y0, 1, 1) + c(x1, y0, -1, 1) + c(x0, y1, 1, -1) + c(x1, y1, -1, -1);
 }
 function frame(){
   if (!GS || GS.phase !== 'play' || !$('#clock')) return;
   const G = GS, c = cpos(G, G.t), C = G.sc.C;
-  $('#clock').textContent = hhmm(G.t);
-  const bpH = I(G.paused ? 'play' : 'pause'); if ($('#bp')._h !== bpH){ $('#bp').innerHTML = bpH; $('#bp')._h = bpH; } $('#bp').classList.toggle('on', G.paused);
+  { const L = Math.ceil(timeLeft(G) - 0.05), ck = $('#clock'), txt = G.closed ? 'DONE' : L + ' MIN';
+    if (ck._t !== txt){ ck._t = txt; ck.innerHTML = `<small>${G.closed ? 'orders' : 'time left'}</small>${txt}`; ck.setAttribute('aria-label', G.closed ? 'Decision made' : L + ' minutes of watch time left'); }
+    ck.classList.toggle('low', !G.closed && L <= 15); ck.classList.toggle('crit', !G.closed && L <= 5); ck.classList.toggle('run', acting(G) && !G.closed); }
   setTxt('#bs', G.speed + '×');
   const fx = clamp(stormX(G, G.t), 0, 1000);
-  $('#stR').setAttribute('width', fx); $('#stR2').setAttribute('width', fx);
-  $('#stL').setAttribute('x', Math.max(110, fx - 100)); $('#stL').setAttribute('visibility', fx > 150 ? 'visible' : 'hidden');
-  trafficList(G).forEach((s,i) => { const p = trafficPos(s, G.t); $('#tf'+i).setAttribute('transform', `translate(${snap(p.x)},${snap(p.y)})`); });
-  $('#trail').setAttribute('points', G.trail.map(p => p.join(',')).join(' ') + ` ${c.x.toFixed(1)},${c.y.toFixed(1)}`);
+  const spol = stormPoly(fx > 0 ? fx : -900); if ($('#stR')._p !== spol){ $('#stR')._p = spol; $('#stR').setAttribute('points', spol); $('#stR2').setAttribute('points', spol); }
+  { const sl = V(Math.max(110, fx - 100), 300); $('#stL').setAttribute('x', snap(sl.x)); $('#stL').setAttribute('y', snap(sl.y)); $('#stL').setAttribute('text-anchor', VA('start')); $('#stL').setAttribute('visibility', fx > 150 ? 'visible' : 'hidden'); }
+  if (lowMo()) trafficList(G).forEach((s,i) => { const p = trafficPos(s, G.t); $('#tf'+i).setAttribute('transform', VT(p.x, p.y)); });
+  $('#trail').setAttribute('points', G.trail.map(p => VP(p[0], p[1])).join(' ') + ' ' + VP(c.x, c.y));
   // track history after replay
   const h = $('#hist');
   if (G.done.track){
     const s = G.sc, M = s.C.mo, pts = M === 'drift' ? `${s.sx-210},${s.sy-40} ${s.sx-120},${s.sy-20}` : M === 'survey' || M === 'anchor' || M === 'fish' ? `${s.sx-60},${s.sy+40} ${s.sx-20},${s.sy+10}` : `${s.sx-60},${s.sy+30} ${s.sx-25},${s.sy+12}`;
-    h.setAttribute('points', pts + ` ${G.trail[0].join(',')}`); h.setAttribute('visibility', 'visible');
+    h.setAttribute('points', vpts(pts + ` ${G.trail[0].join(',')}`)); h.setAttribute('visibility', 'visible');
   } else h.setAttribute('visibility', 'hidden');
-  $('#cg').setAttribute('transform', `translate(${snap(c.x)},${snap(c.y)})`);
+  if (lowMo()) $('#cg').setAttribute('transform', VT(c.x, c.y));
   const Ev = envOf(G); $('#cg').setAttribute('opacity', Ev.clutter && Math.floor(G.t/3) % 4 === 0 ? .25 : G.sc.E === 'fog' ? .75 : 1);
   setTxt('#clabel', 'K-7' + (vesselKnown(G) ? ' · ' + C.vessel.name : ''));
   const pp = probs(G), bb = best(pp), sure = !blind(G) && G.findings.length && pp[bb] >= 0.75;
@@ -1610,8 +1858,8 @@ function frame(){
   $('#cshape').setAttribute('fill', col); $('#ctagb').setAttribute('fill', col);
   setTxt('#ctag', sym === 'unknown' ? '?' : sym === 'hostile' ? 'H' : 'N');
   for (const k in UNITS){ const u = G.units[k], l = $('#ul-'+k);
-    $('#ug-'+k).setAttribute('transform', `translate(${snap(u.x)},${snap(u.y)})`);
-    if (u.st === 'out'){ l.setAttribute('x1', u.x); l.setAttribute('y1', u.y); l.setAttribute('x2', c.x); l.setAttribute('y2', c.y); l.setAttribute('visibility', 'visible'); }
+    if (lowMo()) $('#ug-'+k).setAttribute('transform', VT(u.x, u.y));
+    if (u.st === 'out'){ const a = V(u.x, u.y), b = V(c.x, c.y); l.setAttribute('x1', a.x); l.setAttribute('y1', a.y); l.setAttribute('x2', b.x); l.setAttribute('y2', b.y); l.setAttribute('visibility', 'visible'); }
     else l.setAttribute('visibility', 'hidden');
   }
   const sIn = G.sc.hitT - G.t, bIn = (BORDER_X - c.x)/10;
@@ -1669,11 +1917,11 @@ function renderPanel(){
   if (G.tab === 'look'){
     const ds = G.units.drone.st, E = envOf(G), fo = facesOK(G), gr = E.drone === 'grounded';
     h += `<div class="acts">
-      ${actBtn('task','track','track','Replay track', E.clutter ? 'Radar + AIS · fuzzy in the skerries · 2 min' : 'Match radar with AIS history · 2 min', lock || G.done.track, G.done.track)}
-      ${actBtn('task','drift','drift','Drift check','Power, or drifting with wind and current? · 2 min', lock || G.done.drift, G.done.drift)}
-      ${actBtn('task','hail','radio','Call on ch. 16','Hail the vessel by radio · 3 min', lock || G.done.hail, G.done.hail)}
+      ${actBtn('task','track','track','Replay track', E.clutter ? 'Radar + AIS · fuzzy in the skerries · '+taskMin('track')+' min' : 'Match radar with AIS history · '+taskMin('track')+' min', lock || G.done.track, G.done.track)}
+      ${actBtn('task','drift','drift','Drift check','Power, or drifting with wind and current? · '+taskMin('drift')+' min', lock || G.done.drift, G.done.drift)}
+      ${actBtn('task','hail','radio','Call on ch. 16','Hail the vessel by radio · '+taskMin('hail')+' min', lock || G.done.hail, G.done.hail)}
       ${actBtn('drone','drone','drone','Send drone', gr ? 'Grounded: wind too strong' : ds==='out' ? 'On its way…' : G.done.drone ? (fo ? 'Video live' : 'Heat image only') : (fo ? 'Live video' : 'Thermal only, no faces') + ' · long flight', G.closed || gr || ds!=='base' || G.done.drone, G.done.drone, ds==='out'?'go':'')}
-      ${E.cams ? actBtn('task','cams','cam','Port cameras','Harbour-mouth footage · 2 min', lock || G.done.cams, G.done.cams) : ''}
+      ${E.cams ? actBtn('task','cams','cam','Port cameras','Harbour-mouth footage · '+taskMin('cams')+' min', lock || G.done.cams, G.done.cams) : ''}
       ${actBtn('tab','people','id','Face match', !fo ? 'No faces in these conditions' : G.done.drone ? 'Open People tab' : 'Needs the drone first', !fo || !G.done.drone, G.done.face)}
     </div>`;
     h += latticeCard(G);
@@ -1686,14 +1934,14 @@ function renderPanel(){
        <div class="kv2"><span><small>Name</small><b>${esc(v.name)}</b></span><span><small>Type</small>${esc(v.type)}</span><span><small>Flag</small>${esc(v.flag)}</span>
        <span><small>MMSI</small>${esc(v.mmsi)}</span><span><small>Owner</small>${esc(v.owner)}</span><span><small>Last port</small>${esc(v.port)}</span></div>
        <span class="src" style="margin-top:6px">Source: AIS history · ${G.done.track ? hhmm(G.findings.find(f=>f.key==='track')?.t||0) : 'drone'}. Claimed data until checked.</span></div>`;
-      h += `<div class="acts">${actBtn('task','registry','search','Registry check','Is the identity real? · 2 min', lock || G.done.registry, G.done.registry, 'wide')}</div>`;
-      h += `<div class="card"><div class="lbl"><span>Link graph · search around</span><span>tap ＋ · 1 min</span></div>${graphSVG(G)}</div>`;
+      h += `<div class="acts">${actBtn('task','registry','search','Registry check','Is the identity real? · '+taskMin('registry')+' min', lock || G.done.registry, G.done.registry, 'wide')}</div>`;
+      h += `<div class="card"><div class="lbl"><span>Link graph · search around</span><span>tap ＋ · ${taskMin('expand')} min</span></div>${graphSVG(G)}</div>`;
     }
   }
   if (G.tab === 'people'){
     if (!facesOK(G)) h += `<div class="card"><div class="lbl"><span>People on board</span><span>${I(envOf(G).ic,12)} ${esc(envOf(G).name)}</span></div><p>No faces in these conditions: ${envOf(G).drone === 'grounded' ? 'the drone cannot fly in this wind' : envOf(G).drone === 'fog' ? 'the fog hides them' : 'it is dark, and thermal shows heat, not faces'}.</p><p class="mute sm" style="margin-top:6px">Build the case from how it moves, what they say on the radio, the registry and the link graph.</p></div>`;
     else if (!G.done.drone) h += `<div class="card"><p class="mute">No faces yet. ${G.done.droneSent ? 'The drone is on its way.' : 'Send the drone (Look tab) to get video of the people on board.'}</p></div>`;
-    else if (!G.done.face) h += `<div class="acts">${actBtn('task','face','people','Run face match','Drone video vs. national ID photos · 2 min', lock, false, 'wide')}</div>`;
+    else if (!G.done.face) h += `<div class="acts">${actBtn('task','face','people','Run face match','Drone video vs. national ID photos · '+taskMin('face')+' min', lock, false, 'wide')}</div>`;
     else {
       h += `<div class="card"><div class="lbl"><span>People on board</span><span>${G.unlocked ? (G.override ? '<span class="no">records: override</span>' : '<span class="ok">records: logged access</span>') : I('lock',12)+' records restricted'}</span></div><div style="display:flex;flex-direction:column;gap:8px">${C.people.map((p,i) => personRow(G,p,i)).join('')}</div></div>`;
       h += `<p class="mute sm">Face matching is an outside tool with its own error rate. A match is a lead, not a fact: you decide whether to link it to a person record.</p>`;
@@ -1793,7 +2041,7 @@ function renderModal(){
      <li><span><b>Identify the vessel</b>: registry check, then search around its owner.</span></li>
      <li><span><b>Identify people</b> when the drone can see faces, then <b>vet</b> records with a stated purpose.</span></li>
      <li><span><b>Decide</b>: rescue, board, shadow or let it pass.</span></li></ol>
-    <p class="mute sm">Weather and light decide which tools work. Every check costs minutes. 1 s = 1 min. Space pauses.</p>
+    <p class="mute sm">Weather and light decide which tools work. Time only moves when you act. You have a ${budget(G)}-minute watch: every check and every drone flight spends minutes from it. When it runs out you must decide.</p>
     <div class="row"><button class="btn pri" data-act="close">${m.type==='alert' ? 'Open the case' : 'Back'}</button></div>`;
   if (m.type === 'idcards'){
     const ppl = C.people.map((p,i) => i).filter(i => !C.people[i].crowd), k = Math.max(0, ppl.indexOf(m.i)), i = ppl[k] ?? ppl[0];
@@ -1804,7 +2052,7 @@ function renderModal(){
   }
   if (m.type === 'unlock') h = `<h2>${I('lock',18)} Restricted records</h2>
     <p>Police records carry an access marking. To open them you must state why. The request and your purpose go into the audit log that oversight reviews.</p>
-    <button class="btn choice" data-act="unlockLogged" data-i="${m.i}" ${G.busy?'disabled':''}><b>Purpose: case ${CASE_NO}, border incident K-7</b><small>Logged · 1 min</small></button>
+    <button class="btn choice" data-act="unlockLogged" data-i="${m.i}" ${G.busy?'disabled':''}><b>Purpose: case ${CASE_NO}, border incident K-7</b><small>Logged · ${taskMin('unlock')} min</small></button>
     <button class="btn choice red" data-act="unlockOverride" data-i="${m.i}"><b>Use admin override</b><small>Instant, no purpose stated. Flagged in the audit.</small></button>
     ${G.busy ? '<p class="wn sm">The analyst is busy. Wait for the current task to finish.</p>' : ''}
     <div class="row"><button class="btn" data-act="cancel">Cancel</button></div>`;
@@ -1819,11 +2067,11 @@ function renderModal(){
   }
   if (m.type === 'decide'){
     const p = probs(G);
-    h = `<h2>Decide</h2><p class="mute sm">One decision. ${blind(G) ? 'No assessment at this clearance.' : `Lattice says: <b style="color:${HC[best(p)]}">${HN[best(p)]} ${Math.round(p[best(p)]*100)}%</b>`} from ${G.findings.length} piece${G.findings.length===1?'':'s'} of evidence.</p>
+    h = `<h2>Decide</h2>${m.forced ? '<p class="wn sm"><b>Your watch time is up.</b> Make the call now.</p>' : ''}<p class="mute sm">One decision. ${blind(G) ? 'No assessment at this clearance.' : `Lattice says: <b style="color:${HC[best(p)]}">${HN[best(p)]} ${Math.round(p[best(p)]*100)}%</b>`} from ${G.findings.length} piece${G.findings.length===1?'':'s'} of evidence.</p>
       ${Object.keys(DEC).map(k => `<button class="btn choice ${m.d===k?'on':''}" data-act="pickD" data-d="${k}"><b>${I(DEC[k].icon)} ${DEC[k].name}</b> <span class="mute">· ${DEC[k].sub}</span><small>${DEC[k].text}</small></button>`).join('')}
       ${m.d === 'board' ? `<div class="lbl" style="margin-top:12px"><span>Legal basis</span></div>${Object.keys(BASIS).map(k => `<button class="btn choice ${m.b===k?'on':''}" data-act="pickB" data-b="${k}"><b>${BASIS[k].name}</b><small>${BASIS[k].sub}</small></button>`).join('')}` : ''}
       ${!G.findings.length ? '<p class="wn sm">You haven’t gathered any evidence yet.</p>' : ''}
-      <div class="row"><button class="btn" data-act="cancel">Not yet</button><button class="btn pri hold" data-act="decide" ${!m.d || (m.d==='board' && !m.b) ? 'disabled' : ''}><span>${m.d ? 'Hold to confirm: '+DEC[m.d].name : 'Pick an action'}</span></button></div>`;
+      <div class="row">${m.forced ? '' : '<button class="btn" data-act="cancel">Not yet</button>'}<button class="btn pri hold" data-act="decide" ${!m.d || (m.d==='board' && !m.b) ? 'disabled' : ''}><span>${m.d ? 'Hold to confirm: '+DEC[m.d].name : 'Pick an action'}</span></button></div>`;
   }
   if (m.type === 'achs') h = `<h2>${I('check',18)} Badges</h2>${Object.keys(ACH).map(id => `<div class="ach" style="${CR.ach[id]?'':'opacity:.45'}">${CR.ach[id]?I('check',14):I('lock',14)}<span><b>${ACH[id][0]}</b> · ${ACH[id][1]}${CR.ach[id]?` <span class="mute">${CR.ach[id]}</span>`:''}</span></div>`).join('')}<div class="row"><button class="btn" data-act="cancel">Close</button></div>`;
   if (m.type === 'reset') h = `<h2>Start over?</h2><p><b>Reset case</b> deletes this case only. <b>Reset everything</b> also wipes your rank, clearances, archive and badges.</p>
@@ -1911,7 +2159,7 @@ function endHTML(){
    <div class="card"><div class="lbl"><span>The lesson</span></div><p>${lesson}</p></div>
    <div class="card"><div class="lbl"><span>Audit log (what oversight sees)</span></div><div class="audit">${G.audit.map(a => `<div class="${/OVERRIDE/.test(a.m)?'no':''}">${hhmm(a.t)} ${esc(a.m)}</div>`).join('')}</div></div>
    ${careerCard(G)}
-   <div style="display:flex;gap:8px"><button class="btn pri" data-act="newRun">New case</button>${G.daily ? `<button class="btn" data-act="copy" data-day="${G.daily}" id="copyb">Share result</button>` : '<button class="btn" data-act="replay">Replay seed</button>'}</div>
+   <div class="endbar"><button class="btn pri big" data-act="newRun">${I('play',18)} New case</button>${G.daily ? `<button class="btn" data-act="copy" data-day="${G.daily}" id="copyb">Share result</button>` : '<button class="btn" data-act="replay">Replay seed</button>'}</div>
    ${G.daily && G.shareOpen ? `<textarea class="share" readonly aria-label="Share text">${esc(shareText(G.daily))}</textarea>` : ''}
    ${sessionCases >= 3 && sessionCases % 3 === 0 ? '<p class="mute sm" style="text-align:center">Good place to stop: your career and archive are saved.</p>' : ''}
   </div>`;
@@ -1966,7 +2214,7 @@ document.addEventListener('keydown', e => {
   if (!GS) return;
   if (e.target.tagName === 'INPUT'){ if (e.key === 'Enter' && GS.phase === 'title') act('start', {seed:e.target.value}); return; }
   if (GS.phase !== 'play') return;
-  if (e.key === ' '){ e.preventDefault(); if (!GS.modal) act('pause'); }
+
   if (e.key === 'Escape' && GS.modal) act(['alert','help','idcards'].includes(GS.modal.type) ? 'close' : 'cancel');
 });
 let ticks = 0;
@@ -1974,11 +2222,13 @@ addEventListener('visibilitychange', () => { if (document.hidden && GS) save(); 
 addEventListener('pagehide', () => { if (GS) save(); });
 setInterval(() => {
   if (!GS || GS.phase !== 'play') return;
-  if (!GS.paused && !GS.modal){
-    const n = GS.closed ? 15 : GS.speed;
+  if (!GS.paused && !GS.modal && acting(GS)){
+    const n = GS.closed ? 15 : GS.speed * 2;
+    AN.prev = {}; for (const k in GS.units) AN.prev[k] = {x:GS.units[k].x, y:GS.units[k].y}; AN.last = performance.now(); AN.rate = n*0.1;
     for (let i=0; i<n && GS.phase === 'play'; i++) step(0.1);
     if (GS.phase === 'end'){ save(); render(); return; }
-  }
+  } else { AN.rate = 0; AN.prev = {}; for (const k in GS.units) AN.prev[k] = {x:GS.units[k].x, y:GS.units[k].y};
+    if (!GS.paused && !GS.modal && !GS.closed && !GS.res && timeLeft(GS) < 0.05){ GS.modal = {type:'decide', d:null, b:null, forced:true}; tick('Watch time is up. Decide now.'); renderModal(); } }
   frame();
   if (++ticks % 20 === 0) save();
 }, 100);
