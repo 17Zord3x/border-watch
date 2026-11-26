@@ -2212,13 +2212,15 @@ function debriefExtra(G, sc, p, lb){
   else if (good && J < 45) luck = `<p class="sm" style="margin-top:6px"><span class="flag warn">lucky</span> It worked out, but your evidence didn’t support this call.</p>`;
   const nextG = 'FDCBA'['FDCBA'.indexOf(sc.grade)+1];
   const gap = nextG ? GRADE_MIN[nextG] - sc.s : 0;
-  const cf = Object.keys(DEC).map(k => `<div class="${G.decision===k?'you':''} ${PAY[k][G.truth]===100?'best':''}"><b>${letter(PAY[k][G.truth])}</b>${DEC[k].name}${G.decision===k?' · you':''}</div>`).join('');
   const miss = missedClue(G);
   return `<div class="card"><div class="lbl"><span>Your read of the evidence</span><span>${G.findings.length} clues</span></div>
     <p>${G.findings.length ? `Your evidence pointed to <b style="color:${HC[lb]}">${HN[lb]} at ${Math.round(p[lb]*100)}%</b>.` : `You decided with no evidence, on the base rate alone.`} The truth was <b style="color:${HC[G.truth]}">${HN[G.truth]}</b>.</p>${luck}
     ${gap ? `<p class="mute sm" style="margin-top:6px">${gap} point${gap>1?'s':''} short of ${nextG}.</p>` : ''}
-    ${miss ? `<div class="ev" style="margin-top:10px;border-color:var(--amber)"><b>Missed: ${esc(miss.tool)}</b><span>${esc(miss.title)}</span></div>` : '<p class="mute sm" style="margin-top:6px">You found every telling clue.</p>'}</div>
-   <div class="card"><div class="lbl"><span>How each call would have ended</span></div><div class="cf">${cf}</div></div>`;
+    ${miss ? `<div class="ev" style="margin-top:10px;border-color:var(--amber)"><b>Missed: ${esc(miss.tool)}</b><span>${esc(miss.title)}</span></div>` : '<p class="mute sm" style="margin-top:6px">You found every telling clue.</p>'}</div>`;
+}
+function callsCard(G){
+  const cf = Object.keys(DEC).map(k => `<div class="${G.decision===k?'you':''} ${PAY[k][G.truth]===100?'best':''}"><b>${letter(PAY[k][G.truth])}</b>${DEC[k].name}${G.decision===k?' · you':''}</div>`).join('');
+  return `<div class="card"><div class="lbl"><span>How each call would have ended</span></div><div class="cf">${cf}</div></div>`;
 }
 function careerCard(G){
   const M = G.meta; if (!M) return '';
@@ -2236,6 +2238,8 @@ function endHTML(){
   const fp = C.people.map((x,i) => ({x,i})).filter(o => !o.x.crowd);
   return `${CLASSBAR}<div class="end">
    <div class="hero ${o.g?'good':'bad'}"><div class="grade ${o.g?'ok':'no'}">${sc.grade}</div><h1>${esc(head)}</h1></div>
+   ${callsCard(G)}
+   <div class="card"><div class="lbl"><span>Score</span><span>${sc.s}/100</span></div><div class="sc">${sc.L.map(l => `<div><span>${esc(l[0])}</span><b class="${l[1]>0?'ok':l[1]<0?'no':'mute'}">${l[1]>0?'+':''}${l[1]}</b></div>`).join('')}</div></div>
    <div class="card"><div class="lbl"><span>Your decision</span><span>${hhmm(G.decidedAt ?? G.res.t)}</span></div>
     <div class="verdict">${G.decision ? I(DEC[G.decision].icon,18)+' '+DEC[G.decision].name : 'None'}</div>
     ${G.decision === 'board' ? `<p class="sm" style="margin-top:4px">Legal basis: ${esc(BASIS[G.basis].name)} — ${G.basisOK ? '<span class="ok">valid</span>' : '<span class="no">not valid</span>'}</p>` : ''}
@@ -2249,7 +2253,6 @@ function endHTML(){
     ${fp.map(({x,i}) => `<div class="ev" style="border-color:${x.same?'var(--green)':'var(--red)'}"><b>${esc(x.n)} · ${x.m}% match → ${x.same ? 'really them' : 'NOT them'}</b>
       <span>You ${G.ids[i]==='yes'?'confirmed':G.ids[i]==='no'?'rejected':'never resolved'} this match. ${((G.ids[i]==='yes')===x.same && G.ids[i]) ? '<span class="ok">✓</span>' : G.ids[i] ? '<span class="no">✗</span>' : ''} ${x.truthNote ? esc(x.truthNote) : ''}</span></div>`).join('')}</div>`}
    ${debriefExtra(G, sc, p, lb)}
-   <div class="card"><div class="lbl"><span>Score</span><span>${sc.s}/100</span></div><div class="sc">${sc.L.map(l => `<div><span>${esc(l[0])}</span><b class="${l[1]>0?'ok':l[1]<0?'no':'mute'}">${l[1]>0?'+':''}${l[1]}</b></div>`).join('')}</div></div>
    <div class="card"><div class="lbl"><span>The lesson</span></div><p>${lesson}</p></div>
    <div class="card"><div class="lbl"><span>Audit log (what oversight sees)</span></div><div class="audit">${G.audit.map(a => `<div class="${/OVERRIDE/.test(a.m)?'no':''}">${hhmm(a.t)} ${esc(a.m)}</div>`).join('')}</div></div>
    ${careerCard(G)}
