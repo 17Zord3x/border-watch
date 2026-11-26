@@ -621,6 +621,7 @@ svg.graph text{font-family:"Watchkeeper",monospace!important;font-size:16px}
 html.lowfx .clock.run{animation:none}
 @media(max-width:760px){.clock small{font-size:9px!important}}
 </style>
+<script data-goatcounter="https://zord3x.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </head>
 <body>
 <div id="app"></div>
@@ -1330,9 +1331,9 @@ function basisValid(G, b){
 // ---------- actions ----------
 const H = {
   rnd(){ H.start({new:1}); },
-  start(d){ GS = freshState(d.new ? randomSeed() : ((d.seed || '').trim().toUpperCase().slice(0,24) || randomSeed()), CR.sel); tone(440,.12,'triangle'); },
+  start(d){ GS = freshState(d.new ? randomSeed() : ((d.seed || '').trim().toUpperCase().slice(0,24) || randomSeed()), CR.sel); tone(440,.12,'triangle'); gcEvent('case-start'); },
   daily(d){ const day = (d && d.day) || today(), arch = day !== today(); if (!arch && CR.daily[day]) return; const seed = 'DAILY-'+day;
-    GS = freshState(seed, 2, arch ? null : day); GS.arch = arch ? day : null; tone(440,.12,'triangle'); },
+    GS = freshState(seed, 2, arch ? null : day); GS.arch = arch ? day : null; tone(440,.12,'triangle'); gcEvent(arch ? 'case-start-archive' : 'case-start-daily'); },
   lvl(d){ const n = +d.n; if (n >= 1 && n <= CR.lvlMax){ CR.sel = n; saveCareer(); } },
   sound(){ CR.sound = !CR.sound; saveCareer(); if (CR.sound) tone(660,.1); },
   fx(){ CR.lowfx = !CR.lowfx; saveCareer(); applyFx(); },
@@ -1372,7 +1373,7 @@ const H = {
   decide(){
     const G = GS, m = G.modal, d = m.d; if (!d || (d === 'board' && !m.b)) return;
     G.modal = null; G.decision = d; G.basis = m.b; G.basisOK = d === 'board' ? basisValid(G, m.b) : null;
-    G.decidedAt = G.t; G.closed = true; G.paused = false; G.busy = null; G.tab = 'case'; G.judge = judgement(G, d); tone(110,.35,'sine',.2); buzz(30);
+    G.decidedAt = G.t; G.closed = true; G.paused = false; G.busy = null; G.tab = 'case'; G.judge = judgement(G, d); tone(110,.35,'sine',.2); buzz(30); gcEvent('case-decided');
     audit('DECISION: '+DEC[d].name + (m.b ? ' · basis: '+BASIS[m.b].name : ''));
     if (d === 'rescue'){ for (const k of ['heli','lifeboat']) if (G.units[k].st === 'base') G.units[k].st = 'out'; tick('Helicopter and lifeboat launched.'); }
     if (d === 'board' || d === 'shadow'){ G.units.cutter.st = 'out'; tick('Patrol cutter launched.'); }
@@ -1428,6 +1429,7 @@ function casesHTML(){
   <div class="row" style="margin-top:10px"><button class="btn" data-act="rnd" style="flex:1">New random case</button></div>`;
 }
 let moreOpen = typeof matchMedia === 'function' ? !matchMedia('(max-width:760px)').matches : true;
+function gcEvent(p){ try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({path:p, title:p, event:true}); } catch(e){} }
 function goBar(){
   const dr = CR.daily[today()];
   return `<div class="go">${dr ? `<button class="btn pri big" data-act="rnd">${I('play',18)} Play a new case</button>` : `<button class="btn pri big" data-act="daily">${I('play',18)} Play today’s brief</button>`}</div>`;
@@ -1446,6 +1448,7 @@ function titleHTML(){
   <div class="seedrow" style="display:block"><label for="seed">Scenario seed · same seed, same case</label><div style="display:flex;gap:6px;margin-top:6px"><input id="seed" value="${esc(GS.seed || 'NIGHT-01')}" maxlength="24"><button class="btn pri" data-act="start" style="flex:none">Open case</button></div></div>
   <p class="mute" style="font-size:12.5px">The seed decides what really happened. Everything is fictional. Works offline.</p>
   </details>
+  <p class="mute xs" style="margin-top:10px">Anonymous visit counts via GoatCounter: no cookies, no personal data.</p>
   ${storageOK ? '' : '<p class="no" style="font-size:13px">Storage is off: progress won’t be saved.</p>'}
   </div>${goBar()}</div></div></div>`;
 }
