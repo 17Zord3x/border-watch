@@ -653,6 +653,12 @@ body.authon{overflow:hidden}
 .alog{list-style:none;margin:6px 0;padding:0;max-height:38vh;overflow-y:auto}
 .alog li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line2);font-size:14px}
 .alog time{color:var(--dim);white-space:nowrap}
+.intel{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.intel span{display:flex;align-items:center;gap:3px;padding:3px 6px;border:1px solid var(--line2);border-radius:3px;font-size:12px;color:var(--dim)}
+.intel span.on{color:var(--ink,#e8eef4);border-color:var(--cyan,#5fd3e6)}.intel b{font-weight:600;margin-right:3px;text-transform:uppercase;letter-spacing:.04em}
+.intel i{width:7px;height:7px;border:1px solid currentColor;display:inline-block}.intel i.f{background:var(--cyan,#5fd3e6);border-color:var(--cyan,#5fd3e6)}
+.escm{margin-top:8px;font-size:13px}.escm>span:first-child{display:block}.escm .bar{position:relative;display:block;height:6px;background:rgba(255,255,255,.08);margin:4px 0}
+.escm .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--amber)}.escm.hot .bar i{background:var(--red,#ff6a5a)}.escm .bar em{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--dim)}
+.escm small{display:block;color:var(--dim)}.escm.hot>span:first-child b{color:var(--red,#ff6a5a)}
 </style>
 <script data-goatcounter="https://zord3x.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </head>
@@ -796,9 +802,9 @@ function saveCareer(){ try { localStorage.setItem(CAREER, JSON.stringify(CR)); }
 const LEVELS = [null,
   {rule:'Standard watch. Lattice shows its assessment.'},
   {rule:'+ The storm front moves 15% faster.'},
-  {rule:'+ Every analyst task takes 2 minutes longer.'},
+  {rule:'+ Every analyst task takes 2 minutes longer. 22-minute watch.'},
   {rule:'+ No Lattice assessment: you weigh the evidence yourself.'},
-  {rule:'+ Only 18 minutes of watch time.'}];
+  {rule:'+ Only 16 minutes of watch time.'}];
 // payoff of each decision against each truth, 0–100 (from the design report's matrix)
 const PAY = { rescue:{D:100,S:30,L:50}, board:{D:55,S:100,L:35}, shadow:{D:25,S:60,L:70}, pass:{D:0,S:5,L:100} };
 const letter = s => s >= 85 ? 'A' : s >= 70 ? 'B' : s >= 50 ? 'C' : s >= 30 ? 'D' : 'F';
@@ -1192,7 +1198,7 @@ function freshState(seed, lvl=1, daily=null){
   const G = { v:6, seed, phase:'play', t:0, speed:1, paused:true, truth, sc, units:{}, busy:null, done:{},
     findings:[], ticker:[], audit:[], graph:['v'], ids:{}, unlocked:false, override:false,
     decision:null, basis:null, closed:false, saved:0, res:null, stopT:null, sunk:false, trail:[],
-    tab:'look', seen:{}, modal:{type:'alert'}, lvl, daily, prepos:{}, spent:{}, alerted:null, mayAsk:false, may:null };
+    tab:'look', seen:{}, modal:{type:'alert'}, lvl, daily, prepos:{}, spent:{}, alerted:null, esc:0, escLog:[], mayAsk:false, may:null, mayV:null };
   for (const k in UNITS){ const b = BASES[UNITS[k].base]; G.units[k] = {st:'base', x:b.x+UNITS[k].off, y:b.y}; }
   let t = 0; if (Env.storm) while (t < 200 && stormX(G,t) < cpos(G,t).x) t += 0.1; else t = 200;
   sc.hitT = +t.toFixed(1);
@@ -1228,14 +1234,25 @@ function trafficPos(s, t){ let x = s.x0 + s.v*t; x = 120 + ((x-120) % 600 + 600)
 // ---------- evidence ----------
 function probs(G){
   const p = {...envOf(G).prior};
-  for (const f of G.findings) if (f.w) HK.forEach((k,i) => p[k] *= f.w[i]);
+  for (const f of G.findings) if (f.w) HK.forEach((k,i) => p[k] *= Math.pow(f.w[i], f.dm ?? 1));
   const s = p.D+p.S+p.L; HK.forEach(k => p[k] /= s); return p;
 }
 function best(p){ return HK.reduce((a,b) => p[b] > p[a] ? b : a, 'D'); }
+// intel domains (HoI4-style): a second or third source in the same domain tells you less
+const DOMS = {K:'Movement', C:'Radio', I:'Identity', S:'Shore'};
+const domOf = k => /^(track|drift|drone)$/.test(k) ? 'K' : k === 'hail' ? 'C' : /^(cams|rec-)/.test(k) ? 'S' : 'I';
+const DIM = [1, 0.6, 0.35];
+function domCount(G){ const n = {K:0, C:0, I:0, S:0}; G.findings.forEach(f => { if (f.w) n[domOf(f.key)]++; }); return n; }
 function addFinding(key, title, text, w, src){
   if (GS.findings.some(f => f.key === key)) return;
-  GS.findings.unshift({key, t:GS.t, title, text, w, src}); tick(title);
+  const dm = w ? DIM[Math.min(2, domCount(GS)[domOf(key)])] : 1;
+  GS.findings.unshift({key, t:GS.t, title, text, w, src, dm}); tick(title);
 }
+// escalation (HoI4 world tension): smugglers react to how loudly you watch them
+function addEsc(n, why){ const G = GS, before = G.esc || 0; G.esc = Math.min(100, before + n); (G.escLog = G.escLog || []).push([why, n]); dirty = true;
+  if (G.truth === 'S' && !G.alerted){
+    if (before < 40 && G.esc >= 40 && mulberry(hash(G.seed + '#ESC'))() < 0.6) G.alerted = why;
+    if (G.esc >= 70) G.alerted = why; } }
 function hailResult(G){ return G.sc.C.hail; }
 function droneResult(G){
   const C = G.sc.C, m = envOf(G).drone;
@@ -1249,7 +1266,7 @@ function trackResult(G){
 }
 function taskMin(id){ return TASKS[id] + ((GS && GS.lvl >= 3) ? 2 : 0); }
 // turn-based time: the world only moves while an order is being carried out
-function budget(G){ return G.lvl >= 5 ? 18 : 24; }
+function budget(G){ return G.lvl >= 5 ? 16 : G.lvl >= 3 ? 22 : 24; }
 function timeLeft(G){ return Math.max(0, budget(G) - G.t); }
 function acting(G){ return G.closed || !!G.res || !!G.busy || Object.values(G.units).some(u => u.st === 'out' || (u.st === 'hold' && !u.held)); }
 const spent = (G, k) => !!(G.spent && G.spent[k]);
@@ -1266,13 +1283,14 @@ function finishTask(b){
   if (b.id === 'track'){ G.done.track = true; const r = trackResult(G); addFinding('track', r[0], r[1], r[2], 'Radar + AIS history'); G.badge = 'vessel'; }
   if (b.id === 'drift'){ G.done.drift = true; addFinding('drift', C.drift[0], C.drift[1], C.drift[2], 'Drift model · wind + current'); }
   if (b.id === 'cams'){ G.done.cams = true; addFinding('cams', C.cams[0], C.cams[1], C.cams[2], 'Port cameras'); }
-  if (b.id === 'hail'){ G.done.hail = true; const r = hailResult(G); addFinding('hail', r[0], r[1], r[2], 'VHF channel 16'); if (G.truth === 'S' && !G.alerted) G.alerted = 'radio'; }
+  if (b.id === 'hail'){ G.done.hail = true; const r = hailResult(G); addFinding('hail', r[0], r[1], r[2], 'VHF channel 16'); addEsc(35, 'your radio call'); }
   if (b.id === 'registry'){ G.done.registry = true; addFinding('registry', C.registry[0], C.registry[1], C.registry[2], 'Ship registry'); }
   if (b.id === 'expand'){
     G.graph.push(...C.graph.filter(n => n.parent === b.arg && !G.graph.includes(n.id)).map(n => n.id));
     for (const n of C.graph.filter(n => n.parent === b.arg)) if (n.w) addFinding('g-'+n.id, n.label, n.text, n.w, 'Search around · '+C.graph.find(x=>x.id===b.arg).label);
   }
   if (b.id === 'face'){ G.done.face = true; tick('Face match done: '+C.people.filter(p=>!p.crowd).length+' possible identities.'); G.modal = {type:'idcards', i:0}; }
+  if (b.id === 'verify'){ const dc = domCount(G); G.mayV = dc.K && dc.C ? (G.sc.may.real ? 'real' : 'fake') : 'unsure'; G.modal = {type:'mayday'}; tick('Mayday check: '+(G.mayV === 'unsure' ? 'inconclusive' : G.mayV === 'real' ? 'genuine call' : 'looks like a decoy')+'.'); }
   if (b.id === 'unlock'){ G.unlocked = true; tick('Police records unlocked for case '+CASE_NO+'.'); applyRecords(); if (b.arg != null) G.modal = {type:'idcards', i:+b.arg}; }
   dirty = true;
 }
@@ -1316,7 +1334,7 @@ function moveUnit(k, dt, c){
     const hx = c.x + (U.air ? 30 : 55), hy = c.y + (U.air ? -42 : k === 'cutter' ? 34 : -34);
     if (mv(u, hx, hy, U.speed*dt*(!U.air && envOf(G).slow ? envOf(G).slow : 1)) && !u.held){
       u.held = G.t || 0.01; dirty = true; tick(U.name+' on station near K-7.');
-      if (k === 'heli' && G.truth === 'S' && !G.alerted) G.alerted = 'heli'; }
+      if (k === 'heli' && !G.closed) addEsc(25, 'the helicopter overhead'); }
     if (U.air && u.held && G.t - u.held >= HOLD_FUEL){ u.st = 'ret'; u.held = 0; G.spent[k] = true; tick('Helicopter: fuel low, returning to base. It can’t fly again this watch.'); }
     return; }
   if (u.st === 'away'){ if (mv(u, 830, -70, U.speed*dt)) u.st = 'gone'; return; }
@@ -1336,7 +1354,7 @@ function moveUnit(k, dt, c){
 function mv(u, x, y, d){ const dx = x-u.x, dy = y-u.y, L = Math.hypot(dx,dy); if (L <= d + 2){ u.x = x; u.y = y; return true; } u.x += dx/L*d; u.y += dy/L*d; return false; }
 function arrive(k){
   const G = GS, T = G.truth, u = G.units[k], s = G.sc; dirty = true;
-  if (k === 'drone'){ G.done.drone = true; const r = droneResult(G), f = facesOK(G); addFinding('drone', r[0], r[1], r[2], f ? 'Drone video' : 'Drone thermal camera'); tick(f ? 'Drone over K-7. Faces visible: run a face match (People tab).' : 'Drone over K-7. '+(envOf(G).drone === 'fog' ? 'Fog: only faint heat shapes.' : 'Dark: heat shapes only, no faces.')); if (f) G.badge = 'people'; return; }
+  if (k === 'drone'){ G.done.drone = true; addEsc(20, 'the drone overhead'); const r = droneResult(G), f = facesOK(G); addFinding('drone', r[0], r[1], r[2], f ? 'Drone video' : 'Drone thermal camera'); tick(f ? 'Drone over K-7. Faces visible: run a face match (People tab).' : 'Drone over K-7. '+(envOf(G).drone === 'fog' ? 'Fog: only faint heat shapes.' : 'Dark: heat shapes only, no faces.')); if (f) G.badge = 'people'; return; }
   if (k === 'heli'){
     if (T === 'D' && !G.sunk && !G.res){ u.st = 'hoist'; tick('Helicopter is winching people up.'); }
     else { u.st = 'ret'; tick(T === 'S' ? 'Helicopter: the speedboat ignores us.' : T === 'L' ? 'Helicopter: nobody needs rescue.' : 'Helicopter: too late.'); }
@@ -1412,6 +1430,7 @@ const H = {
   deploy(d){ const G = GS, k = d.id, u = G.units[k]; if (G.closed || !['heli','cutter','lifeboat'].includes(k) || !u || u.st !== 'base' || spent(G, k)) return;
     u.st = 'hold'; u.held = 0; G.prepos = G.prepos || {}; G.prepos[k] = true; tick(UNITS[k].name+' ordered out to hold near K-7.'); audit('ORDER: '+UNITS[k].name.toLowerCase()+' to hold near K-7'); buzz(20); },
   mayday(d){ const G = GS; if (G.may || !G.modal || G.modal.type !== 'mayday') return; G.spent = G.spent || {};
+    if (d.v === 'verify'){ if (G.mayV || G.busy || timeLeft(G) < 2) return; G.modal = null; G.busy = {id:'verify', start:G.t, end:+(G.t+2).toFixed(2), label:'Verify mayday call sign'}; audit('Verifying MAYDAY call sign ('+G.sc.may.boat+')'); return; }
     if (d.v === 'send' && G.units.lifeboat.st === 'base'){ G.units.lifeboat.st = 'away'; G.may = 'sent'; G.spent.lifeboat = true; tick('Lifeboat sent to the mayday. It is gone for this watch.'); audit('ORDER: lifeboat to MAYDAY relay ('+G.sc.may.boat+')'); }
     else { G.may = 'stay'; tick('Mayday passed to the next station, 40 minutes away.'); audit('MAYDAY relay ('+G.sc.may.boat+') logged, no unit sent'); }
     G.modal = null; },
@@ -1420,8 +1439,8 @@ const H = {
   confirm(d){ const i = +d.i, v = d.v; if (GS.closed) return; GS.ids[i] = v; audit((v==='yes'?'Confirmed':'Rejected')+' match: '+GS.sc.C.people[i].n); applyRecords(); },
   unlockAsk(d){ GS.modal = {type:'unlock', i:d.i}; },
   unlockLogged(d){ const G = GS; if (G.busy || tooDear(G, 'unlock')){ return; } G.modal = null; G.busy = {id:'unlock', arg:d.i, start:G.t, end:+(G.t+taskMin('unlock')).toFixed(2), label:'Records access'}; audit('Records access requested · purpose: case '+CASE_NO+' (border incident K-7)'); },
-  unlockOverride(d){ const G = GS; G.override = true; G.unlocked = true; audit('ADMIN OVERRIDE · records opened with no purpose stated'); tick('Records opened with an override. It will show in the audit.'); applyRecords(); G.modal = {type:'idcards', i:+(d.i||0)}; },
-  ask(){ if (GS.closed) return; GS.modal = {type:'decide', d:null, b:null}; },
+  unlockOverride(d){ const G = GS; if (!G.override) addEsc(15, 'the records override'); G.override = true; G.unlocked = true; audit('ADMIN OVERRIDE · records opened with no purpose stated'); tick('Records opened with an override. It will show in the audit.'); applyRecords(); G.modal = {type:'idcards', i:+(d.i||0)}; },
+  ask(){ if (GS.closed || (GS.busy && GS.busy.id === 'verify')) return; GS.modal = {type:'decide', d:null, b:null}; },
   pickD(d){ GS.modal.d = d.d; GS.modal.b = null; },
   pickB(d){ GS.modal.b = d.b; },
   decide(){
@@ -1952,7 +1971,7 @@ function nextHint(G){
   if (G.lvl >= 2) return `<b>${L} min of watch left.</b> You can’t run every check and orders are final. Spend minutes on what tells the three stories apart.`;
   if (L <= 4) return `<b>${L} min left:</b> make your call. Open the Decide tab.`;
   if (E.drone !== 'grounded' && !G.done.droneSent) return '<b>Launch first, think while it flies:</b> the drone needs about 15 minutes to get there, and your analyst can work in the meantime.' + (fo ? '' : ` <span class="mute">(${E.drone === 'fog' ? 'fog' : 'dark'}: heat only, no faces)</span>`);
-  if (G.findings.length >= 2) return `<b>${L} min left.</b> You can’t afford every check. Pick the one that best separates <i>in distress</i>, <i>criminal</i> and <i>legitimate</i>, or decide now. Careful: a radio call tells smugglers you’re watching.`;
+  if (G.findings.length >= 2) return `<b>${L} min left.</b> You can’t afford every check. Pick the one that best separates <i>in distress</i>, <i>criminal</i> and <i>legitimate</i>, or decide now. Careful: escalation of 40+ can tip smugglers off.`;
   if (!G.done.track) return '<b>Correlate:</b> replay the contact’s track to see which ship it might be.' + (E.clutter ? ' The skerries make it fuzzy.' : '') + ' <span class="mute">(Look tab)</span>';
   if (E.drone !== 'grounded' && !G.done.droneSent) return '<b>Get eyes on it:</b> send the drone now; it takes a while to fly out.' + (fo ? '' : ` <span class="mute">(${E.drone === 'fog' ? 'fog' : 'dark'}: heat only, no faces)</span>`);
   if (!G.done.drift) return '<b>How does it move?</b> A drift check shows whether it has power, or is just drifting. <span class="mute">(Look tab)</span>';
@@ -1985,8 +2004,8 @@ function renderPanel(){
     h += `<div class="acts">
       ${actBtn('task','track','track','Replay track', E.clutter ? 'Radar + AIS · fuzzy in the skerries · '+taskMin('track')+' min' : 'Match radar with AIS history · '+taskMin('track')+' min', lock || G.done.track, G.done.track)}
       ${actBtn('task','drift','drift','Drift check','Power, or drifting with wind and current? · '+taskMin('drift')+' min', lock || G.done.drift, G.done.drift)}
-      ${actBtn('task','hail','radio','Call on ch. 16','Hail by radio · they’ll know they’re watched · '+taskMin('hail')+' min', lock || G.done.hail, G.done.hail)}
-      ${actBtn('drone','drone','drone','Send drone', gr ? 'Grounded: wind too strong' : ds==='out' ? 'On its way…' : G.done.drone ? (fo ? 'Video live' : 'Heat image only') : (fo ? 'Live video' : 'Thermal only, no faces') + ' · long flight', G.closed || gr || ds!=='base' || G.done.drone, G.done.drone, ds==='out'?'go':'')}
+      ${actBtn('task','hail','radio','Call on ch. 16','Hail by radio · +35 escalation · '+taskMin('hail')+' min', lock || G.done.hail, G.done.hail)}
+      ${actBtn('drone','drone','drone','Send drone', gr ? 'Grounded: wind too strong' : ds==='out' ? 'On its way…' : G.done.drone ? (fo ? 'Video live' : 'Heat image only') : (fo ? 'Live video' : 'Thermal only, no faces') + ' · long flight · +20 escalation', G.closed || gr || ds!=='base' || G.done.drone, G.done.drone, ds==='out'?'go':'')}
       ${E.cams ? actBtn('task','cams','cam','Port cameras','Harbour-mouth footage · '+taskMin('cams')+' min', lock || G.done.cams, G.done.cams) : ''}
       ${actBtn('tab','people','id','Face match', !fo ? 'No faces in these conditions' : G.done.drone ? 'Open People tab' : 'Needs the drone first', !fo || !G.done.drone, G.done.face)}
     </div>`;
@@ -2106,7 +2125,7 @@ function renderModal(){
     <div class="opts">${Object.keys(DEC).map(k => `<div>${I(DEC[k].icon,14)}<b>${DEC[k].name}</b><span class="mute">${DEC[k].sub}</span></div>`).join('')}</div>` : `<ol class="steps">
      <li><span><b>You can’t check everything.</b> You have a ${budget(G)}-minute watch and the checks cost more than that. Pick the ones that tell the stories apart.</span></li>
      <li><span><b>Launch long jobs first.</b> The drone and your units keep moving while your analyst works.</span></li>
-     <li><span><b>Actions have side effects.</b> A radio call tells smugglers they’re being watched.</span></li>
+     <li><span><b>Actions have side effects.</b> A radio call (+35) and the drone overhead (+20) raise escalation. At 40 smugglers may notice; at 70 they always do.</span></li>
      <li><span><b>Orders are final.</b> A unit you send can’t be called back to base for another job this watch.</span></li>
      <li><span><b>Decide:</b> rescue, board, shadow or let it pass. Minutes left over earn points; a boat in trouble won’t wait.</span></li></ol>
     <p class="mute sm">Weather and light decide which tools work. Time only moves when you act. When the watch runs out you must decide.</p>`}
@@ -2146,6 +2165,8 @@ function renderModal(){
     <p class="sm" style="margin:10px 0">${M.looksReal ? 'The call came by DSC with a GPS position, and coast radio can hear the crew shouting in the background.' : 'Voice only, no position data, and the caller hung up when asked for the boat’s name.'}</p>
     <p class="mute sm">Only the lifeboat can reach it in time. If you send it, it is gone for the rest of this watch: if K-7 needs rescue, you will have only the helicopter.</p>
     <button class="btn choice" data-act="mayday" data-v="send" ${free ? '' : 'disabled'}><b>${I('buoy')} Send the lifeboat</b><small>${free ? 'Committed until the end of the watch' : 'The lifeboat is already committed to K-7'}</small></button>
+    ${G.mayV ? `<p class="sm ${G.mayV==='fake'?'no':G.mayV==='real'?'ok':'wn'}" style="margin:8px 0"><b>Verification:</b> ${G.mayV==='fake' ? 'Nobody by that name is registered, and the call came from near K-7’s course. It looks like a decoy.' : G.mayV==='real' ? 'Call sign checks out and the DSC position is consistent. The call is genuine.' : 'Inconclusive. You need a Movement fix and a radio contact with K-7 to cross-check the call.'}</p>`
+      : `<button class="btn choice" data-act="mayday" data-v="verify" ${timeLeft(G) >= 2 ? '' : 'disabled'}><b>${I('search')} Verify the call sign</b><small>2 min · only conclusive if you have a Movement check and a radio contact</small></button>`}
     <button class="btn choice" data-act="mayday" data-v="stay"><b>${I('eye')} Log it, stay on K-7</b><small>Passed to the next station, 40 minutes away.</small></button>`; }
   if (m.type === 'achs') h = `<h2>${I('check',18)} Badges</h2>${Object.keys(ACH).map(id => `<div class="ach" style="${CR.ach[id]?'':'opacity:.45'}">${CR.ach[id]?I('check',14):I('lock',14)}<span><b>${ACH[id][0]}</b> · ${ACH[id][1]}${CR.ach[id]?` <span class="mute">${CR.ach[id]}</span>`:''}</span></div>`).join('')}<div class="row"><button class="btn" data-act="cancel">Close</button></div>`;
   if (m.type === 'reset') h = `<h2>Start over?</h2><p><b>Reset case</b> deletes this case only. <b>Reset everything</b> also wipes your rank, clearances, archive and badges.</p>
@@ -2185,8 +2206,7 @@ function score(G){
   if (tb > 0){ s += tb; L.push(['Decided with '+Math.floor(left)+' min of watch left', tb]); }
   if (G.mayAsk && G.may){ const M = G.sc.may, v = G.may === 'sent' ? (M.real ? 8 : -3) : (M.real ? -12 : 5); s += v;
     L.push([G.may === 'sent' ? (M.real ? 'Mayday answered: the lifeboat pulled someone out' : 'Lifeboat sent to a false alarm') : (M.real ? 'Mayday ignored: it was real' : 'Mayday was a hoax: right to stay on K-7'), v]); }
-  if (G.truth === 'S' && G.alerted){ s -= 5; L.push([(G.alerted === 'radio' ? 'Your radio call' : 'The helicopter overhead')+' warned the smugglers', -5]); }
-  if (G.truth === 'L') Object.keys(G.prepos || {}).forEach(k => { s -= 4; L.push([UNITS[k].name+' tied up by a boat that needed nothing', -4]); });
+  if (G.truth === 'S' && G.alerted){ s -= 5; L.push([G.alerted.charAt(0).toUpperCase() + G.alerted.slice(1)+' pushed escalation to '+G.esc+' and warned the smugglers', -5]); }
   if (G.decision === 'board'){ const b = G.basisOK ? 5 : -15; s += b; L.push([G.basisOK ? 'Boarding had a valid legal basis' : 'Boarding had no valid legal basis', b]); }
   const needle = !!G.decision && againstOdds(envOf(G).prior, G.truth, PAY[G.decision][G.truth]);
   if (needle){ s += 8; L.push(['Against the odds: the less likely answer, called right', 8]); }
@@ -2268,14 +2288,22 @@ Object.assign(ICONS, {
   island:'<path d="M1 12.5c2-1 3.5-1 5 0s3 1 5 0 2.5-1 4 0M3 11l2-4 2 2 2-4 3 6"/>',
   drift:'<path d="M1.5 5c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 2.5-1.5 4 0M1.5 10c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 2.5-1.5 4 0"/><path d="M11 13.5h3.5V10"/>'
 });
+function intelHTML(G){
+  const dc = domCount(G), e = G.esc || 0;
+  return `<div class="intel">${Object.keys(DOMS).map(k => `<span class="${dc[k]?'on':''}"><b>${DOMS[k]}</b>${[0,1,2].map(i => `<i class="${dc[k]>i?'f':''}"></i>`).join('')}</span>`).join('')}</div>
+   <div class="escm ${e>=40?'hot':''}"><span>Escalation <b>${e}</b>/100</span><span class="bar"><i style="width:${e}%"></i><em style="left:40%"></em><em style="left:70%"></em></span><small>${(G.escLog||[]).length ? G.escLog.map(x => esc(x[0])+' +'+x[1]).join(' · ') : 'Quiet so far. Smugglers may notice at 40.'}</small></div>
+   <p class="mute xs">Domains: a 2nd source in the same domain counts 60%, a 3rd 35%. Spread your checks.</p>`;
+}
 function assessCard(G, p, n, keys, names, cols, base){
   const b = keys.reduce((a,k) => p[k] > p[a] ? k : a, keys[0]);
-  if (blind(G)) return `<div class="card"><div class="lbl"><span>Lattice assessment</span><span>${I('lock',12)} clearance 4</span></div><div class="mute sm">Assessment switched off at this clearance. You have ${n} piece${n===1?'':'s'} of evidence in the Case tab: weigh them yourself.</div></div>`;
+  if (blind(G)) return `<div class="card"><div class="lbl"><span>Lattice assessment</span><span>${I('lock',12)} clearance 4</span></div><div class="mute sm">Assessment switched off at this clearance. You have ${n} piece${n===1?'':'s'} of evidence in the Case tab: weigh them yourself.</div>${intelHTML(G)}</div>`;
+  const dc = domCount(G), cov = Object.values(dc).filter(x => x).length, wid = Math.max(5, Math.round(40 / (1 + 0.5*cov)));
+  const rng = v => { const c = Math.round(v*100); return Math.max(0, c-wid) + '–' + Math.min(100, c+wid) + '%'; };
   const verdict = !n ? `<div class="verdict mute">No evidence yet</div><div class="mute sm">Starting guess from past cases. ${esc(base)} That’s a base rate, not evidence.</div>`
-    : `<div class="verdict" style="color:${cols[b]}">${esc(names[b])} · ${Math.round(p[b]*100)}%</div><div class="mute sm">${p[b] < .75 ? 'Not sure yet' : 'Fairly sure'} · ${n} piece${n>1?'s':''} of evidence you collected.</div>`;
-  return `<div class="card"><div class="lbl"><span>Lattice assessment</span></div>${verdict}
+    : `<div class="verdict" style="color:${cols[b]}">${esc(names[b])} · ${rng(p[b])}</div><div class="mute sm">${p[b] < .75 ? 'Not sure yet' : 'Fairly sure'} · ${n} piece${n>1?'s':''} of evidence. The range narrows as you cover more domains.</div>`;
+  return `<div class="card"><div class="lbl"><span>Lattice assessment</span><span>±${wid}%</span></div>${verdict}
     <div class="tri">${keys.map(k => `<b style="width:${(p[k]*100).toFixed(1)}%;background:${cols[k]}"></b>`).join('')}</div>
-    <div class="legend">${keys.map(k => `<span style="color:${cols[k]}">${esc(names[k])} ${Math.round(p[k]*100)}%</span>`).join('')}</div></div>`;
+    <div class="legend">${keys.map(k => `<span style="color:${cols[k]}">${esc(names[k])} ${rng(p[k])}</span>`).join('')}</div>${intelHTML(G)}</div>`;
 }
 
 // ---------- input & loop ----------
