@@ -1503,14 +1503,10 @@ function titleHTML(){
   <p>A dark boat is heading for our coast. Work it like an intelligence analyst: <b>collect</b>, <b>corroborate</b>, <b>vet</b> restricted data lawfully, then <b>decide</b> before the clock runs out.</p>
   ${dailyHTML()}
   <details class="more" ${moreOpen ? 'open' : ''}><summary>${I('person',14)} Career, cases &amp; seed</summary>
-  <p class="mute sm" style="margin-top:10px">Every seed sets the weather, the boat and what really happened. The weather decides which tools work: fog hides faces, a gale grounds the drone, the skerries confuse the radar.</p>
-  <ul class="how"><li>One daily brief, the same case for everyone. One attempt.</li><li>Your score lifts an uplink toward orbit: 100 points reaches 35,786 km.</li><li>The obvious answer is often right. Calling the unlikely one right, on evidence, scores extra.</li></ul>
   ${casesHTML()}
   ${profileHTML()}
   <div class="seedrow" style="display:block"><label for="seed">Scenario seed · same seed, same case</label><div style="display:flex;gap:6px;margin-top:6px"><input id="seed" value="${esc(GS.seed || 'NIGHT-01')}" maxlength="24"><button class="btn pri" data-act="start" style="flex:none">Open case</button></div></div>
-  <p class="mute" style="font-size:12.5px">The seed decides what really happened. Everything is fictional. Works offline.</p>
   </details>
-  <p class="mute xs" style="margin-top:10px">Anonymous visit counts via GoatCounter: no cookies. Accounts run on Google Firebase.</p>
   ${storageOK ? '' : '<p class="no" style="font-size:13px">Storage is off: progress won’t be saved.</p>'}
   </div>${goBar()}</div></div></div>`;
 }
@@ -1993,15 +1989,6 @@ function renderPanel(){
       ${E.cams ? actBtn('task','cams','cam','Port cameras','Harbour-mouth footage · '+taskMin('cams')+' min', lock || G.done.cams, G.done.cams) : ''}
       ${actBtn('tab','people','id','Face match', !fo ? 'No faces in these conditions' : G.done.drone ? 'Open People tab' : 'Needs the drone first', !fo || !G.done.drone, G.done.face)}
     </div>`;
-    const ord = (k, ic, nm, ds) => { const u = G.units[k], st = u.st, sp = spent(G, k);
-      const lab = st === 'hold' ? (u.held ? 'On station' + (k === 'heli' ? ' · fuel for '+Math.max(0, Math.ceil(HOLD_FUEL - (G.t - u.held)))+' min' : '') : 'On its way…')
-        : (st === 'away' || st === 'gone') ? 'Sent to the mayday' : sp ? 'Out of fuel · back at base' : st !== 'base' ? 'Returning' : ds;
-      return actBtn('deploy', k, ic, nm, lab, G.closed || st !== 'base' || sp, st === 'hold' && u.held, st === 'hold' && !u.held ? 'go' : ''); };
-    h += `<div class="lbl" style="margin:12px 0 6px"><span>Orders · final once given</span><span>${Math.ceil(timeLeft(G) - 1e-6)} min left</span></div><div class="acts">
-      ${ord('heli','drone','Helicopter: hold nearby','Ready to winch at once · '+HOLD_FUEL+' min of fuel · loud')}
-      ${ord('lifeboat','buoy','Lifeboat: stand by','Slow to get there; first on scene if people need help')}
-      ${ord('cutter','anchor','Cutter: shadow distance','Out of sight; can board or follow at once')}
-    </div>`;
     h += latticeCard(G);
   }
   if (G.tab === 'vessel'){
@@ -2118,7 +2105,7 @@ function renderModal(){
     <div class="opts">${Object.keys(DEC).map(k => `<div>${I(DEC[k].icon,14)}<b>${DEC[k].name}</b><span class="mute">${DEC[k].sub}</span></div>`).join('')}</div>` : `<ol class="steps">
      <li><span><b>You can’t check everything.</b> You have a ${budget(G)}-minute watch and the checks cost more than that. Pick the ones that tell the stories apart.</span></li>
      <li><span><b>Launch long jobs first.</b> The drone and your units keep moving while your analyst works.</span></li>
-     <li><span><b>Actions have side effects.</b> A radio call tells smugglers they’re being watched; a helicopter overhead is hard to miss.</span></li>
+     <li><span><b>Actions have side effects.</b> A radio call tells smugglers they’re being watched.</span></li>
      <li><span><b>Orders are final.</b> A unit you send can’t be called back to base for another job this watch.</span></li>
      <li><span><b>Decide:</b> rescue, board, shadow or let it pass. Minutes left over earn points; a boat in trouble won’t wait.</span></li></ol>
     <p class="mute sm">Weather and light decide which tools work. Time only moves when you act. When the watch runs out you must decide.</p>`}
